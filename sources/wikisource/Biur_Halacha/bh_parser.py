@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys, re
+from collections import namedtuple
 
 import urllib2
 from bs4 import BeautifulSoup
@@ -15,9 +16,9 @@ sys.path.insert(0, SEFARIA_PROJECT_PATH)
 os.environ['DJANGO_SETTINGS_MODULE'] = "sefaria.settings"
 from sefaria.model import *
 
-from sources.functions import numToHeb, getGematria, post_index, post_text
+from sources.functions import post_index, post_text
 from sefaria.datatype import jagged_array
-from data_utilities.util import ja_to_xml, traverse_ja
+from data_utilities.util import getGematria, ja_to_xml, traverse_ja
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -123,7 +124,11 @@ opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 page = opener.open("https://he.wikisource.org/w/index.php?title=%D7%91%D7%99%D7%90%D7%95%D7%A8_%D7%94%D7%9C%D7%9B%D7%94&printable=yes")
 soup = BeautifulSoup(page)
 
+
 sections = []
+Section = namedtuple('Section', ['title', 'start', 'end'])
+
+
 start = 1  # start of first section of halachot
 end = 0  # end is added to start
 
@@ -137,12 +142,12 @@ for section_title in section_titles:
     if siman_headers:
         start = end + 1
         end = siman_headers.text.count("|") + start
-        sections.append([section_title.text, start, end])
+        sections.append(Section(section_title.text, start, end))
 
 
 files = os.listdir("./pages")
 
-for filename in files:  #696 simanim in O.C.
+for filename in files:
 
     siman_num = int(filename.split('.')[1])  # get siman number from title
 
@@ -187,9 +192,9 @@ alt_schema = SchemaNode()
 
 for section in sections:
     map_node = ArrayMapNode()
-    map_node.add_title(section[0], "he", True)
+    map_node.add_title(section.title, "he", True)
     map_node.add_title("temp", "en", True)
-    map_node.wholeRef = "Biur Halacha.{}-{}".format(section[1], section[2])
+    map_node.wholeRef = "Biur Halacha.{}-{}".format(section.start, section.end)
     map_node.includeSections = True
     map_node.depth = 0
     map_node.validate()

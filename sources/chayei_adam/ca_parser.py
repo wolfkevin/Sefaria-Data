@@ -155,6 +155,8 @@ with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_wr
 
     file_write.write("</div></root>")
 
+klalim_ja = jagged_array.JaggedArray([[]])   # JA of [Klal[comments]]]
+nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote]]
 
 klalim_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comments]]]
 
