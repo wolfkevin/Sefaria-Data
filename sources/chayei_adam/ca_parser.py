@@ -55,7 +55,6 @@ def checkAndEditTag(tag, line, file):
             line = u"כלל " + numToHeb(klal_count + 1)
             klal_count += 1
 
-
     elif tag is 'h3':
         comment_num = getGematria(line)
 
@@ -97,7 +96,7 @@ tags['00'] = 'h1'
 tags['11'] = 'h2'
 tags['22'] = 'h3'
 tags['33'] = 'p'
-tags['44'] = 'ul'
+tags['44'] = 'p'
 tags['99'] = 'footer'
 
 
