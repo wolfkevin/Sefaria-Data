@@ -56,6 +56,7 @@ def checkAndEditTag(tag, line, file):
             klal_count += 1
 
     elif tag is 'h3':
+
         comment_num = getGematria(line)
 
         if comment_num is comment_count + 1 or comment_num is 1:
@@ -127,27 +128,26 @@ with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_wr
 
     for line in file_read:
 
-
         if line[:1] is '$':
             tag = 'section'
+            line = line[1:]
 
             if u'הלכות' not in line:
                 tag = 'sub' + tag
 
-            line = line[1:]
-            file_write.write(u"<{}>{}</{}>".format(tag, line.strip(), tag))
-
-
         elif line[:1] is '@':
             tag = tags[line[1:3]]
             line = line[3:]
-
             tag, line = checkAndEditTag(tag, line, file_write)
-            file_write.write(u"<{}>{}</{}>".format(tag, line.strip(), tag))
+
+        # else:
+        #     tag = 'p'
+        #     line = line.replace('@44', '<b>')
+        #     line = line.replace('@55', '</b>')
 
 
-        else:  # TODO: address ? lines
-            x=1
+        file_write.write(u"<{}>{}</{}>".format(tag, line.strip(), tag))
+
 
     file_write.write("</div></root>")
 
