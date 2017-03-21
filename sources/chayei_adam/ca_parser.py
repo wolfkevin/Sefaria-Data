@@ -158,7 +158,33 @@ with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_wr
 klalim_ja = jagged_array.JaggedArray([[]])   # JA of [Klal[comments]]]
 nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote]]
 
-klalim_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comments]]]
+with open("nishmat_adam.txt") as file_read:
+
+    f_count = 0
+
+    for line in file_read:
+
+        if line[1:3] is '11':
+
+            line = line.replace('@33', "</b>", 1)
+            comment += '<br><b>' + line[3:].strip()
+
+            if line.find('@'): print line
+
+        elif line[1:3] is '22':
+
+            letter = line[line.index('(')+1:line.index(')')]
+            footnote = footnotes[f_count]
+
+            if letter is not footnote.letter:
+                print "letters off ", line
+
+            nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter)], comment, "")
+            f_count += 1
+            comment = ""
+
+        else: #TODO @11, @44, @99
+            print "ERROR what is this", line
 
 
 with open("ca_parsed.xml") as file_read:
@@ -226,7 +252,7 @@ index_schema.validate()
 alt_schema = SchemaNode()
 
 for section in sections:
-    map_node = ArrayMapNode()
+    map_node = SchemaNode()
     map_node.add_title(section.title, "he", True)
     map_node.add_title("temp", "en", True)
     alt_schema.append(map_node)
@@ -280,11 +306,16 @@ Questions:
 - should we link from title all from OC kinda, some are siman, other si', others just in (), some link to 2 simanim, some x ad y (e.g 48), some 2 ()
 - what is @44
 - klal 61 is miswritten
-- klalim restart
 - klal 26 (#2) is empty
-- some klalim listed together (32, 33 #2)
-- some times subtitle appears on same line (57 #2)
+- what are we doing with the subtitles @11's
 - no subtitle or partial (131 or 132 #2)
+
+Fixed:
+- klalim restart = made it long running count and will have alt struct
+- some klalim on other lines - parser splits this
+- some klalim listed together (32, 33 #2) - skipped number and put it together
+
+
 
 Nishmat Adam
 - there are some 44's, 55's, 99, ?, ???
@@ -293,3 +324,14 @@ Nishmat Adam
 - do sections mean anything?
 
 '''
+
+for footnote in footnotes:
+    links.append({
+        'refs': [
+            'Chayei Adam.{}.{}'.format(footnote.klal_num, footnote.comment_num)
+            'Nishmat Adam.{}.{}'.format(footnote.klal_num, getGematria(footnote.letter))
+        ],
+        'type': 'commentary',
+        'auto': True,
+        'generated_by': 'Nishmat Adam linker'
+    })
