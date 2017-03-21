@@ -20,6 +20,14 @@ from sefaria.model import *
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+sections = []
+Section = namedtuple('Section', ['title', 'start', 'end'])
+
+subtitles = []
+Subtitle = namedtuple('Subtitle', ['klal_num', 'title'])
+
+footnotes = {}
+Footnote = namedtuple('Footnote', ['klal_num', 'comment_num', 'letter'])
 
 klal_count = 0
 comment_count = 0
@@ -100,10 +108,6 @@ tags['33'] = 'p'
 tags['44'] = 'p'
 tags['99'] = 'footer'
 
-
-sections = []
-Section = namedtuple('Section', ['title', 'start', 'end'])
-
 opener = urllib2.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 page = opener.open("https://he.wikisource.org/w/index.php?title=%D7%97%D7%99%D7%99_%D7%90%D7%93%D7%9D&printable=yes")
@@ -178,16 +182,18 @@ with open("ca_parsed.xml") as file_read:
 
     for klal in soup.find_all("h1"):
 
-        comments = []
-
-        for comment in klal.find_next_siblings("p"):
-            comments.append(comment.text)
-
         klal_num = getGematria(klal.text.split()[1]) + addition
 
         if klal_num < prev_klal_num:  # start of shabbat klalim
             addition = 69
             klal_num += addition
+
+        comments = []
+
+        for index, comment in enumerate(klal.find_next_siblings("p")):
+            comments.append(comment.text)
+            if comment.i:
+                footnotes.append(Footnote(str(klal_num) + '.' str(index), comments[comment.index('#')+1:comment])))
 
         klalim_ja.set_element([klal_num - 1], comments, [])
 
@@ -198,23 +204,22 @@ ja_to_xml(klalim_ja.array(), ["klal", "comment"])
 
 links = []
 
-for comment in traverse_ja(klalim_ja.array()):
-    links.append({
-        'refs': [
-            # TODO: edit
-            # 'Shulchan_Arukh, Orach_Chayim.{}.{}'.format(comment['indices'][0] - 1, comment['indices'][1] - 1),
-            'Chayei Adam.{}.{}'.format(*[i - 1 for i in comment['indices']])
-        ],
-        'type': 'commentary',
-        'auto': True,
-        'generated_by': 'Chayei Adam linker'
-    })
+# for comment in traverse_ja(klalim_ja.array()):
+#     links.append({
+#         'refs': [
+#             # TODO: edit
+#             # 'Shulchan_Arukh, Orach_Chayim.{}.{}'.format(comment['indices'][0] - 1, comment['indices'][1] - 1),
+#             'Chayei Adam.{}.{}'.format(*[i - 1 for i in comment['indices']])
+#         ],
+#         'type': 'commentary',
+#         'auto': True,
+#         'generated_by': 'Chayei Adam linker'
+#     })
 
 index_schema = JaggedArrayNode()
 index_schema.add_primary_titles("Chayei Adam", u"חיי אדם")
 index_schema.add_structure(["Klal", "Comment"])
 index_schema.validate()
-
 
 alt_schema = SchemaNode()
 
