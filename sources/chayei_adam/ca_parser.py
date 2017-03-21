@@ -67,9 +67,27 @@ def checkAndEditTag(tag, line, file):
             comment_count += 1
 
     elif tag is 'p':
-        if '#' in line:
+
+        while '#' in line:
+
+            footnote_index = line.index('#')
+            end_footnote = line[footnote_index].find(' ')
+            letter = line[footnote_index+1:end_footnote]
+            footnote_num = getGematria(letter)
+
+            if footnote_num is local_foot_count + 1 or footnote_num is 1:
+                local_foot_count = footnote_num
+
+            else:
+                print "FOOTNOTE COUNT OFF", line
+
+            footnotes[footnote_count] = Footnote(letter, klal_count, comment_count)
+
+            if local_foot_count is not footnote_num:
+                print "MISMATCHED COUNT AND GEMATRIA"
+
+            line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" data-order="{}"></i>').format("Nishmat Adam", footnote_count)
             footnote_count += 1
-            line.replace('#', "<i id={}></i>".format(footnote_count))
 
     return tag, line
 
