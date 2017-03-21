@@ -227,12 +227,28 @@ for section in sections:
     map_node = ArrayMapNode()
     map_node.add_title(section.title, "he", True)
     map_node.add_title("temp", "en", True)
+    alt_schema.append(map_node)
+
+    start = section.start
+
+    for subtitle in subtitles[section.start:section.end]
+        map_node = ArrayMapNode()
+        map_node.add_title(subtitle.title, "he", True)
+        map_node.add_title(str(subtitle.klal_num), "en", True)
+        map_node.wholeRef = "Chayei Adam.{}".format(subtitle.klal_num)
+        map_node.includeSections = True
+        map_node.depth = 0
+        map_node.validate()
+
     map_node.wholeRef = "Chayei Adam.{}-{}".format(section.start, section.end)
     map_node.includeSections = True
-    map_node.depth = 0
     map_node.validate()
 
-    alt_schema.append(map_node)
+
+
+subtitle_schema = SchemaNode()
+
+
 
 index = {
     "title": "Chayei Adam",
