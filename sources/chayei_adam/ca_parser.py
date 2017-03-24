@@ -23,25 +23,38 @@ sys.setdefaultencoding("utf-8")
 sections = []
 Section = namedtuple('Section', ['title', 'start', 'end'])
 
-subtitles = []
-Subtitle = namedtuple('Subtitle', ['klal_num', 'title'])
+klal_titles = []
+KlalTitle = namedtuple('KlalTitle', ['num', 'title'])
 
 footnotes = {}
 Footnote = namedtuple('Footnote', ['klal_num', 'comment_num', 'letter'])
 
 klal_count = 0
 comment_count = 0
-footnote_count = 0
+ca_footnote_count = 0
+local_foot_count = 0
+
+
+tags = {}
+tags['00'] = 'klal_num'
+tags['11'] = 'klal_title'
+tags['22'] = 'seif_num'
+tags['33'] = 'comment'
+tags['44'] = 'list_comment'
+tags['99'] = 'footer'
+
 
 def checkAndEditTag(tag, line, file):
 
-    global klal_count, comment_count, footnote_count
+    global klal_count, comment_count, ca_footnote_count, local_foot_count
 
-    if tag is 'ul':
+    if tag is 'list_comment':
         line = '<b>' + line.replace("@55", " </b> ", 1)
 
-    elif tag is 'h1':
+    elif tag is 'klal_num':
         file.write("</div><div>")  # adding this makes it much easier to parse klalim
+
+        local_foot_count = 0
 
         klal_num = getGematria(line.split()[1])
 
@@ -50,9 +63,9 @@ def checkAndEditTag(tag, line, file):
             if klal_num + 1 is getGematria(line.split()[2]):  # its a double klal
                 klal_count += 2
 
-            else:  # subtitle is on same line as klal and should be moved down and split
+            else:  # klal_title is on same line as klal and should be moved down and split
                 file.write(u"<{}>{}</{}>".format(tag, ' '.join(line.split()[:2]), tag))
-                tag ='h2'
+                tag ='klal_title'
                 line = ' '.join(line.split()[2:])
                 klal_count += 1
 
@@ -63,7 +76,7 @@ def checkAndEditTag(tag, line, file):
             line = u"כלל " + numToHeb(klal_count + 1)
             klal_count += 1
 
-    elif tag is 'h3':
+    elif tag is 'seif_num':
 
         comment_num = getGematria(line)
 
@@ -74,12 +87,14 @@ def checkAndEditTag(tag, line, file):
             line = numToHeb(comment_count + 1)
             comment_count += 1
 
-    elif tag is 'p':
+    elif tag is 'comment':
 
         while '#' in line:
 
             footnote_index = line.index('#')
-            end_footnote = line[footnote_index].find(' ')
+            end_footnote = footnote_index + line[footnote_index:].find(' ')
+            if end_footnote < footnote_index:
+                end_footnote = len(line)
             letter = line[footnote_index+1:end_footnote]
             footnote_num = getGematria(letter)
 
@@ -89,24 +104,16 @@ def checkAndEditTag(tag, line, file):
             else:
                 print "FOOTNOTE COUNT OFF", line
 
-            footnotes[footnote_count] = Footnote(letter, klal_count, comment_count)
+            footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
+            print footnotes[ca_footnote_count]
 
             if local_foot_count is not footnote_num:
                 print "MISMATCHED COUNT AND GEMATRIA"
 
-            line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" data-order="{}"></i>').format("Nishmat Adam", footnote_count)
-            footnote_count += 1
+            line = line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" data-order="{}"></i>'.format("Nishmat Adam", ca_footnote_count))
+            ca_footnote_count += 1
 
     return tag, line
-
-
-tags = {}
-tags['00'] = 'h1'
-tags['11'] = 'h2'
-tags['22'] = 'h3'
-tags['33'] = 'p'
-tags['44'] = 'p'
-tags['99'] = 'footer'
 
 opener = urllib2.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
@@ -116,14 +123,14 @@ soup = BeautifulSoup(page, 'html.parser')
 header = soup.find(id=".D7.A1.D7.93.D7.A8_.D7.94.D7.99.D7.95.D7.9D")  # get seder hayom section
 header = header.parent
 
-start = 1  # start of first section of halachot
-end = 0  # end is added to start
+section_start_num = 1  # start of first section of halachot
+section_end_num = 0  # end is added to start
 
 for section in header.find_next_siblings("h3"):
     bullets = section.find_next_sibling("ul")
-    end = len(bullets.find_all("li")) + start - 1
-    sections.append(Section(section.text, start, end))
-    start = end + 1
+    section_end_num = len(bullets.find_all("li")) + section_start_num - 1
+    sections.append(Section(section.text, section_start_num, section_end_num))
+    section_start_num = section_end_num + 1
 
 
 with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_write:
@@ -137,7 +144,7 @@ with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_wr
             line = line[1:]
 
             if u'הלכות' not in line:
-                tag = 'sub' + tag
+                tag = 'mini' + tag
 
         elif line[:1] is '@':
             tag = tags[line[1:3]]
@@ -155,36 +162,43 @@ with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_wr
 
     file_write.write("</div></root>")
 
-klalim_ja = jagged_array.JaggedArray([[]])   # JA of [Klal[comments]]]
-nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote]]
+klalim_ja = jagged_array.JaggedArray([[]])   # JA of [Klal[comment, comment]]]
+nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 
 with open("nishmat_adam.txt") as file_read:
 
-    f_count = 0
+    na_footnote_count = 0
+
+    comment = ""
 
     for line in file_read:
 
-        if line[1:3] is '11':
+        if line[1:3] == '11':
 
             line = line.replace('@33', "</b>", 1)
-            comment += '<br><b>' + line[3:].strip()
+            comment = '<b>' + line[3:].strip() + '<br>'
 
             if line.find('@'): print line
 
-        elif line[1:3] is '22':
+        elif line[1:3] == '22':
 
             letter = line[line.index('(')+1:line.index(')')]
-            footnote = footnotes[f_count]
+            print letter
+            print na_footnote_count
+            footnote = footnotes[na_footnote_count]
 
-            if letter is not footnote.letter:
+            if letter != footnote.letter:
+                print footnote.letter
                 print "letters off ", line
 
             nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter)], comment, "")
-            f_count += 1
+            na_footnote_count += 1
             comment = ""
 
         else: #TODO @11, @44, @99
             print "ERROR what is this", line
+
+ja_to_xml(nishmat_ja.array(), ["klal", "footnote"])
 
 
 with open("ca_parsed.xml") as file_read:
@@ -221,7 +235,7 @@ with open("ca_parsed.xml") as file_read:
         for index, comment in enumerate(klal.find_next_siblings("p")):
             comments.append(comment.text)
             if comment.i:
-                footnotes.append(Footnote(str(klal_num) + '.' str(index), comments[comment.index('#')+1:comment])))
+                footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
 
         klalim_ja.set_element([klal_num - 1], comments, [])
 
@@ -251,26 +265,26 @@ index_schema.validate()
 
 alt_schema = SchemaNode()
 
-for section in sections:
-    map_node = SchemaNode()
-    map_node.add_title(section.title, "he", True)
-    map_node.add_title("temp", "en", True)
-    alt_schema.append(map_node)
-
-    start = section.start
-
-    for subtitle in subtitles[section.start:section.end]
-        map_node = ArrayMapNode()
-        map_node.add_title(subtitle.title, "he", True)
-        map_node.add_title(str(subtitle.klal_num), "en", True)
-        map_node.wholeRef = "Chayei Adam.{}".format(subtitle.klal_num)
-        map_node.includeSections = True
-        map_node.depth = 0
-        map_node.validate()
-
-    map_node.wholeRef = "Chayei Adam.{}-{}".format(section.start, section.end)
-    map_node.includeSections = True
-    map_node.validate()
+# for section in sections:
+#     map_node = SchemaNode()
+#     map_node.add_title(section.title, "he", True)
+#     map_node.add_title("temp", "en", True)
+#     alt_schema.append(map_node)
+#
+#     start = section.start
+#
+#     for subtitle in subtitles[section.start:section.end]
+#         map_node = ArrayMapNode()
+#         map_node.add_title(subtitle.title, "he", True)
+#         map_node.add_title(str(subtitle.klal_num), "en", True)
+#         map_node.wholeRef = "Chayei Adam.{}".format(subtitle.klal_num)
+#         map_node.includeSections = True
+#         map_node.depth = 0
+#         map_node.validate()
+#
+#     map_node.wholeRef = "Chayei Adam.{}-{}".format(section.start, section.end)
+#     map_node.includeSections = True
+#     map_node.validate()
 
 
 
@@ -325,13 +339,13 @@ Nishmat Adam
 
 '''
 
-for footnote in footnotes:
-    links.append({
-        'refs': [
-            'Chayei Adam.{}.{}'.format(footnote.klal_num, footnote.comment_num)
-            'Nishmat Adam.{}.{}'.format(footnote.klal_num, getGematria(footnote.letter))
-        ],
-        'type': 'commentary',
-        'auto': True,
-        'generated_by': 'Nishmat Adam linker'
-    })
+# for footnote in footnotes:
+#     links.append({
+#         'refs': [
+#             'Chayei Adam.{}.{}'.format(footnote.klal_num, footnote.comment_num)
+#             'Nishmat Adam.{}.{}'.format(footnote.klal_num, getGematria(footnote.letter))
+#         ],
+#         'type': 'commentary',
+#         'auto': True,
+#         'generated_by': 'Nishmat Adam linker'
+#     })
