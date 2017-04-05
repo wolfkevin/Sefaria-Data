@@ -4,7 +4,13 @@
 from sources.Shulchan_Arukh.ShulchanArukh import *
 from data_utilities.util import he_ord
 
-
+def markup(b_vol):
+    commentaries = root.get_commentaries()
+    b_vol.mark_references(commentaries.commentary_ids["Siftei Cohen"], ur'@65\(([\u05d0-\u05ea]{1,3})\)', group=1)
+    b_vol.mark_references(commentaries.commentary_ids["Me'irat Einayim"], u'@62([\u05d0-\u05ea]{1,3})', group=1)
+    b_vol.mark_references(commentaries.commentary_ids["Ktsot HaHoshen"], u'@67([\u05d0-\u05ea]{1,3})\)', group=1)
+    b_vol.mark_references(commentaries.commentary_ids["Pithei Teshuva"], u'@64([\u05d0-\u05ea]{1,3})\]', group=1)
+    return
 
 root = Root('../Choshen_Mishpat.xml')
 base = root.get_base_text()
@@ -26,8 +32,10 @@ volume.mark_simanim(u'@22([\u05d0-\u05ea]{1,3})', start_mark=u'!start!', special
 print 'Validating Simanim'
 volume.validate_simanim()
 
-volume.mark_seifim(u'@11([\u05d0-\u05ea]{1,3})', specials={u'@23': {'name': u'title'}})
+bad = volume.mark_seifim(u'@11([\u05d0-\u05ea]{1,3})', specials={u'@23': {'name': u'title'}})
 print 'Validating Seifim'
+for i in bad:
+    print i
 volume.validate_seifim()
 # root.export()
 
@@ -38,3 +46,6 @@ for code, pattern in zip(codes, patterns):
 errors = volume.format_text('@33', '@34', 'ramah')
 for i in errors:
     print i
+markup(volume)
+# root.populate_comment_store()
+root.export()
