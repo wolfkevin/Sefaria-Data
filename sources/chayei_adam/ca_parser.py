@@ -16,7 +16,6 @@ from sefaria.datatype import jagged_array
 from sources.functions import post_index, post_text
 from sefaria.model import *
 
-
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
@@ -26,7 +25,7 @@ Section = namedtuple('Section', ['title', 'start', 'end'])
 klal_titles = []
 KlalTitle = namedtuple('KlalTitle', ['num', 'title'])
 
-footnotes = {}
+footnotes = {}  # needs to be a dict bc of double klalim
 Footnote = namedtuple('Footnote', ['klal_num', 'comment_num', 'letter'])
 
 klal_count = 0
@@ -42,6 +41,8 @@ tags['22'] = 'seif_num'
 tags['33'] = 'comment'
 tags['44'] = 'list_comment'
 tags['99'] = 'footer'
+
+mapping = dict.fromkeys(map(ord, u":.\n)"))  #chars to eliminate when parsing chayei adam numbers
 
 
 def checkAndEditTag(tag, line, file):
@@ -64,16 +65,19 @@ def checkAndEditTag(tag, line, file):
                 klal_count += 2
 
             else:  # klal_title is on same line as klal and should be moved down and split
-                file.write(u"<{}>{}</{}>".format(tag, ' '.join(line.split()[:2]), tag))
+                file.write(u"<{}>{}</{}>".format(tag, ' '.join(line.split()[:2]), tag))  # write klal num to file
                 tag ='klal_title'
-                line = ' '.join(line.split()[2:])
+                line = ' '.join(line.split()[2:])  # create klal title from rest of words that aren't klal num
                 klal_count += 1
 
         elif klal_num is klal_count + 1 or klal_num is 1:
             klal_count = klal_num
 
-        else:  # line is off and should be corrected
+        else:  # line is off bc of poor OCR and should be corrected
+            print "klal is off, correcting"
+            print line
             line = u"כלל " + numToHeb(klal_count + 1)
+            print line
             klal_count += 1
 
     elif tag is 'seif_num':
@@ -84,6 +88,7 @@ def checkAndEditTag(tag, line, file):
             comment_count = comment_num
 
         else:  # TODO: weird case of ראוי here
+            print "seif num off", line
             line = numToHeb(comment_count + 1)
             comment_count += 1
 
@@ -93,9 +98,11 @@ def checkAndEditTag(tag, line, file):
 
             footnote_index = line.index('#')
             end_footnote = footnote_index + line[footnote_index:].find(' ')
-            if end_footnote < footnote_index:
-                end_footnote = len(line)
-            letter = line[footnote_index+1:end_footnote]
+
+            if end_footnote < footnote_index:  # when footnote appears at end of comment cant find ' '
+                end_footnote = len(line)  # so use len of line as end_footnote index
+
+            letter = unicode(line[footnote_index+1:end_footnote])
             footnote_num = getGematria(letter)
 
             if footnote_num is local_foot_count + 1 or footnote_num is 1:
@@ -104,14 +111,12 @@ def checkAndEditTag(tag, line, file):
             else:
                 print "FOOTNOTE COUNT OFF", line
 
-            footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
-            print footnotes[ca_footnote_count]
-
-            if local_foot_count is not footnote_num:
-                print "MISMATCHED COUNT AND GEMATRIA"
+            footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter.translate(mapping))
+            ca_footnote_count += 1
+            # print footnotes[ca_footnote_count]
 
             line = line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" data-order="{}"></i>'.format("Nishmat Adam", ca_footnote_count))
-            ca_footnote_count += 1
+
 
     return tag, line
 
@@ -182,7 +187,7 @@ with open("nishmat_adam.txt") as file_read:
 
         elif line[1:3] == '22':
 
-            letter = line[line.index('(')+1:line.index(')')]
+            letter = unicode(line[line.index('(')+1:line.index(')')])
             print letter
             print na_footnote_count
             footnote = footnotes[na_footnote_count]
@@ -190,6 +195,7 @@ with open("nishmat_adam.txt") as file_read:
             if letter != footnote.letter:
                 print footnote.letter
                 print "letters off ", line
+                print footnotes[na_footnote_count]
 
             nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter)], comment, "")
             na_footnote_count += 1
