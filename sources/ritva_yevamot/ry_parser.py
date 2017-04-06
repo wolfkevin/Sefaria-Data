@@ -14,15 +14,14 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "sefaria.settings"
 
 from data_utilities.util import ja_to_xml, traverse_ja, getGematria, numToHeb
 from sefaria.datatype import jagged_array
-from sources.functions import post_index, post_text
+from sources.functions import post_index, post_text, get_page, removeExtraSpaces
 from sefaria.model import *
 
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-# פירוש, פי' ק"ל ופרשי
-# וכו' .
+
 par_c = 0
 dh_c = 0
 
@@ -34,7 +33,7 @@ def checkAndEditTag(tag, line, file):
         line = '<b> ' + line.replace("@12", " </b> ", 1) if "@12" in line \
             else '<b> ' + line.replace("@15", " </b> ", 1)
 
-        # remove שם when it is DH
+        # remove שם when it is first word b/c not useful
         if "שם" in line.split()[1]:
             line = line.replace(line.split()[1], "", 1)
 
@@ -95,54 +94,66 @@ with open("ritva_yevamot.txt") as file_read, open("ry_parsed.xml", "w") as file_
 
     file_write.write("</daf></root>")
 
-
-daf_ja = jagged_array.JaggedArray([[]])  # JA of [Daf[comments]]]
+daf_ja = jagged_array.JaggedArray([[]])  # JA of [Daf[], Daf[comment, comment]]
 
 
 with open("ry_parsed.xml") as file_read:
 
     soup = BeautifulSoup(file_read, 'lxml')
 
-    perek_start = "2a"
+    perek_start = "2a.0"
     perek_end = ""
-    perek_title = u"חמש עשרה נשים"
+    perek_title = u"חמש עשרה נשים"  # set first title manually
+    prev_daf_count = 1
 
     for daf in soup.find_all("daf")[1:]:
 
         # getGematria and check if amud bet or aleph
-        daf_num = (getGematria(daf.h2.text.split()[1]) - 1) * 2 + 1 if daf.h2.text.split('"')[1] == u'ב' \
-            else ((getGematria(daf.h2.text.split()[1]) - 1) * 2)
+        # daf_num = (getGematria(daf.h2.text.split()[1]) - 1) * 2 + 1 if daf.h2.text.split('"')[1] == u'ב' \
+        #     else ((getGematria(daf.h2.text.split()[1]) - 1) * 2)
+
+        daf_num = str(getGematria(daf.h2.text.split()[1])) + 'a' if daf.h2.text.endswith(u'א') \
+            else str(getGematria(daf.h2.text.split()[1])) + 'b'
 
         comments = []
         comment_text = ""
-        comment_num = 0  # so alt struct can know where to break
+        comment_num = 1  # so alt struct can know where to break
 
         for content in daf.children:
 
-            if content.name is 'p':  # has a new comment
-                comments.append(bleach.clean(comment_text, tags=['b', 'i'], strip=True))
-
-                comment_text = str(content)
+            if content.name is 'p':
+                comments.append(bleach.clean(content, tags=['b'], strip=True))
                 comment_num += 1
 
             elif content.name == 'h1':
-                sections.append(Section(perek_title, perek_start, str(daf_num) + "." + str(comment_num)))
+
+                if content.previous_sibling.name == "h2":  # new chapter at beginning of daf
+                    if daf_num.endswith('a'):
+                        prev_daf_num = str(int(daf_num[:-1]) - 1)
+                        prev_daf_num += 'b'
+                    else:
+                        prev_daf_num = daf_num[:-1] + 'a'
+
+                    sections.append(Section(perek_title, perek_start, prev_daf_num + "." + str(prev_daf_count)))
+                    perek_start = daf_num + "." + '1'
+
+                else:
+                    sections.append(Section(perek_title, perek_start, str(daf_num) + "." + str(comment_num)))
+                    perek_start = str(daf_num) + "." + str(comment_num + 1)
 
                 perek_title = ""
                 for word in content.text.split()[2:]:
                     perek_title += word
 
-                perek_start = str(daf_num) + "." + str(comment_num + 1)
+        prev_daf_count = comment_num
 
-            # print comment_text
-
-        if comment_text: # is a last comment that exists
+        if comment_text:  # is a last comment that exists
             comments.append(bleach.clean(comment_text, tags=['b'], strip=True))
+            print "does this happen?"
 
-        daf_ja.set_element([daf_num], comments, [])
+        daf_ja.set_element([get_page(int(daf_num[:-1]), daf_num[-1:])], comments, [])
+    sections.append(Section(perek_title, perek_start, daf_num + "." + str(comment_num)))
 
-print par_c
-print dh_c
 ja_to_xml(daf_ja.array(), ["daf", "comment"])
 
 print sections
