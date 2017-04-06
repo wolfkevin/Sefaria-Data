@@ -4,6 +4,7 @@ import os, sys
 import urllib2
 from bs4 import BeautifulSoup
 import bleach
+import codecs
 
 from collections import namedtuple
 
@@ -37,27 +38,32 @@ def checkAndEditTag(tag, line, file):
         if "שם" in line.split()[1]:
             line = line.replace(line.split()[1], "", 1)
 
-            if "</b>" == line.split()[1]:
-                line = line.replace("</b>", line.split()[2] + " </b>", 1)
-                line = line.replace(line.split()[3], "", 1)
-
-        # begining of comment so assume DH is everything before this word
-        for word in ["פירוש", "פי'", 'ק"ל', "ופרשי"]:
-            if word in line.split()[:20]:
-                line = line.replace("</b>", "", 1)
-                line = line.replace(word, " </b> " + word, 1)
-                dh_c += 1
-                print line
+        word_index = 1000
 
         # end of quote so assume DH ends right after this word
-        for word in ["וכו'", "."]:
-            if word in line.split()[:20]:
-                line = line.replace("</b>", "", 1)
-                line = line.replace(word, word + " </b> ", 1)
-                dh_c += 1
-                print line
+        for word in [u"וכו'", u".", u'ק"ל']:
+            potential_index = line.find(word, 0, 1000)
+            if potential_index is not -1 and potential_index < word_index:  # want to find earliest delimiter
+                word_index = line.find(' ', potential_index)
 
-        par_c += 1
+        # beginning of comment so assume DH is everything before this word
+        #TODO: not אפי׳
+        for word in [u"כלומר" , u"פירוש", u"פי'", u"רשי", u'ר"שי']:
+            potential_index = line.find(word, 0, 1000)
+            if potential_index is not -1 and potential_index < word_index:  # want to find earliest delimiter
+                word_index = line.rfind(' ', 0, potential_index)
+
+        if word_index < 999:  # something was found
+            line = line[:word_index] + u' </b> ' + line[word_index:]
+            line = line.replace(u" </b> ", u" ", 1)
+            # print line
+
+        if u"</b>" == line.split()[1]:  # if DH is empty, make first word bold by default
+            word = line.split()[2]
+            line = line.replace(word, u" ", 1)
+            line = line.replace(u" </b> ", word + u" </b> ", 1)
+
+        line = removeExtraSpaces(line)
 
     elif tag is 'h2':
         file.write("</daf><daf>")  # adding this makes it much easier to parse daf
@@ -76,13 +82,13 @@ sections = []
 Section = namedtuple('Section', ['title', 'start', 'end'])
 
 
-with open("ritva_yevamot.txt") as file_read, open("ry_parsed.xml", "w") as file_write:
+with codecs.open("ritva_yevamot.txt", 'r', 'utf-8') as file_read, open("ry_parsed.xml", "w") as file_write:
 
-    file_write.write("<root><daf>")
+    file_write.write(u"<root><daf>")
 
     for line in file_read:
 
-        if line[:1] is '@':
+        if line[:1] == u'@':
             tag = tags[line[1:3]]
             line = line[3:].strip()
 
@@ -92,7 +98,7 @@ with open("ritva_yevamot.txt") as file_read, open("ry_parsed.xml", "w") as file_
         else:
             print "LINE ERROR\n", line
 
-    file_write.write("</daf></root>")
+    file_write.write(u"</daf></root>")
 
 daf_ja = jagged_array.JaggedArray([[]])  # JA of [Daf[], Daf[comment, comment]]
 
