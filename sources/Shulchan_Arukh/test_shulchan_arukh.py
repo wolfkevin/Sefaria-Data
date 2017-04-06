@@ -69,6 +69,14 @@ class TestMarkSimanim(object):
         v.mark_simanim(u'@00([\u05d0-\u05ea])')
 
         assert len(v.get_child()) == 2
+        assert unicode(v) == u'<volume num="1"><siman num="2">סימן שני\n</siman><siman num="1">סימן ראשון</siman></volume>'
+
+    def test_out_of_order_enforced(self):
+        raw_text = u'<volume num="1">@00ב\nסימן שני\n@00א\nסימן ראשון</volume>'
+        v = Volume(BeautifulSoup(raw_text, 'xml').volume)
+        v.mark_simanim(u'@00([\u05d0-\u05ea])', enforce_order=True)
+
+        assert len(v.get_child()) == 2
         assert unicode(v) == u'<volume num="1"><siman num="1">סימן ראשון</siman><siman num="2">סימן שני\n</siman></volume>'
 
     def test_duplicate_siman(self):
@@ -173,46 +181,46 @@ class TestMarkSimanim(object):
 class TestTextFormatting(object):
 
     def test_no_special_formatting(self):
-        raw_text = u'<seif>just some text</seif>'
+        raw_text = u'<seif num="1">just some text</seif>'
         s = Seif(BeautifulSoup(raw_text, 'xml').seif)
         s.format_text('@33', '@34', 'ramah')
-        assert unicode(s) == u'<seif><reg-text>just some text</reg-text></seif>'
+        assert unicode(s) == u'<seif num="1"><reg-text>just some text</reg-text></seif>'
 
     def test_simple_formatting(self):
-        raw_text = u'<seif>some @33bold @34text</seif>'
+        raw_text = u'<seif num="1">some @33bold @34text</seif>'
         s = Seif(BeautifulSoup(raw_text, 'xml').seif)
         s.format_text('@33', '@34', 'b')
-        assert unicode(s) == u'<seif><reg-text>some </reg-text><b>bold </b><reg-text>text</reg-text></seif>'
+        assert unicode(s) == u'<seif num="1"><reg-text>some </reg-text><b>bold </b><reg-text>text</reg-text></seif>'
 
     def test_start_formatting(self):
-        raw_text = u'<seif>@33bold text @34at the beginning</seif>'
+        raw_text = u'<seif num="1">@33bold text @34at the beginning</seif>'
         s = Seif(BeautifulSoup(raw_text, 'xml').seif)
         s.format_text('@33', '@34', 'b')
-        assert unicode(s) == u'<seif><b>bold text </b><reg-text>at the beginning</reg-text></seif>'
+        assert unicode(s) == u'<seif num="1"><b>bold text </b><reg-text>at the beginning</reg-text></seif>'
 
     def test_end_formatting(self):
-        raw_text = u'<seif>the end is @33marked bold</seif>'
+        raw_text = u'<seif num="1">the end is @33marked bold</seif>'
         s = Seif(BeautifulSoup(raw_text, 'xml').seif)
         s.format_text('@33', '@34', 'b')
-        assert unicode(s) == u'<seif><reg-text>the end is </reg-text><b>marked bold</b></seif>'
+        assert unicode(s) == u'<seif num="1"><reg-text>the end is </reg-text><b>marked bold</b></seif>'
 
     def test_random_end_tag(self):
-        raw_text = u'<seif>@34just some text</seif>'
+        raw_text = u'<seif num="1">@34just some text</seif>'
         s = Seif(BeautifulSoup(raw_text, 'xml').seif)
         s.format_text('@33', '@34', 'b')
-        assert unicode(s) == u'<seif><reg-text>just some text</reg-text></seif>'
+        assert unicode(s) == u'<seif num="1"><reg-text>just some text</reg-text></seif>'
 
     def test_double_start_tag(self):
-        raw_text = u'<seif>@33just @33some text</seif>'
+        raw_text = u'<seif num="1">@33just @33some text</seif>'
         s = Seif(BeautifulSoup(raw_text, 'xml').seif)
         with pytest.raises(AssertionError):
             s.format_text('@33', '@34', 'b')
 
     def test_interspersed(self):
-        raw_text = u'<seif>@33just @34some @33text</seif>'
+        raw_text = u'<seif num="1">@33just @34some @33text</seif>'
         s = Seif(BeautifulSoup(raw_text, 'xml').seif)
         s.format_text('@33', '@34', 'b')
-        assert unicode(s) == u'<seif><b>just </b><reg-text>some </reg-text><b>text</b></seif>'
+        assert unicode(s) == u'<seif num="1"><b>just </b><reg-text>some </reg-text><b>text</b></seif>'
 
 class TestXref(object):
 
@@ -222,7 +230,7 @@ class TestXref(object):
         up the data tree.
         """
         basic_text = u'hello @33 world'
-        full_text = u'<seif><reg-text>{}</reg-text></seif>'.format(basic_text)
+        full_text = u'<seif num="1"><reg-text>{}</reg-text></seif>'.format(basic_text)
         s = Seif(BeautifulSoup(full_text, 'xml').seif)
         for child in s.get_child():
             child.mark_references(0, 1, 1, '@33')
@@ -230,7 +238,7 @@ class TestXref(object):
         assert len(s.get_child()) == 1
         for child in s.get_child():
             assert len(child.get_child()) == 1
-        assert unicode(s) == u'<seif><reg-text>hello <xref id="b0-c1-si1-ord1">@33</xref> world</reg-text></seif>'
+        assert unicode(s) == u'<seif num="1"><reg-text>hello <xref id="b0-c1-si1-ord1">@33</xref> world</reg-text></seif>'
 
     def test_multiple(self):
         raw_text = u'<b>some @33 random @33 words @33 here</b>'
@@ -275,4 +283,99 @@ class TestXref(object):
         with pytest.raises(AssertionError):
             b.mark_references(0, 1, 1, '@33')
 
+def test_correct_marks():
+    test_text = u'קצת @22א טקסט @22ט @22ג שאין @22ג @22ד @22ח לו\n @22ו משמעות'
+    assert correct_marks(test_text, u'@22([\u05d0-\u05ea]{1,2})') == u'קצת @22א טקסט @22ב @22ג שאין @22ג @22ד @22ה לו\n @22ו משמעות'
 
+    test_text = u'קצת @22ש טקסט @22כ ללא @22א משמעות'
+    assert correct_marks(test_text, u'@22([\u05d0-\u05ea])', error_finder=out_of_order_he_letters) == u'קצת @22ש טקסט @22ת ללא @22א משמעות'
+
+    test_text = u'קצת @22ת טקסט @22כ ללא @22ב משמעות'
+    assert correct_marks(test_text, u'@22([\u05d0-\u05ea])',
+                         error_finder=out_of_order_he_letters) == u'קצת @22ת טקסט @22א ללא @22ב משמעות'
+
+    test_text = u'קצת @22א טקסט @22כ ללא @22ג משמעות'
+    assert correct_marks(test_text, u'@22([\u05d0-\u05ea])',
+                         error_finder=out_of_order_he_letters) == u'קצת @22א טקסט @22ב ללא @22ג משמעות'
+
+def test_validate_double_refs():
+    test_text = u'<siman num="1"><seif num="1">foo @22א bar @22א</seif></siman>'
+    siman = Siman(BeautifulSoup(test_text, 'xml').find('siman'))
+    assert not siman.validate_references(u'@22([\u05d0-\u05ea])', u'@22')
+
+class TestCommentStore(object):
+
+    def test_populate_comment_store(self):
+        """
+        Make sure the code properly passes down the entire tree
+        """
+        root = Root('test_document.xml')
+        base_text = root.get_base_text()
+        base_text.add_titles('Shulchan Arukh', u'שולחן ערוך')
+        commentaries = root.get_commentaries()
+        shach = commentaries.add_commentary('Shach', u'ש"ך')
+
+        base_volume = u'<siman num="1"><seif num="1"><b>' \
+                      u'some <xref id="b0-c1-s1-ord1"/> text</b></seif></siman>'
+        shach_volume =  u'<siman num="1"><seif num="1" rid="b0-c1-s1-ord1"></seif><b>' \
+                      u'some text</b></siman>'
+        base_text.add_volume(base_volume, 1)
+        shach.add_volume(shach_volume, 1)
+        root.populate_comment_store()
+
+        comment_store = CommentStore()
+        assert comment_store.get("b0-c1-s1-ord1") is not None
+        assert comment_store["b0-c1-s1-ord1"] == {
+            'base_title': 'Shulchan Arukh',
+            'siman': 1,
+            'seif': 1,
+            'commentator_title': 'Shach',
+            'commentator_seif': 1,
+            'commentator_siman': 1
+        }
+        comment_store.clear()
+
+    def test_set_rid(self):
+        root = Root('test_document.xml')
+        base_text = root.get_base_text()
+        base_text.add_titles('Shulchan Arukh', u'שולחן ערוך')
+        commentaries = root.get_commentaries()
+        shach = commentaries.add_commentary('Shach', u'ש"ך')
+
+        volume_text = u'<siman num="1"><seif num="3"><b>some text</b></seif></siman>'
+        volume = shach.add_volume(volume_text, 1)
+        volume.set_rid_on_seifim()
+
+        assert unicode(volume) == u'<volume num="1"><siman num="1"><seif num="3" rid="b0-c1-si1-ord3">' \
+                                  u'<b>some text</b></seif></siman></volume>'
+
+    def test_duplicate_xref(self):
+        first_xref = Xref(BeautifulSoup('<xref id="abcd"/>', 'xml').find('xref'))
+        first_xref.load_xrefs_to_commentstore('a', 1, 1)
+        second_xref = Xref(BeautifulSoup('<xref id="abcd"/>', 'xml').find('xref'))
+        second_xref.load_xrefs_to_commentstore('a', 1, 1)
+
+        comment_store = CommentStore()
+        assert comment_store['abcd'] == {
+            'base_title': 'a',
+            'siman': 1,
+            'seif': 1
+        }
+
+        third_xref = Xref(BeautifulSoup('<xref id="abcd"/>', 'xml').find('xref'))
+        with pytest.raises(DuplicateCommentError):
+            third_xref.load_xrefs_to_commentstore('a', 1, 2)
+        CommentStore().clear()
+
+    def test_no_matching_xref(self):
+        seif = Seif(BeautifulSoup(u'<siman num="1" rid="abcd"/>', 'xml').find('siman'))
+        with pytest.raises(MissingCommentError):
+            seif.load_comments_to_commentstore('a', 1)
+        CommentStore().clear()
+
+    def test_duplicate_comment(self):
+        Xref(BeautifulSoup('<xref id="abcd"/>', 'xml').find('xref')).load_xrefs_to_commentstore('a', 1, 1)
+        Seif(BeautifulSoup(u'<siman num="1" rid="abcd"/>', 'xml').find('siman')).load_comments_to_commentstore('a', 1)
+        with pytest.raises(DuplicateCommentError):
+            Seif(BeautifulSoup(u'<siman num="2" rid="abcd"/>', 'xml').find('siman')).load_comments_to_commentstore('a', 1)
+        CommentStore().clear()

@@ -19,13 +19,12 @@ if __name__ == "__main__":
     post_info["versionSource"] = "http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId=NNL_ALEPH001338443"
     file_name = "IbnEzra_Isiah.xml"
     title = "Ibn Ezra on Isaiah"
-
+    setattr
 
     mapping = {}
     array_of_names = ["Prelude"]
     for i in range(66):
         array_of_names.append(i+1)
-        mapping["Ibn Ezra on Isaiah {}".format(i+1)] = "Ibn Ezra on Isaiah"
     array_of_names += ["Addenda", "Translators Foreword"]
     parser = XML_to_JaggedArray(title, file_name, allowed_tags, allowed_attributes, post_info, array_of_names)
     parser.set_funcs()

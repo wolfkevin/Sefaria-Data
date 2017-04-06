@@ -11,6 +11,7 @@ import pageranklowram
 import json
 import logging
 import math
+import time as pytime
 from collections import defaultdict, OrderedDict
 from sefaria.model import *
 from sefaria.settings import SEARCH_ADMIN
@@ -27,13 +28,13 @@ logging.disable(logging.WARNING)
 es = ElasticSearch(SEARCH_ADMIN)
 TEST_INDEX_NAME = "test"
 
-pagerank_dict = {r: v for r, v in json.load(open("pagerank.txt","rb"))}
+#pagerank_dict = {r: v for r, v in json.load(open("pagerank.txt","rb"))}
 
 test_he_query_list = [
     'וידבר יהוה אל משה לאמר',
     'ארבע שנכנס',
     'מוקצה מחמת מיאוס',
-    'לא בשבים היא',
+    'לא בשמים היא',
     'עשרת הדיברות',
     'נעשה ונשמע',
     'ברוך שם כבוד מלכותו לעולם ועד',
@@ -177,6 +178,21 @@ def make_mapping():
                     'analyzer': 'hebrew',
                     'search_analyzer': 'hebrew_exact'
                 },
+                'hebmorph-standard-no-norm': {
+                    'type': 'string',
+                    'analyzer': 'hebrew',
+                    'norms': {
+                        'enabled': False
+                    }
+                },
+                'hebmorph-exact-no-norm': {
+                    'type': 'string',
+                    'analyzer': 'hebrew',
+                    'search_analyzer': 'hebrew_exact',
+                    'norms': {
+                        'enabled': False
+                    }
+                },
                 'ngram': {
                     'type': 'string',
                     'analyzer': 'sefaria-ngram'
@@ -193,12 +209,24 @@ def make_mapping():
                     'type': 'string',
                     'analyzer': 'sefaria-aggresive-ngram'
                 },
+                'naive-lemmatizer': {
+                    'type': 'string',
+                    'analyzer': 'sefaria-naive-lemmatizer'
+                },
                 "order": {
                     'type': 'string',
                     'index': 'not_analyzed'
                 },
                 "ref": {
                     'type': 'string',
+                    'index': 'not_analyzed'
+                },
+                "comp-date": {
+                    'type': 'integer',
+                    'index': 'not_analyzed'
+                },
+                "comp_date_int": {
+                    'type': 'double',
                     'index': 'not_analyzed'
                 }
             }
@@ -214,6 +242,10 @@ def orderid2int(orderid):
 
 
 def index_all(merged=False, skip=0):
+    print "WARNING: YOU'RE ABOUT TO DELETE EVERYTHING" + ("#"*100)
+    for i in reversed(range(10)):
+        print "{} seconds until complete desctruction".format(i) + ("-"*100)
+        pytime.sleep(1)
     if skip == 0:
         make_index()
     index_all_sections(skip=skip, merged=merged)
@@ -236,19 +268,33 @@ def make_text_index_document(tref, version, lang):
 
     content = bleach.clean(content, strip=True, tags=())
     content = strip_cantillation(content,strip_vowels=True)
+
+    index = oref.index
+
+    tp = index.best_time_period()
+    if not tp is None:
+        comp_start_date = int(tp.start)
+    else:
+        comp_start_date = 3000
+
+
     return {
         "ref": oref.normal(),
         "ref_order": oref.order_id(),
-        "ref_order_int": orderid2int(oref.order_id()),
+        "comp_date_int": comp_date_curve(comp_start_date),
         "pagerank": math.log(pagerank_dict[oref.normal()]) + 20 if oref.normal() in pagerank_dict else 1.0,
         "pagerank-original": pagerank_dict[oref.normal()] if oref.normal() in pagerank_dict else 1E-8,
         "version": version,
         "lang": lang,
         "hebmorph-standard": content,
         "hebmorph-exact": content,
+        "hebmorph-standard-no-norm": content,
+        "hebmorph-exact-no-norm": content,
         "ngram": content,
         "infreq": content,
         "aggresive-ngram": content,
+        "naive-lemmatizer": content,
+        "comp-date": comp_start_date,
         "original": content
     }
 
@@ -379,50 +425,89 @@ def unicode_number(u):
     return n
 
 
-def query(q, fields, query_type, size):
+def query(q, fields, query_type, size, from_int, sort_type, search_analyzer=None):
     """
 
     :param q: query string
     :param fields: string or list of fields to query
     :param query_type: so far, multi_match, match and match_phrase are supported
     :param size: max num docs to ret
+    :param sort_type: either 'pagerank' or 'ref_order_int' or 'ref_year'
     :return: query results from ES
     """
 
     q = re.sub('(\S)"(\S)', '\1\u05f4\2', q)  # Replace internal quotes with gershaim.
 
     if query_type == "multi_match":
-        full_query = {
+        inner_query = {
+            "multi_match": {
+                "type": "most_fields",
+                "query": q,
+                "fields": list(fields)
+            }
+        }
 
-          "query":{
-            "function_score":{
-            "query": {
-                "multi_match": {
-                    "type": "most_fields",
-                    "query": q,
-                    "fields": fields
+        if search_analyzer:
+            inner_query['multi_match']["analyzer"] = search_analyzer
+
+        query_body = {
+            "query": inner_query
+        }
+
+        fields = fields[0]
+
+    elif query_type == "bool":
+        inner_queries = [
+            {
+                "match_phrase": {
+                    "{}".format(f): {
+                        "query": q
+                    }
                 }
-            },
-            "field_value_factor": {
-                "field": "pagerank"
-            }}
-        }}
+            }
+            for f in fields
+        ]
+
+        query_body = {
+            "query": {
+                "bool": {
+                    "must": inner_queries
+                }
+            }
+        }
         fields = fields[0]
     else:
+        inner_query = {
+            "{}".format(query_type): {
+                "{}".format(fields): {
+                    "query": q
+                }
+            }
+        }
+
+        if search_analyzer:
+            inner_query[query_type][fields]["analyzer"] = search_analyzer
+
+
+        query_body = {
+            "query": inner_query
+        }
+
+    if not isinstance(sort_type, tuple):
+        query_body["field_value_factor"] = {
+        }
+
         full_query = {
             "query": {
-                "function_score": {
-                    "query": {
-                        "{}".format(query_type): {
-                            "{}".format(fields): q
-                        }
-                },
-                    "field_value_factor": {
-                        "field": "pagerank"
-                    }
+                "function_score": query_body
             }
-
-            }
+        }
+    else:
+        full_query = {
+            "query": query_body,
+            "sort": [{
+                "ref_order": {}
+            }]
         }
 
     full_query["highlight"] = {
@@ -450,6 +535,9 @@ def query(q, fields, query_type, size):
     }
     """
     full_query['size'] = size
+    full_query['from'] = from_int
+
+    #print json.dumps(full_query, indent=4)
     res = es.search(full_query, index=TEST_INDEX_NAME, doc_type="a")
 
     return res
@@ -462,15 +550,22 @@ def query_result_to_csv_rows(results, field):
     :param field: field that's highlighted
     :return:
     """
+    rows = []
+    for result in results['hits']['hits']:
+        try:
+            od = OrderedDict()
+            od["Ref"] = result["_source"]["ref"]
+            od["Version"] = result["_source"]["version"]
+            od["Lang"] = result["_source"]["lang"]
+            od["Content"] = result["highlight"][field][0]
+            od["Field"] = field
+            od["Score"] = result["_score"]
+            rows += [od]
+        except KeyError:
+            pass
 
-    return [{
-        "Score": result["_score"],
-        "Lang": result["_source"]["lang"],
-        "Ref": result["_source"]["ref"],
-        "Content": result["highlight"][field][0],
-        "Version": result["_source"]["version"],
-        "Field": field
-        } for result in results['hits']['hits']]
+    return rows
+
 
 
 def generate_manual_train_set():
@@ -491,7 +586,7 @@ def generate_manual_train_set():
         ('multi_match', ['infreq', 'hebmorph-standard'])
     ]
 
-    max_size = 30
+    max_size = 70
 
     test_query_list = test_en_query_list + test_he_query_list
 
@@ -508,16 +603,21 @@ def generate_manual_train_set():
 
         html_doc = u'<html><head><link rel="stylesheet" type="text/css" href="noahstyle.css"></head><body><table>'
         f = open('training_files/{}.csv'.format(q),'wb')
-        csv = unicodecsv.DictWriter(f, ['Score', 'Ref', 'Version', 'Lang', 'Content', 'Field'])
+        csv = unicodecsv.DictWriter(f, ['Id', 'Relevance', 'Ref', 'Version', 'Lang', 'Content', 'Field', 'Score'])
         csv.writeheader()
 
         for irow, (ref, dicts) in enumerate(results_dict.items()):
             best = sorted(dicts, key=lambda x: x['Score'])[-1]
+            newbest = OrderedDict()
+            newbest['Id'] = irow
+            for key, value in best.items():
+                newbest[key] = value
             if irow == 0:
-                html_doc += u"<tr><td>{}</td></tr>".format(u"</td><td>".join([unicode(k) for k in best.keys()]))
-            html_doc += u"<tr><td>{}</td></tr>".format(u"</td><td>".join([unicode(v) for v in best.values()]))
-            #best['Content'] = re.sub(ur'<.+?>', u'', best['Content'])
-            csv.writerow(best)
+                html_doc += u"<tr><td>{}</td></tr>".format(u"</td><td>".join([unicode(k) for k in newbest.keys()]))
+            html_doc += u"<tr><td>{}</td></tr>".format(u"</td><td>".join([unicode(v) for v in newbest.values()]))
+            newbest['Content'] = re.sub(ur'<.+?>', u'', newbest['Content'])
+            newbest['Relevance'] = "--"
+            csv.writerow(newbest)
         f.close()
 
         html_doc += u"</table></body></html>"
@@ -533,6 +633,27 @@ def init_pagerank_graph():
     :return: graph which is a double dict. the keys of both dicts are refs. the values are the number of incoming links
     between outer key and inner key
     """
+    tanach_indexes = library.get_indexes_in_category("Tanakh")
+    def is_tanach(r):
+        return r.index.title in tanach_indexes
+
+    def put_link_in_graph(ref1, ref2):
+        str1 = ref1.normal()
+        str2 = ref2.normal()
+        all_ref_strs.add(str1)
+        all_ref_strs.add(str2)
+        if str1 not in graph:
+            graph[str1] = {}
+
+
+        if str2 == str1 or (is_tanach(ref1) and is_tanach(ref2)):
+            # self link
+            return
+
+        if str2 not in graph[str1]:
+            graph[str1][str2] = 0
+        graph[str1][str2] += 1
+
     graph = OrderedDict()
     all_links = LinkSet().array()  # LinkSet({"type": re.compile(ur"(commentary|quotation)")}).array()
     all_ref_strs = set()
@@ -543,23 +664,32 @@ def init_pagerank_graph():
         try:
             #TODO there's a known issue that a lot of refs don't have order_ids (in which case it's Z). This hopefully doesn't affect the graph too much
             refs = [Ref(r) for r in link.refs]
-            older_ref, newer_ref = (refs[0], refs[1]) if refs[0].order_id() < refs[1].order_id() else (refs[1], refs[0])
+            tp1 = refs[0].index.best_time_period()
+            tp2 = refs[1].index.best_time_period()
+            start1 = int(tp1.start) if tp1 else 3000
+            start2 = int(tp2.start) if tp2 else 3000
 
-            old_str = older_ref.normal()
-            new_str = newer_ref.normal()
-            all_ref_strs.add(old_str)
-            all_ref_strs.add(new_str)
-            if old_str not in graph:
-                graph[old_str] = {}
+            older_ref, newer_ref = (refs[0], refs[1]) if start1 < start2 else (refs[1], refs[0])
 
-            if new_str == old_str or (older_ref.is_tanach() and newer_ref.is_tanach()):
-                # self link
-                continue
+            older_ref = older_ref.padded_ref()
+            newer_ref = newer_ref.padded_ref()
 
-            if new_str not in graph[older_ref.normal()]:
-                graph[older_ref.normal()][new_str] = 0
-            graph[older_ref.normal()][new_str] += 1
+            if older_ref.is_range():
+                older_ref = older_ref.range_list()[0]
+            if newer_ref.is_range():
+                newer_ref = newer_ref.range_list()[0]
+
+            older_ref = older_ref.section_ref()
+            newer_ref = newer_ref.section_ref()
+
+            put_link_in_graph(older_ref, newer_ref)
+
+
         except InputError:
+            pass
+        except TypeError:
+            print link.refs
+        except IndexError:
             pass
 
     for ref in all_ref_strs:
@@ -571,11 +701,205 @@ def init_pagerank_graph():
 
 def calculate_pagerank():
     graph = init_pagerank_graph()
+    json.dump(dict(graph), open("pagerank_graph.json", "wb"), indent=4)
     ranked = pageranklowram.pagerank(graph, 0.9999, verbose=True, tolerance=0.00005)
-    f = open("pagerank.txt","wb")
+    f = open("pagerank.json","wb")
     sorted_ranking = sorted(list(dict(ranked).items()), key=lambda x: x[1])
     json.dump(sorted_ranking,f,indent=4)
     f.close()
+
+def calculate_sheetrank():
+
+
+    def count_sources(sources):
+        temp_sources_count = 0
+        for s in sources:
+            if "ref" in s and s["ref"] is not None:
+                temp_sources_count += 1
+                try:
+                    oref = Ref(s["ref"]).padded_ref()
+                    if oref.is_range():
+                        oref = oref.range_list()[0]
+                    oref_sec = oref.section_ref()
+                    graph[oref_sec.normal()] += 1
+                except InputError:
+                    continue
+                except TypeError:
+                    continue
+                except IndexError:
+                    print s["ref"]
+                    continue
+
+            if "subsources" in s:
+                temp_sources_count += count_sources(s["subsources"])
+        return temp_sources_count
+
+    from sefaria.system.database import db
+    graph = defaultdict(int)
+    sheets = db.sheets.find()
+    total = sheets.count()
+    sources_count = 0
+    for i, sheet in enumerate(sheets):
+        if i % 1000 == 0:
+            print "{}/{}".format(i, total)
+        if "sources" not in sheet:
+            continue
+        sources_count += count_sources(sheet["sources"])
+
+    f = open("sheetrank.json", "wb")
+    obj = {r:{"count": v, "prob": 1.0*v/sources_count} for r, v in graph.items()}
+    json.dump(obj, f, indent=4)
+    f.close()
+
+
+
+def validate_csv_files_exist():
+    test_query_list = test_en_query_list + test_he_query_list
+
+    for q in test_query_list:
+        with open("training_files/{}.csv".format(q), 'rb') as f:
+            pass
+        with open("training_files_done/{}.csv".format(q), 'rb') as f:
+            pass
+
+
+def get_training_set_dict():
+    d = defaultdict(dict)
+    test_query_list = test_en_query_list + test_he_query_list
+    for q in test_query_list:
+        csvfile =  open("training_files_done/{}.csv".format(q), 'rb')
+        reader = unicodecsv.DictReader(csvfile)
+        for row in reader:
+            rel = row["Relevance"]
+            if rel == u"--" or rel.strip() == u"":
+                score = 4
+            elif rel.strip() == u"n":
+                score = -4
+            elif rel.strip() == u"m":
+                score = 1
+            else:
+                raise Exception("bad score {} {}".format(q, row["Id"]))
+            d[q][row["Ref"]] = score
+
+    return d
+
+
+def comp_date_curve(date):
+    # return 1 + math.exp(-date/613)
+    if date < 0:
+        offset = 0
+    elif 0 <= date < 650:
+        offset = 200
+    elif 650 <= date < 1050:
+        offset = 400
+    elif 1050 <= date < 1500:
+        offset = 800
+    else:
+        offset = 1000
+
+    return -(offset + date) / 100
+
+def score_position_weight(pos):
+    """
+    this has been mathematically proven to be the ideal curve for scoring
+    max 1, min 0.5. inflection point around 17-ish
+    :param pos: >= 0
+    :return:
+    """
+    try:
+        result = 0.5 + (0.5 / (1 + math.exp((pos - 16)/4)))
+    except OverflowError:
+        result = 0.5  # it assymptotes to 0.5 for high pos
+    return result
+
+
+def score_algo(fields, query_type, sort_type, search_analyzer, consScore, training_dict):
+    test_query_list = test_en_query_list
+
+    page_size = 100
+
+    total_score = 0.0
+    for iq, q in enumerate(test_query_list):
+
+        page = 0
+        result_rows = []
+        temp_result_rows = None
+        while (temp_result_rows is None or len(temp_result_rows) > 0) and len(result_rows) < 20000:
+            results = query(q, fields, query_type, page_size, page * page_size, sort_type, search_analyzer=search_analyzer)
+            if page == 0:
+                print "\t{} - {}/{} num results: {}".format(q, iq, len(test_query_list), results['hits']['total'])
+            field = fields if isinstance(fields, str) else fields[0]
+            temp_result_rows = query_result_to_csv_rows(results, field)
+            result_rows += temp_result_rows
+            page += 1
+
+        for irow, row in enumerate(result_rows):
+            tempScore = training_dict[q].get(row["Ref"], 0)
+            if consScore:
+                total_score += tempScore
+            else:
+                total_score += (score_position_weight(irow) * tempScore)
+
+    avg_score = total_score / len(test_query_list)
+
+    return avg_score
+
+
+def test_all():
+    training_dict = get_training_set_dict()
+
+    query_types = ['match_phrase']
+    fieldss = ['hebmorph-standard', 'hebmorph-exact', 'original', 'aggresive-ngram', 'infreq', 'naive-lemmatizer']
+    sort_types = ['pagerank', 'ref_order_int', ('comp-date', 'ref_order')]
+
+    query_settings = []
+
+    for qt in query_types:
+        for fields in fieldss:
+            for st in sort_types:
+                if fields == 'hebmorph-exact':
+                    query_settings+= [(qt, fields, st, 'sefaria-semi-exact')]
+                query_settings += [(qt, fields, st, None)]
+
+    # query_settings += [('bool', ('naive-lemmatizer', 'hebmorph-standard'), 'pagerank', None)]
+    # query_settings += [('bool', ('naive-lemmatizer', 'hebmorph-standard'), 'ref_order_int', None)]
+    # query_settings += [('bool', ('naive-lemmatizer', 'hebmorph-standard'), 'comp-date', None)]
+
+
+    all_scores = defaultdict(dict)
+
+    for i, (query_type, fields, sort_type, search_analyzer) in enumerate(query_settings):
+        print '{}/{} - {}'.format(i, len(query_settings), query_settings[i])
+        is_time_ordered = isinstance(sort_type, tuple)
+        temp_score = score_algo(fields, query_type, sort_type, search_analyzer, is_time_ordered, training_dict)
+        key = (query_type, fields, search_analyzer)
+        all_scores[key][sort_type] = temp_score
+
+    sort_by_pagerank = sorted(all_scores.items(), key=lambda x: x[1]['pagerank'], reverse=True)
+
+
+
+    f = open('scored_algos_en.csv', 'wb')
+    csv = unicodecsv.DictWriter(f, ['Query Type', 'Fields', 'Search Analyzer', 'PageRank-Log', 'PageRank', 'RefOrderInt', 'CompDate'])
+    csv.writeheader()
+
+    for (query_type, fields, search_analyzer), sort_dict in sort_by_pagerank:
+        csv.writerow({'Query Type': query_type,
+                      'Fields': fields,
+                      'Search Analyzer': search_analyzer,
+                      'PageRank': sort_dict['pagerank'],
+                      'RefOrderInt': sort_dict['ref_order_int'],
+                      'CompDate': sort_dict[('comp-date', 'ref_order')]
+                      })
+
+
+
+def sort_prefixes():
+    with codecs.open("prefixes-short.json",'rb',encoding='utf8') as f:
+        j = json.load(f)
+        j.sort(key=lambda x: len(x), reverse=True)
+    json.dump(j, codecs.open("prefixes-short.json","wb",encoding='utf8'), indent=4, ensure_ascii=False)
+
 
 
 #index_all(merged=False, skip=0)
@@ -590,8 +914,8 @@ def calculate_pagerank():
 #print yo['b']
 
 #init_pagerank_graph()
-#calculate_pagerank()
-
+calculate_pagerank()
+#calculate_sheetrank()
 """
 {
   "size": 200,
@@ -610,4 +934,7 @@ def calculate_pagerank():
 }
 """
 
-generate_manual_train_set()
+#generate_manual_train_set()  # wow, exactly 613 lines! this is serendipitous (TODO if I add more lines, this comment will look stupid)
+
+#test_all()
+#sort_prefixes()

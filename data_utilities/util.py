@@ -52,6 +52,60 @@ wordToNumber[u'שמיני'] = 8
 wordToNumber[u'תשיעי'] = 9
 wordToNumber[u'עשירי'] = 10
 
+he_char_ord = {
+    u'א': 1,
+    u'ב': 2,
+    u'ג': 3,
+    u'ד': 4,
+    u'ה': 5,
+    u'ו': 6,
+    u'ז': 7,
+    u'ח': 8,
+    u'ט': 9,
+    u'י': 10,
+    u'כ': 11,
+    u'ך': 11,
+    u'ל': 12,
+    u'מ': 13,
+    u'ם': 13,
+    u'נ': 14,
+    u'ן': 14,
+    u'ס': 15,
+    u'ע': 16,
+    u'פ': 17,
+    u'ף': 17,
+    u'צ': 18,
+    u'ץ': 18,
+    u'ק': 19,
+    u'ר': 20,
+    u'ש': 21,
+    u'ת': 22
+}
+
+num_to_char_dict = {1: u"א",
+2: u"ב",
+3: u"ג",
+4: u"ד",
+5: u"ה",
+6: u"ו",
+7: u"ז",
+8: u"ח",
+9: u"ט",
+10: u"י",
+11: u"כ",
+12: u"ל",
+13: u"מ",
+14: u"נ",
+15: u"ס",
+16: u"ע",
+17: u"פ",
+18: u"צ",
+19: u"ק",
+20: u"ר",
+21: u"ש",
+22: u"ת",
+}
+
 class Util:
     def __init__(self, output_file, fail):
         self.output_file = output_file
@@ -150,6 +204,26 @@ class Util:
 
 
 
+    def strip_nekud(word):
+        data = word.replace(u"\u05B0", "")
+        data = data.replace(u"\u05B1", "")
+        data = data.replace(u"\u05B2", "")
+        data = data.replace(u"\u05B3", "")
+        data = data.replace(u"\u05B4", "")
+        data = data.replace(u"\u05B5", "")
+        data = data.replace(u"\u05B6", "")
+        data = data.replace(u"\u05B7", "")
+        data = data.replace(u"\u05B8", "")
+        data = data.replace(u"\u05B9", "")
+        data = data.replace(u"\u05BB", "")
+        data = data.replace(u"\u05BC", "")
+        data = data.replace(u"\u05BD", "")
+        data = data.replace(u"\u05BF", "")
+        data = data.replace(u"\u05C1", "")
+        data = data.replace(u"\u05C2", "")
+        data = data.replace(u"\u05C3", "")
+        data = data.replace(u"\u05C4", "")
+        return data
 
     def wordHasNekudot(word):
         data = word.decode('utf-8')
@@ -275,6 +349,25 @@ def getGematria(txt):
 
             index+=1
         return sum
+
+
+def he_ord(he_char):
+    """
+    Get the order number for a hebrew character (א becomes 1, ת becomes 22). Sofi letters (i.e ך), return the same value
+    as their regular
+    :param he_char:
+    :return:
+    """
+    if len(he_char) != 1:
+        raise AssertionError('Can only evaluate a single character')
+    if re.search(u'[\u05d0-\u05ea]', he_char) is None:
+        raise AssertionError(u'{} is not a Hebrew Character!'.format(he_char))
+    return he_char_ord[he_char]
+
+
+def he_num_to_char(num):
+    assert 1 <= num <= 22
+    return num_to_char_dict[num]
 
 
 

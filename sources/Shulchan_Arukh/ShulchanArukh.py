@@ -3,7 +3,7 @@
 import re
 import codecs
 from bs4 import BeautifulSoup, Tag
-from data_utilities.util import Singleton, getGematria
+from data_utilities.util import Singleton, getGematria, numToHeb, he_ord, he_num_to_char
 
 """
 This module describes an object module for parsing the Shulchan Arukh and it's associated commentaries. The classes
@@ -11,9 +11,9 @@ outlined here are wrappers for BeautifulSoup Tag elements, with the necessary pa
 This allows for a steady accumulation of data to be saved on disk as an xml document.
 """
 
-@Singleton
+
 class CommentStore(dict):
-    pass
+    __metaclass__ = Singleton
 
 
 class Element(object):
@@ -61,7 +61,7 @@ class Element(object):
             child_cls = module_locals[self.child]
             return child_cls(self.Tag.find(child_cls.name, recursive=False))
 
-    def _add_child(self, child, raw_text, num):
+    def _add_child(self, child, raw_text, num, enforce_order=False):
         """
         Add a new ordered child to the parent. Takes raw text and wraps in a child tag.
         :param child: Child to be added. Must be the child type specified by the parent class
@@ -78,13 +78,11 @@ class Element(object):
         if len(children) == 0:
             self.Tag.append(current_child.Tag)
         else:
-            # assert that volumes are stored in order
-            assert OrderedElement.validate_collection(children)
             for volume in children:
                 if current_child.num == volume.num:
                     raise DuplicateChildError(u'{} appears more than once!'.format(current_child.num))
 
-                if current_child.num < volume.num:
+                if current_child.num < volume.num and enforce_order:
                     volume.Tag.insert_before(current_child.Tag)
                     break
             else:
@@ -107,7 +105,7 @@ class Element(object):
             special['found_after'] = found_after
         self.Tag.append(special)
 
-    def _mark_children(self, pattern, start_mark, specials, add_child_callback=None):
+    def _mark_children(self, pattern, start_mark, specials, add_child_callback=None, enforce_order=False):
         """
         Mark up simanim in xml.
         :param pattern: regex pattern. The first capture group should indicate the siman number
@@ -165,9 +163,9 @@ class Element(object):
                     if new_child:
                         if child_num > 0:  # add the previous siman, will be -1 if this is the first siman marker in the text
                             assert len(current_child) > 0
-                            add_child_callback(u''.join(current_child), child_num)
+                            add_child_callback(u''.join(current_child), child_num, enforce_order)
                             current_child = []
-                        child_num = getGematria(new_child.group(1))
+                        child_num = getGematria(new_child.group(1))  #Todo needs to be a callback
                         continue
 
                     special_pattern = is_special(line, specials)
@@ -175,7 +173,7 @@ class Element(object):
                         special_mode = True
                         if child_num > 0:
                             assert len(current_child) > 0
-                            add_child_callback(u''.join(current_child), child_num)
+                            add_child_callback(u''.join(current_child), child_num, enforce_order)
                             current_child = []
                             found_after = child_num
                             child_num = -1
@@ -196,8 +194,18 @@ class Element(object):
                 if special_mode:
                     self.add_special(u''.join(current_child), specials[special_pattern]['name'], found_after)
                 else:
-                    add_child_callback(u''.join(current_child), child_num)
+                    add_child_callback(u''.join(current_child), child_num, enforce_order)
 
+    def load_xrefs_to_commentstore(self, *args, **kwargs):
+        for child in self.get_child():
+            try:
+                child.load_xrefs_to_commentstore(*args, **kwargs)
+            except DuplicateCommentError as e:
+                print e.message
+
+    def load_comments_to_commentstore(self, *args, **kwargs):
+        for child in self.get_child():
+            child.load_comments_to_commentstore(*args, **kwargs)
 
     def __unicode__(self):
         return unicode(self.Tag)
@@ -268,6 +276,15 @@ class Root(Element):
         else:
             raise AssertionError("Unknown language passed. Recognized values are 'en' or 'he'")
 
+    def populate_comment_store(self):
+        comment_store = CommentStore()
+        comment_store.clear()
+
+        self.get_base_text().load_xrefs_to_commentstore()
+        commentaries = self.get_commentaries()
+        commentaries.load_xrefs_to_commentstore()
+        commentaries.load_comments_to_commentstore()
+
 
 class Record(Element):
     """
@@ -314,20 +331,41 @@ class Record(Element):
         #Todo
         pass
 
-    def add_volume(self, raw_text, vol_num):
+    def add_volume(self, raw_text, vol_num, enforce_order=True):
         """
         Add a new volume to the book. Takes raw text and wraps in a volume tag.
         :param raw_text: Text to be added
         :param vol_num: volume number
+        :param enforce_order: If True, will add volumes according to thier numerical order, otherwise, the will appear
+        in the order they were added.
         :return: Volume object
         """
-        return self._add_child(Volume, raw_text, vol_num)
+        return self._add_child(Volume, raw_text, vol_num, enforce_order)
+
+    def remove_volume(self, num):
+        for child in self.get_child():
+            if int(child.num) == num:
+                child.Tag.decompose()
+
+    def get_volume(self, num):
+        for child in self.get_child():
+            if child.num == num:
+                return child
+        else:
+            return None
+
+    def load_xrefs_to_commentstore(self, *args, **kwargs):
+        for child in self.get_child():
+            child.load_xrefs_to_commentstore(self.titles['en'])
 
 
 
 class BaseText(Record):
     name = 'base_text'
     parent = Root
+
+    def load_comments_to_commentstore(self, *args, **kwargs):
+        raise NotImplementedError("Comments in base text not included in commentstore")
 
 
 class Commentary(Record):
@@ -337,6 +375,10 @@ class Commentary(Record):
     def __init__(self, soup_tag):
         self.id = soup_tag['id']
         super(Commentary, self).__init__(soup_tag)
+
+    def load_comments_to_commentstore(self):
+        for child in self.get_child():
+            child.load_comments_to_commentstore(self.titles['en'])
 
 
 class Commentaries(Element):
@@ -358,6 +400,7 @@ class Commentaries(Element):
         assert self.commentary_ids.get(en_title) is None
         commentary_id = len(self.commentary_ids) + 1
         self.commentary_ids[en_title] = commentary_id
+        self.he_commentary_ids[he_title] = commentary_id
 
         raw_commentary = BeautifulSoup(u'', 'xml').new_tag('commentary')
         raw_commentary['id'] = commentary_id
@@ -366,12 +409,30 @@ class Commentaries(Element):
         self.Tag.append(raw_commentary)
         return commentary
 
+    def get_commentary_by_id(self, commentary_id):
+        commentary = self.Tag.find('commentary', attrs={'id': commentary_id})
+        if commentary is None:
+            return None
+        return Commentary(commentary)
+
+    def get_commentary_by_title(self, title, lang='en'):
+        try:
+            if lang == 'en':
+                commentary_id = self.commentary_ids[title]
+            elif lang == 'he':
+                commentary_id = self.he_commentary_ids[title]
+            else:
+                raise AssertionError("lang parameter must be 'en' or 'he'")
+        except KeyError:
+            return None
+        return self.get_commentary_by_id(commentary_id)
+
 
 
 class OrderedElement(Element):
 
     def __init__(self, soup_tag):
-        self.num = soup_tag['num']
+        self.num = int(soup_tag['num'])
         super(OrderedElement, self).__init__(soup_tag)
 
     def validate_order(self, previous=None):
@@ -421,7 +482,11 @@ class OrderedElement(Element):
             if not validation(previous_element):
                 passed = False
                 if verbose:
-                    print 'misordered element at location {}'.format(element.num)
+                    if previous_element is None:
+                        print 'First element is element {}'.format(element.num)
+                    else:
+                        print 'misordered element: {} followed by {}'.format(previous_element.num, element.num)
+            previous_element = element
         if verbose and passed:
             print 'Validation Successful'
         return passed
@@ -438,16 +503,16 @@ class Volume(OrderedElement):
         else:
             return Commentary(self.Tag.parent).id
 
-    def _add_siman(self, raw_text, siman_num):
+    def _add_siman(self, raw_text, siman_num, enforce_order=False):
         """
         Add a new siman to the volum. Takes raw text and wraps in a siman tag.
         :param raw_text: Text to be added
         :param siman_num: siman number
         :return: Siman object
         """
-        return self._add_child(Siman, raw_text, siman_num)
+        return self._add_child(Siman, raw_text, siman_num, enforce_order)
 
-    def mark_simanim(self, pattern, start_mark=None, specials=None):
+    def mark_simanim(self, pattern, start_mark=None, specials=None, enforce_order=False):
         """
         Mark up simanim in xml.
         :param pattern: regex pattern. The first capture group should indicate the siman number
@@ -459,21 +524,128 @@ class Volume(OrderedElement):
         mark a return to standard parsing. If not set, the only a single line will be marked.
         :return:
         """
-        self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_siman)
+        self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_siman, enforce_order=enforce_order)
 
-    def mark_seifim(self, pattern, start_mark, specials=None):
+    def mark_seifim(self, pattern, start_mark=None, specials=None, enforce_order=False):
+        errors = []
         for siman in self.get_child():
             assert isinstance(siman, Siman)
-            siman.mark_seifim(pattern, start_mark, specials)
+            try:
+                siman.mark_seifim(pattern, start_mark, specials, enforce_order)
+            except DuplicateChildError as e:
+                errors.append(e.message)
+        return errors
 
     def format_text(self, start_special, end_special, name):
+        errors = []
         for siman in self.get_child():
             assert isinstance(siman, Siman)
-            siman.format_text(start_special, end_special, name)
+            try:
+                siman.format_text(start_special, end_special, name)
+            except AssertionError as e:
+                errors.append(e.message)
+        return errors
 
-    def mark_references(self, commentary_id, pattern):
+    def mark_references(self, commentary_id, pattern, group=None):
         for child in self.get_child():
-            child.mark_references(self.get_book_id(), commentary_id, self.num, pattern)
+            child.mark_references(self.get_book_id(), commentary_id, pattern, group=group)
+
+    def validate_simanim(self, complete=True, verbose=True):
+        self.validate_collection(self.get_child(), complete, verbose)
+
+    def validate_seifim(self, complete=True, verbose=True):
+        for siman in self.get_child():
+            assert isinstance(siman, Siman)
+            if not siman.validate_seifim(complete, verbose=False):
+                print "Found in Siman {}".format(siman.num)
+                if verbose:
+                    siman.validate_seifim(complete, verbose)
+
+    def validate_references(self, pattern, code, group=1, key_callback=getGematria):
+        """
+        Pull all matches to a regular expression for each siman, then check that they all go in order
+        :param pattern: regex pattern
+        :param code: The exact code used to identify this reference
+        :param group: regex group to capture the numeric part of the match
+        :param key_callback: (str) -> int
+        callback function to convert the capture group to an integer
+        :return: bool
+        """
+        passed = True
+        for siman in self.get_child():
+            assert isinstance(siman, Siman)
+            passed = siman.validate_references(pattern, code, group, key_callback)
+        return passed
+
+    def set_rid_on_seifim(self, base_id=0):
+        book_id = self.get_book_id()
+        for siman in self.get_child():
+            siman.set_rid_on_seifim(base_id, book_id)
+
+    def unlink_seifim(self, bad_rid):
+        """
+        It's possible that several seifim should not be linked to the base text. Given an `rid` (or list of `rid`s)
+        this method will replace the rid field with 'no-link', which will prevent the Seif from being loaded to the
+        commentStore
+        :param bad_rid: rid to invalidate. Can accept a list
+        """
+        if isinstance(bad_rid, basestring):
+            bad_rid_list = [bad_rid]
+        elif isinstance(bad_rid, list):
+            bad_rid_list = bad_rid
+        else:
+            raise TypeError("Cannot recognize type of rid field")
+
+        for rid in bad_rid_list:
+            seif = self.Tag.find(lambda x: x.name=='seif' and x.get('rid')==rid)
+            assert seif is not None
+            seif['rid'] = 'no-link'
+
+
+    def validate_all_xrefs_matched(self, xref_finding_callback=lambda tag: tag.name=='xref'):
+        """
+        Find a group of xrefs, look up each id in CommentStore and make sure they have all field filled out.
+        :param xref_finding_callback: Callback function that takes a BeautifulSoup Tag object and returns True or
+        False. The verification will be run on all tags that are matched by this function. (This is equivalent to passing
+        a function to the `find_all()` method on a BeautifulSoup Tag object. View BeautifulSoup documentation for more
+        info.
+        :return: list of errors found
+        """
+        comment_store = CommentStore()
+        validation_set = self.Tag.find_all(xref_finding_callback)
+        assert len(validation_set) > 0
+        required_fields = ['base_title', 'siman', 'seif', 'commentator_title', 'commentator_siman', 'commentator_seif']
+        errors = []
+
+        for item in validation_set:
+            if comment_store.get(item['id']) is None:
+                errors.append("xref with id {} not found in comment store".format(item['id']))
+            elif any([i not in comment_store[item['id']] for i in required_fields]):
+                errors.append("xref with id {} missing required field".format(item['id']))
+        if len(errors) == 0:
+            print "No errors found"
+        return errors
+
+    def locate_references(self, pattern, verbose=True):
+        """
+        For each match to pattern, output the seif at which pattern was found
+        :param pattern:
+        :param verbose: If True will print out locations where matches were found
+        :return: tuples (seif, siman) at which each location was found
+        """
+        locations = []
+        for siman in self.get_child():
+            seifim = siman.locate_references(pattern)
+            for seif in seifim:
+                locations.append((siman.num, seif))
+
+        if verbose:
+            for location in locations:
+                print "Pattern found at Siman {}, Seif {}".format(*location)
+            if len(locations) == 0:
+                print "No matches found"
+        return locations
+
 
 class Siman(OrderedElement):
     name = 'siman'
@@ -481,21 +653,91 @@ class Siman(OrderedElement):
     child = 'Seif'
     multiple_children = True
 
-    def _add_seif(self, raw_text, seif_number):
-        self._add_child(Seif, raw_text, seif_number)
+    def _add_seif(self, raw_text, seif_number, enforce_order=False):
+        self._add_child(Seif, raw_text, seif_number, enforce_order)
 
-    def mark_seifim(self, pattern, start_mark, specials=None):
-        self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_seif)
+    def mark_seifim(self, pattern, start_mark=None, specials=None, enforce_order=False):
+        try:
+            self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_seif, enforce_order=enforce_order)
+        except DuplicateChildError as e:
+            raise DuplicateChildError('Siman {}, Seif {}'.format(self.num, e.message))
 
     def format_text(self, start_special, end_special, name):
         for seif in self.get_child():
             assert isinstance(seif, Seif)
-            seif.format_text(start_special, end_special, name)
+            try:
+                seif.format_text(start_special, end_special, name)
+            except AssertionError as e:
+                raise AssertionError('Siman {}, {}'.format(self.num, e.message))
 
     def mark_references(self, base_id, com_id, pattern, found=0, group=None):
         for child in self.get_child():
             found = child.mark_references(base_id, com_id, self.num, pattern, found, group)
         return found
+
+    def validate_seifim(self, complete=True, verbose=True):
+        return self.validate_collection(self.get_child(), complete, verbose)
+
+    def validate_references(self, pattern, code, group=1, key_callback=getGematria):
+        """
+        Pull all mathces to a regular expression, then check that they all go in order
+        :param pattern: regex pattern
+        :param code: The exact code used to identify this reference
+        :param group: regex group to capture the numeric part of the match
+        :param key_callback: (str) -> int
+        callback function to convert the capture group to an integer
+        :return: bool
+        """
+        passed = True
+        matches, errors = [], []
+        for seif in self.get_child():
+            matches.extend(seif.grab_references(pattern))
+        enumerated_matches = [key_callback(match.group(group)) for match in matches]
+        previous = 0
+        for index, i in enumerate(enumerated_matches):
+            if i - previous != 1:
+                if i == 1 and previous == 22:  # For refs that run through the he alphabet repeatedly, this handles the reset to א
+                    pass
+                else:
+                    errors.append((previous, i, index))
+                    passed = False
+            previous = i
+        if not passed:
+            print 'Errors for code {} in Siman {}:'.format(code, self.num)
+            for error in errors:
+                print '\t{} followed by {} (tag {} in this Siman)'.format(*error)
+        return passed
+
+    def load_xrefs_to_commentstore(self, title):
+        for child in self.get_child():
+            child.load_xrefs_to_commentstore(title, self.num)
+
+    def load_comments_to_commentstore(self, title):
+        for child in self.get_child():
+            try:
+                child.load_comments_to_commentstore(title, self.num)
+            except MissingCommentError as e:
+                print e.message
+
+    def set_rid_on_seifim(self, base_id, book_id):
+        for seif in self.get_child():
+            seif.set_rid(base_id, book_id, self.num)
+
+    def locate_references(self, pattern):
+        """
+        For each match to pattern, output the seif at which pattern was found
+        :param pattern:
+        :return: list of integers that represent the seif number at which a match was found. E.g. if the pattern !@#$
+        was found once in seif 5 and twice in seif 7 this will return [1, 2].
+        """
+        matches = []
+        for seif in self.get_child():
+            num_patterns = len(seif.grab_references(pattern))
+            for _ in range(num_patterns):
+                matches.append(seif.num)
+        return matches
+
+
 
 class Seif(OrderedElement):
     name = 'seif'
@@ -504,8 +746,8 @@ class Seif(OrderedElement):
     multiple_children = True
 
     def __init__(self, soup_tag):
-        self.rid = None
-        super(OrderedElement, self).__init__(soup_tag)
+        self.rid = soup_tag.get('rid')
+        super(Seif, self).__init__(soup_tag)
 
     def get_child(self):
         return [TextElement(c) for c in self.Tag.children]
@@ -535,7 +777,7 @@ class Seif(OrderedElement):
         for word in text_array:
             if re.search(start_special, word):
                 if is_special:  # Two consecutive special patterns have been found
-                    raise AssertionError('Two consecutive formatting patterns found')
+                    raise AssertionError('Seif {}: Two consecutive formatting patterns ({}) found'.format(self.num, start_special))
                 else:
                     word = re.sub(start_special, u'', word)
                     if len(element_words) > 0:
@@ -572,6 +814,35 @@ class Seif(OrderedElement):
         for child in self.get_child():
             found = child.mark_references(base_id, com_id, siman, pattern, found, group)
         return found
+
+    def grab_references(self, pattern):
+        """
+        Find all matches to regex pattern in this seif
+        :param pattern: regex pattern
+        :return: list of regex match objects
+        """
+        pattern = re.compile(pattern)
+        return list(pattern.finditer(self.Tag.text))
+
+    def load_xrefs_to_commentstore(self, title, siman):
+        for child in self.get_child():
+            child.load_xrefs_to_commentstore(title, siman, self.num)
+
+    def load_comments_to_commentstore(self, title, siman):
+        comment_store = CommentStore()
+
+        if self.rid == 'no-link':
+            return
+
+        if comment_store.get(self.rid) is None:
+            raise MissingCommentError("No Xref with id {} exists".format(self.rid))
+
+        this_ref = comment_store[self.rid]
+        if this_ref.get('commentator_title') is not None:
+            raise DuplicateCommentError("Found 2 comments with rid: {}".format(self.rid))
+        this_ref['commentator_title'] = title
+        this_ref['commentator_siman'] = siman
+        this_ref['commentator_seif'] = self.num
 
 class TextElement(Element):
     parent = 'Seif'
@@ -617,6 +888,9 @@ class TextElement(Element):
 
         return found
 
+    def load_comments_to_commentstore(self, *args, **kwargs):
+        raise NotImplementedError("Can't load comments at TextElement depth")
+
 
 class Xref(Element):
     name = 'xref'
@@ -634,7 +908,140 @@ class Xref(Element):
     def __hash__(self):
         return hash(self.id)
 
+    def load_xrefs_to_commentstore(self, title, siman, seif):
+        comment_store = CommentStore()
+        if comment_store.get(self.id) is not None:
+            if comment_store[self.id]['seif'] == seif:
+                message = "Xref with id '{}' appears twice. Same Seif as previous appearance.".format(self.id)
+                print message
+            else:
+                message = "Xref with id '{}' appears twice. Different Seif as previous appearance.".format(self.id)
+                raise DuplicateCommentError(message)
+
+        comment_store[self.id] = {
+            'base_title': title,
+            'siman': siman,
+            'seif': seif
+        }
+
+    def load_comments_to_commentstore(self, *args, **kwargs):
+        raise NotImplementedError("Can't load comments at Xref depth")
+
 module_locals = locals()
 
 class DuplicateChildError(Exception):
     pass
+
+class DuplicateCommentError(Exception):
+    pass
+
+class MissingCommentError(Exception):
+    pass
+
+
+def out_of_order_gematria(regex, siman):
+    replacements = {}
+    matches = list(re.finditer(regex, siman))
+    values = [getGematria(match.group(1)) for match in matches]
+
+    for index, value in enumerate(values):
+        if index == 0 or index == len(values) - 1:  # This analysis won't work for the first and last items
+            continue
+        previous_value, next_value = values[index - 1], values[index + 1]
+        if value - previous_value != 1:
+            if next_value - previous_value == 2:
+                replacements[matches[index].group(0)] = {
+                    'start': matches[index].start(),
+                    'replacement': matches[index].group(0).replace(matches[index].group(1),
+                                                                   numToHeb(previous_value + 1))
+                }
+    return replacements
+
+
+def out_of_order_he_letters(regex, siman):
+    replacements = {}
+    matches = list(re.finditer(regex, siman))
+    values = [he_ord(match.group(1)) for match in matches]
+
+    for index, value in enumerate(values):
+        if index == 0 or index == len(values) - 1:  # This analysis won't work for the first and last items
+            continue
+        previous_value, next_value = values[index-1], values[index+1]
+        if (value - previous_value) % 22 != 1:
+            if (next_value - previous_value) % 22 == 2:
+                fixed = (previous_value + 1) % 22
+                if fixed == 0:
+                    fixed = 22
+                replacements[matches[index].group(0)] = {
+                    'start': matches[index].start(),
+                    'replacement': matches[index].group(0).replace(matches[index].group(1),
+                                                                   he_num_to_char(fixed))
+                }
+    return replacements
+
+
+def correct_marks(siman, pattern, error_finder=out_of_order_gematria):
+    """
+    Takes a siman as a string and attempts to make corrections to the codes in that siman. Specifically, this corrects
+    those codes where a single code is misnumbered, but the preceding and following codes are correct. In that case,
+    this method will replace the offending code with the correct number to allow a correct count.
+    Example: @22d, @22h, @22f will reset to @22d, @22e, @22f (English is standing in for hebrew for display purposes).
+    :param unicode siman: Unicode string representing a single siman
+    :param pattern: regular expression pattern. Group 1 must map to an integer
+    :param error_finder: callback function used to identify errors. Must return a dictionary
+    :return: Fixed siman as a string
+    """
+    def repair(match_obj):
+        if replacements.get(match_obj.group(0)):
+            if match_obj.start() == replacements[match_obj.group(0)]['start']:
+                return replacements[match_obj.group(0)]['replacement']
+        return match_obj.group(0)
+
+    regex = re.compile(pattern)
+
+    replacements = error_finder(regex, siman)
+    return regex.sub(repair, siman)
+
+
+def correct_marks_in_file(filename, siman_pattern, code_pattern, error_finder=out_of_order_gematria,
+                          overwrite=True, start_mark=None):
+    """
+    Runs the method "correct_marks" over a single file
+    :param filename: path to file that is to be corrected
+    :param siman_pattern: Pattern to identify new Simanim. Should be at the beginning of a line
+    :param code_pattern: Pattern to match the codes. Must have two groups, one for the code, another for the number
+    :param error_finder: callback function used to identify errors. Must return a dictionary
+    :param overwrite: If True will rewrite the file that was read in. If False, will append "_test" to the end of the
+    filename (before the extension).
+    :param start_mark: A pattern that can be used to identify where changes can begin. If None, will begin from the
+    start of the file.
+    :return:
+    """
+    with codecs.open(filename, 'r', 'utf-8') as infile:
+        lines = infile.readlines()
+    if not overwrite:
+        filename = re.sub(ur'\..{3}$', ur'_test\g<0>', filename)
+    outfile = codecs.open(filename, 'w', 'utf-8')
+    if start_mark is None:
+        started = True
+    else:
+        started = False
+    current_siman = []
+
+    for line in lines:
+        if not started:
+            outfile.write(line)
+            if re.search(start_mark, line):
+                started = True
+            continue
+
+        if re.match(siman_pattern, line):
+            outfile.write(
+                correct_marks(u''.join(current_siman), code_pattern, error_finder))
+            current_siman = []
+        current_siman.append(line)
+    else:
+        outfile.write(
+            correct_marks(u''.join(current_siman), code_pattern, error_finder))
+
+    outfile.close()
