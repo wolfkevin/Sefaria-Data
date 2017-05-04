@@ -25,10 +25,12 @@ sys.setdefaultencoding("utf-8")
 
 par_c = 0
 dh_c = 0
+long_count = 0
 
 def checkAndEditTag(tag, line, file):
     global par_c
     global dh_c
+    global long_count
 
     if tag is 'p':
         line = '<b> ' + line.replace("@12", " </b> ", 1) if "@12" in line \
@@ -47,11 +49,14 @@ def checkAndEditTag(tag, line, file):
                 word_index = line.find(' ', potential_index)
 
         # beginning of comment so assume DH is everything before this word
-        #TODO: not אפי׳
-        for word in [u"כלומר" , u"פירוש", u"פי'", u"רשי", u'ר"שי']:
+        for word in [u"פי'", u"כלומר" , u"פירוש",  u"רשי", u'רש"י', u'ר"ת', u"קשי'", u'ר"י', u'נ"ל', u"הקשו", u"הק'", u'קשה', u"דכתב", u"וקשיא", u"אני אומ", u'וא"ת', u"ואיכא", u'י"ל', u"לא גרס", u'ל״ג', u"תוס'"]:
             potential_index = line.find(word, 0, 1000)
-            if potential_index is not -1 and potential_index < word_index:  # want to find earliest delimiter
-                word_index = line.rfind(' ', 0, potential_index)
+            if potential_index is not -1 and potential_index < word_index:   # want to find earliest delimiter
+                if line[potential_index-1:line.find(' ', potential_index)] != u"אפי'":  # prevent 'אפי from being a delimiter
+                        word_index = line.rfind(' ', 0, potential_index)
+        if word_index > 400 and word_index is not 1000:
+            long_count += 1
+            print line
 
         if word_index < 999:  # something was found
             line = line[:word_index] + u' </b> ' + line[word_index:]
@@ -213,6 +218,8 @@ text_version = {
     'language': 'he',
     'text': daf_ja.array()
 }
+
+print long_count
 
 # post_index(index)
 
