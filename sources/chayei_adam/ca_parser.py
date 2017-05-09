@@ -33,6 +33,8 @@ comment_count = 0
 ca_footnote_count = 0
 local_foot_count = 0
 
+CHELEK_BET_ADDITION = 69
+
 
 tags = {}
 tags['00'] = 'klal_num'
@@ -44,6 +46,9 @@ tags['99'] = 'footer'
 
 mapping = dict.fromkeys(map(ord, u":.\n)"))  #chars to eliminate when parsing chayei adam numbers
 
+def getKlalNum(klal):
+    return getGematria(klal.find("klal_num").text.split()[1])
+
 
 def checkAndEditTag(tag, line, file):
 
@@ -53,11 +58,12 @@ def checkAndEditTag(tag, line, file):
         line = '<b>' + line.replace("@55", " </b> ", 1)
 
     elif tag is 'klal_num':
-        file.write("</div><div>")  # adding this makes it much easier to parse klalim
+        file.write("</klal><klal>")  # adding this makes it much easier to parse klalim
 
         local_foot_count = 0
 
         klal_num = getGematria(line.split()[1])
+
 
         if len(line.split()) > 2:  # abnormally long line
 
@@ -140,7 +146,7 @@ for section in header.find_next_siblings("h3"):
 
 with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_write:
 
-    file_write.write("<root><div>")
+    file_write.write("<root><klal>")
 
     for line in file_read:
 
@@ -161,11 +167,10 @@ with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_wr
         #     line = line.replace('@44', '<b>')
         #     line = line.replace('@55', '</b>')
 
-
         file_write.write(u"<{}>{}</{}>".format(tag, line.strip(), tag))
 
+    file_write.write("</klal></root>")
 
-    file_write.write("</div></root>")
 
 klalim_ja = jagged_array.JaggedArray([[]])   # JA of [Klal[comment, comment]]]
 nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
@@ -213,39 +218,51 @@ with open("ca_parsed.xml") as file_read:
 
     found_sections = soup.find_all("section")
 
-    start = 1
+    start = 1 + CHELEK_BET_ADDITION  # all sections from text are from chelek bet
 
     for index, section in enumerate(found_sections):
 
-        # finds the heading of the last section klal before the next section
-        # except for the last one which is manually set
-        end = 154 if index + 1 >= len(found_sections) \
-            else getGematria(found_sections[index + 1].find_previous_sibling("h1").text.split()[1])
+        # end is 154 if this is last section
+        # else find the heading of the last section klal before this next section and set that as klal end
 
+        end = 223 if index + 1 >= len(found_sections) \
+            else getKlalNum(found_sections[index].parent) + CHELEK_BET_ADDITION
+
+        end += CHELEK_BET_ADDITION
         sections.append(Section(section.text, start, end))
         start = end + 1
+
 
     prev_klal_num = 0
     addition = 0
 
-    for klal in soup.find_all("h1"):
 
-        klal_num = getGematria(klal.text.split()[1]) + addition
+    for klal in soup.find_all("klal")[1:]:  # [1:] because first klal is empty
 
-        if klal_num < prev_klal_num:  # start of shabbat klalim
-            addition = 69
+        klal_num = getKlalNum(klal) + addition
+
+        if klal_num < prev_klal_num:  # if the current klal > prev klal it means its the start of chelek bet
+            addition = CHELEK_BET_ADDITION
             klal_num += addition
 
         comments = []
 
-        for index, comment in enumerate(klal.find_next_siblings("p")):
+        klal_title = klal.find("klal_title")
+
+        if klal_title:
+            klal_title = klal_title.text[:-1] if klal_title.text[-1] == ":" else klal_title.text
+            comments.append(u"<b>" + klal_title + u"</b>")
+        else:
+            print "klal {} has no title".format(getKlalNum(klal))
+
+        for index, comment in enumerate(klal.find_all("comment")):
             comments.append(comment.text)
-            if comment.i:
-                footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
+            # if comment.i:
+            #     footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
 
         klalim_ja.set_element([klal_num - 1], comments, [])
 
-        if addition is not 69:  # once adding offset, no need to set prev_klal_num
+        if addition is not CHELEK_BET_ADDITION:  # once adding offset, no need to set prev_klal_num
             prev_klal_num = klal_num
 
 ja_to_xml(klalim_ja.array(), ["klal", "comment"])
@@ -326,14 +343,15 @@ Questions:
 - should we link from title all from OC kinda, some are siman, other si', others just in (), some link to 2 simanim, some x ad y (e.g 48), some 2 ()
 - what is @44
 - klal 61 is miswritten
-- klal 26 (#2) is empty
 - what are we doing with the subtitles @11's
-- no subtitle or partial (131 or 132 #2)
 
 Fixed:
 - klalim restart = made it long running count and will have alt struct
 - some klalim on other lines - parser splits this
 - some klalim listed together (32, 33 #2) - skipped number and put it together
+- klal 26 (#2) is empty
+- no subtitle or partial (131 or 132 #2)
+
 
 
 
