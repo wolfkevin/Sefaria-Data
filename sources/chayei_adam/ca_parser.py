@@ -76,15 +76,13 @@ def checkAndEditTag(tag, line, file):
                 line = ' '.join(line.split()[2:])  # create klal title from rest of words that aren't klal num
                 klal_count += 1
 
-        elif klal_num is klal_count + 1 or klal_num is 1:
-            klal_count = klal_num
-
-        else:  # line is off bc of poor OCR and should be corrected
-            print "klal is off, correcting"
-            print line
-            line = u"כלל " + numToHeb(klal_count + 1)
-            print line
+        elif klal_num is klal_count + 1 or klal_num + CHELEK_BET_ADDITION is klal_count + 1 or klal_num is 1:
             klal_count += 1
+
+        else:
+            print "KLAL NUMBER OFF", klal_num, klal_count
+
+
 
     elif tag is 'seif_num':
 
