@@ -185,19 +185,14 @@ with open("nishmat_adam.txt") as file_read:
 
     na_footnote_count = -1
 
-    comment = ""
-
     for line in file_read:
 
         if line[1:3] == '11':
 
-            line = line.replace('@33', "</b>", 1)
-            comment = '<b>' + line[3:].strip()
+            line = '<b>' + line[3:].strip().replace('@33', "</b>", 1)
 
-            if line.find('@'): print line
-
-            nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter)], comment, "")
-            # print na_footnote_count
+            #TODO: D3 or leave as is
+            nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], line, "")
 
             if letter != footnote.letter:
                 print "letters off "
@@ -214,9 +209,7 @@ with open("nishmat_adam.txt") as file_read:
             footnote = footnotes[na_footnote_count]
             # print "\nfound:", letter, "from ca:", footnote.letter
 
-
-
-        else: #TODO @11, @44, @99
+        else:
             print "ERROR what is this", line
 
 ja_to_xml(nishmat_ja.array(), ["klal", "footnote"])
@@ -259,14 +252,12 @@ with open("ca_parsed.xml") as file_read:
 
         klal_title = klal.find("klal_title")
 
-        if klal_title:
-            klal_title = klal_title.text[:-1] if klal_title.text[-1] == ":" else klal_title.text
-            comments.append(u"<b>" + klal_title + u"</b>")
-        else:
-            print "ERROR: klal {} has no title".format(getKlalNum(klal))
-
         for index, comment in enumerate(klal.find_all("comment")):
-            comments.append(comment.text)
+            if klal_title:
+                comments.append(u"<b>{}</b><br>{}".format(klal_title.text, comment.text))
+                klal_title = ""
+            else:
+                comments.append(comment.text)
             # if comment.i:
             #     footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
 
@@ -275,7 +266,7 @@ with open("ca_parsed.xml") as file_read:
         if addition is not CHELEK_BET_ADDITION:  # once adding offset, no need to set prev_klal_num
             prev_klal_num = klal_num
 
-ja_to_xml(klalim_ja.array(), ["klal", "comment"])
+ja_to_xml(nishmat_ja.array(), ["klal", "comment"])
 
 links = []
 
