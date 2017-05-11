@@ -49,6 +49,33 @@ mapping = dict.fromkeys(map(ord, u":.\n)"))  #chars to eliminate when parsing ch
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
 
+def checkForFootnotes(line):
+
+    global klal_count, comment_count, ca_footnote_count, local_foot_count
+
+    while '#' in line:
+
+        footnote_index = line.index('#')
+        end_footnote = footnote_index + line[footnote_index:].find(' ')
+
+        if end_footnote < footnote_index:  # when footnote appears at end of comment cant find ' '
+            end_footnote = len(line)  # so use len of line as end_footnote index
+
+        letter = unicode(line[footnote_index+1:end_footnote])
+        # footnote_num = getGematria(letter)
+
+        # if footnote_num is local_foot_count + 1 or footnote_num is 1:
+        #     local_foot_count = footnote_num
+        #
+        # else:
+        #     print "FOOTNOTE COUNT OFF", line
+
+        # add footnote to array based off where it is found
+        footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, line, letter.translate(mapping))
+        line = line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" data-order="{}"></i>'.format("Nishmat Adam", ca_footnote_count))
+
+        ca_footnote_count += 1
+
 
 def checkAndEditTag(tag, line, file):
 
@@ -56,6 +83,8 @@ def checkAndEditTag(tag, line, file):
 
     if tag is 'list_comment':
         line = '<b>' + line.replace("@55", " </b> ", 1)
+
+        checkForFootnotes(line)
 
     elif tag is 'klal_num':
         file.write("</klal><klal>")  # adding this makes it much easier to parse klalim
@@ -98,29 +127,8 @@ def checkAndEditTag(tag, line, file):
 
     elif tag is 'comment':
 
-        while '#' in line:
-
-            footnote_index = line.index('#')
-            end_footnote = footnote_index + line[footnote_index:].find(' ')
-
-            if end_footnote < footnote_index:  # when footnote appears at end of comment cant find ' '
-                end_footnote = len(line)  # so use len of line as end_footnote index
-
-            letter = unicode(line[footnote_index+1:end_footnote])
-            footnote_num = getGematria(letter)
-
-            if footnote_num is local_foot_count + 1 or footnote_num is 1:
-                local_foot_count = footnote_num
-
-            else:
-                print "FOOTNOTE COUNT OFF", line
-
-            footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter.translate(mapping))
-            ca_footnote_count += 1
-            # print footnotes[ca_footnote_count]
-
-            line = line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" data-order="{}"></i>'.format("Nishmat Adam", ca_footnote_count))
-
+        checkForFootnotes(line)
+        # print footnotes[ca_footnote_count]
 
     return tag, line
 
@@ -175,7 +183,7 @@ nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 
 with open("nishmat_adam.txt") as file_read:
 
-    na_footnote_count = 0
+    na_footnote_count = -1
 
     comment = ""
 
