@@ -196,21 +196,25 @@ with open("nishmat_adam.txt") as file_read:
 
             if line.find('@'): print line
 
-        elif line[1:3] == '22':
-
-            letter = unicode(line[line.index('(')+1:line.index(')')])
-            print letter
-            print na_footnote_count
-            footnote = footnotes[na_footnote_count]
+            nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter)], comment, "")
+            # print na_footnote_count
 
             if letter != footnote.letter:
-                print footnote.letter
-                print "letters off ", line
-                print footnotes[na_footnote_count]
+                print "letters off "
 
-            nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter)], comment, "")
+            # print "klal:", footnote.klal_num, "#:", footnote.comment_num, "letter:", footnote.letter
+            # print comment
+            # print footnote.comment
+
+        elif line[1:3] == '22':
+
             na_footnote_count += 1
-            comment = ""
+
+            letter = unicode(line[line.index('(')+1:line.index(')')])
+            footnote = footnotes[na_footnote_count]
+            # print "\nfound:", letter, "from ca:", footnote.letter
+
+
 
         else: #TODO @11, @44, @99
             print "ERROR what is this", line
@@ -224,15 +228,15 @@ with open("ca_parsed.xml") as file_read:
 
     found_sections = soup.find_all("section")
 
-    start = 1 + CHELEK_BET_ADDITION  # all sections from text are from chelek bet
+    start = 1 + CHELEK_BET_ADDITION  # all sections gotten from the text are from chelek bet
 
     for index, section in enumerate(found_sections):
 
         # end is 154 if this is last section
         # else find the heading of the last section klal before this next section and set that as klal end
 
-        end = 223 if index + 1 >= len(found_sections) \
-            else getKlalNum(found_sections[index].parent) + CHELEK_BET_ADDITION
+        end = 154 if index + 1 >= len(found_sections) \
+            else getKlalNum(found_sections[index].parent)
 
         end += CHELEK_BET_ADDITION
         sections.append(Section(section.text, start, end))
@@ -259,7 +263,7 @@ with open("ca_parsed.xml") as file_read:
             klal_title = klal_title.text[:-1] if klal_title.text[-1] == ":" else klal_title.text
             comments.append(u"<b>" + klal_title + u"</b>")
         else:
-            print "klal {} has no title".format(getKlalNum(klal))
+            print "ERROR: klal {} has no title".format(getKlalNum(klal))
 
         for index, comment in enumerate(klal.find_all("comment")):
             comments.append(comment.text)
