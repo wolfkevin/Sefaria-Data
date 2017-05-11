@@ -192,7 +192,7 @@ with open("nishmat_adam.txt") as file_read:
         if line[1:3] == '11':
 
             line = line.replace('@33', "</b>", 1)
-            comment = '<b>' + line[3:].strip() + '<br>'
+            comment = '<b>' + line[3:].strip()
 
             if line.find('@'): print line
 
