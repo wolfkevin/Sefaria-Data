@@ -49,6 +49,17 @@ mapping = dict.fromkeys(map(ord, u":.\n)"))  #chars to eliminate when parsing ch
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
 
+def getRidOfSofit(txt):
+    if txt.find("ך")>=0:
+        txt = txt.replace("ך", "כ")
+    if txt.find("ם")>=0:
+        txt = txt.replace("ם", "מ")
+    if txt.find("ף")>=0:
+        txt = txt.replace("ף", "פ")
+    if txt.find("ץ")>=0:
+        txt = txt.replace("ץ", "צ")
+    return txt
+
 def checkForFootnotes(line):
 
     global klal_count, comment_count, ca_footnote_count, local_foot_count
