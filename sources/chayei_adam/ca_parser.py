@@ -82,7 +82,7 @@ def checkForFootnotes(line):
         #     print "FOOTNOTE COUNT OFF", line
 
         # add footnote to array based off where it is found
-        footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, line, letter.translate(mapping))
+        footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter.translate(mapping))
         line = line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" data-order="{}"></i>'.format("Nishmat Adam", ca_footnote_count))
 
         ca_footnote_count += 1
