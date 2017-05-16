@@ -225,6 +225,7 @@ with open("nishmat_adam.txt") as file_read:
 
 ja_to_xml(nishmat_ja.array(), ["klal", "footnote"])
 
+self_links = []
 
 with open("ca_parsed.xml") as file_read:
 
