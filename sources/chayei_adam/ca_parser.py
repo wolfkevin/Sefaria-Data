@@ -246,36 +246,92 @@ with open("ca_parsed.xml") as file_read:
         sections.append(Section(section.text, start, end))
         start = end + 1
 
-
-    prev_klal_num = 0
     addition = 0
-
 
     for klal in soup.find_all("klal")[1:]:  # [1:] because first klal is empty
 
         klal_num = getKlalNum(klal) + addition
 
-        if klal_num < prev_klal_num:  # if the current klal > prev klal it means its the start of chelek bet
-            addition = CHELEK_BET_ADDITION
-            klal_num += addition
-
         comments = []
 
-        klal_title = klal.find("klal_title")
+        klal_title_added = False
 
         for index, comment in enumerate(klal.find_all("comment")):
-            if klal_title:
-                comments.append(u"<b>{}</b><br>{}".format(klal_title.text, comment.text))
-                klal_title = ""
-            else:
+            if comment.text.find(u'כלל') != -1:
+                comment_words = comment.text.split()
+                count_match = 0
+                for klal_index, word in enumerate(comment_words):
+                    if u'כלל' in word \
+                            and len(comment_words[klal_index:]) > 3 \
+                            and any(word in comment_words[klal_index+2] for word in [u'דין', u"סי'", u'סימן']) \
+                            and not any(word in comment_words[klal_index-1] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א']) \
+                            and getGematria(comment_words[klal_index+1]) < 224 \
+                            and getGematria(comment_words[klal_index+3]) < 58:
+
+                        if len(comment_words[klal_index:]) > 4:
+                            if any(word in comment_words[klal_index+4] for word in [u'נ"א']):
+                                continue
+
+                            offset = 3
+
+                            while getGematria(getRidOfSofit(comment_words[klal_index+offset])) + 1 == getGematria(getRidOfSofit(comment_words[klal_index+offset+1])):
+                                #TODO: add to links
+                                if klal_num > addition:
+                                    self_links.append([getGematria(comment_words[klal_index+1]) + CHELEK_BET_ADDITION, getGematria(comment_words[klal_index+3])])
+
+                                print "double:", comment_words[klal_index+offset], comment_words[klal_index+offset+1]
+
+                                offset += 1
+
+                                if offset + 2 > len(comment_words[klal_index:]):
+                                    break
+
+                        klal_link_num = getGematria(comment_words[klal_index+1])
+
+                        if comment_words[klal_index+1] == u'הקודם':
+                            klal_link_num = klal_num - 1
+
+                        else:
+                            if klal_link_num > 154:
+                                print comment_words[klal_index+1]
+
+                            if klal_link_num > CHELEK_BET_ADDITION:
+                                klal_link_num += CHELEK_BET_ADDITION
+
+                        self_links.append([klal_link_num, getGematria(comment_words[klal_index+3])])
+
+                        # print comment_words[klal_index-1], comment_words[klal_index+1], comment_words[klal_index+3]
+                                # not any(word in comment_words[klal_index+4] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א'])
+                                                            #TODO: kodem
+                                # print comment_words[klal_index+1], comment_words[klal_index+3]
+
+
+                # if word before is ח"א
+                # if len(next_words) > 3 and any(word in next_words[2] for word in [u'דין', u"סי'", u'סימן']):
+                #     if getGematria(next_words[1]) < 224 and getGematria(next_words[3]) < 58:
+                #         if next_words[1] == u'הקודם':
+                #             print "kodem"
+                #         # print next_words[1], next_words[3], getGematria(next_words[3])
+                #         if len(next_words) > 4: print next_words[4]
+                #        # print comment.text
+                #         count_postives +=1
+                #
+                #     #re.compile(^klal _ (siman|din|si))
+
+            if klal_title_added:
                 comments.append(comment.text)
+            else:
+                comments.append(u"<b>{}</b><br>{}".format(klal.find("klal_title").text, comment.text))
+                klal_title_added = True
             # if comment.i:
             #     footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
 
         klalim_ja.set_element([klal_num - 1], comments, [])
 
-        if addition is not CHELEK_BET_ADDITION:  # once adding offset, no need to set prev_klal_num
-            prev_klal_num = klal_num
+        if klal_num == 69 and addition is 0:  # if the current klal > prev klal it means its the start of chelek bet
+            addition = CHELEK_BET_ADDITION
+            klal_num += addition
+
 
 ja_to_xml(nishmat_ja.array(), ["klal", "comment"])
 
