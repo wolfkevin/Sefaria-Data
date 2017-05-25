@@ -936,9 +936,9 @@ def get_page(daf, amud):
     """
 
     if amud == 'a':
-        return 2*daf - 3
-    elif amud == 'b':
         return 2*daf - 2
+    elif amud == 'b':
+        return 2*daf - 1
     else:
         print 'invalid daf number'
         return 0
