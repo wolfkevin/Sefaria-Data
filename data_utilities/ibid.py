@@ -38,12 +38,12 @@ class CitationFinder():
 
         after_title_delimiter_re = ur"[,.: \r\n]+"
         start_paren_reg = ur"(?:[(\[{][^})\]]*)"
-        end_paren_reg = ur"(?:[\])}]| [^({\[]*[\])}])"
+        end_paren_reg = ur"(?:[\])}]|\W[^({\[]*[\])}])"
 
-        inner_paren_reg = u"(?P<Title>" + re.escape(title) + u")" + after_title_delimiter_re + ur'(?:[\[({]' + address_regex + ur'[\])}])(?=\W|$)'
-
+        # inner_paren_reg = u"(?P<Title>" + re.escape(title) + u")" + after_title_delimiter_re + ur'(?:[\[({]' + address_regex + ur'[\])}])(?=\W|$)'
+        inner_paren_reg = u"(?P<Title>" + re.escape(title) + u")" + after_title_delimiter_re + ur'(?:[\[({])' + address_regex + end_paren_reg
         outer_paren_reg = start_paren_reg + u"(?P<Title>" + re.escape(title) + u")" + after_title_delimiter_re + \
-                          address_regex + end_paren_reg
+                      address_regex + end_paren_reg
 
         if title == u"שם":
             sham_reg = u"שם"
@@ -61,11 +61,11 @@ class CitationFinder():
     @staticmethod
     def get_address_regex_dict(lang):
         address_list_depth1 = [
+            ["Integer"],
             ["Perek"],
             ["Mishnah"],
             ["Talmud"],
-            ["Volume"],
-            ["Integer"]
+            ["Volume"]
         ]
 
         jagged_array_nodes = {
@@ -83,13 +83,13 @@ class CitationFinder():
                                                                    "jan_list": [jan, None]}
 
         address_list_depth2 = [
+            ["Integer", "Integer"],
             ["Perek", "Mishnah"],
-            #["Talmud", "Integer"], No such thing as Talmud Integer in our library
             #["Perek", "Halakhah"],
             #["Siman", "Seif"],
-            ["Volume", "Integer"],
+            ["Volume", "Integer"]
             # ["Volume","Siman"],
-            ["Integer", "Integer"]
+
         ]
         lengths = [0, 0]
         sectionNames = ['', '']
@@ -178,7 +178,7 @@ class CitationFinder():
     def get_potential_refs(st, lang='he'):
 
         title_sham = u'שם'
-        non_ref_titles = [u'לעיל', u'להלן']
+        non_ref_titles = [u'לעיל', u'להלן', u'דף']
         unique_titles = set(library.get_titles_in_string(st, lang))
         unique_titles.add(title_sham)
         refs = []
@@ -265,11 +265,10 @@ class IndexIbidFinder(object):
                 pass # maybe want to call ignore her?
         return sham_refs
 
-
     def find_in_segment(self, st, lang='he', citing_only=False, replace=True):
         #todo: implemant replace = True
         """
-        Returns an list of Ref objects derived from string
+        Returns a list of Ref objects derived from string
 
         :param string st: the input string
         :param lang: "he" note: "en" is not yet supported in ibid
@@ -317,11 +316,14 @@ class IndexIbidFinder(object):
         return refs, locations, types  # , failed_refs, failed_non_refs, failed_shams
 
     def find_in_index(self, lang='he', citing_only=False, replace=True):
+        """
+        Returns an OrderedDict. keys: segments. values: dict {'refs': [Refs obj found in this seg], 'locations': [], 'types':[]}
+        """
         seg_refs = self._index.all_segment_refs()
         out = OrderedDict()
 
         prev_node = None
-        for i, r in enumerate(seg_refs[800:]):
+        for i, r in enumerate(seg_refs):
             if prev_node is None:
                 prev_node = r.index_node
             elif prev_node != r.index_node:
@@ -341,6 +343,7 @@ class IndexIbidFinder(object):
 
     def reset_tracker(self):
         self._tr = BookIbidTracker(assert_simple=self._assert_simple)
+
 
 class BookIbidTracker(object):
     """
@@ -385,7 +388,7 @@ class BookIbidTracker(object):
     def resolve(self, index_name, sections=None, match_str=None):
         """
 
-        :param index_name:
+        :param index_name: index name or "None" if it is a sham title citation
         :param list sections: If any entry in this list is "None", then we treat that as a "שם" or "ibid", resolve it, and return a refrence
         :param unicode match_str: optional match string. if this is provided, sections are ignored. index_name is assumed to be None
         :return: Ref
@@ -394,8 +397,12 @@ class BookIbidTracker(object):
         #todo: raise an error if can't find this sham constilation in table
 
         is_index_sham = index_name is None
-
         if index_name is None:
+            try:
+                sham_group_type = self.use_type_get_index(match_str)
+                last_index_type = library.get_schema_node(self._last_cit[0]).addressTypes
+            except:
+                pass
             index_name = self._last_cit[0]
             if index_name is not None:
                 if match_str is not None:
@@ -492,7 +499,6 @@ class BookIbidTracker(object):
             i += 1
         return filter(lambda item: len(item) == text_depth, subs)
 
-
     def ignore_book_name_keys(self):
         '''
         deletes all keys with no book name.
@@ -512,6 +518,14 @@ class BookIbidTracker(object):
                 break
         return last_depth
 
+    def use_type_get_index(self, st):
+        address_regex = CitationFinder.get_ultimate_title_regex(title=u"שם", node=None, lang='he')
+        # address_regex = CitationFinder.create_or_address_regexes(lang='he')
+        m = re.search(address_regex, st)
+        for k, v in m.groupdict().items():
+            if v and not re.search("Title|a0|a1", k):
+                address_type = k
+        return address_type
 
 class IbidDict(OrderedDict):
 
