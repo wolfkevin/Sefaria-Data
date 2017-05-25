@@ -36,7 +36,7 @@ def rashi_filter(text):
     return len(bold_list) > 1 or (len(bold_list) == 1 and u'פרק' not in bold_list[0])
 
 def match():
-    mesechtot = ["Berakhot","Eruvin","Rosh Hashanah", "Yoma", "Makkot","Avodah Zarah","Niddah"]
+    mesechtot = ["Yevamot"]
     gcm = GemaraCommentaryMatcher("Ritva on", mesechtot)
     gcm.match(dh_extraction_method, tokenize_words, rashi_filter, "out", "not_found")
 
