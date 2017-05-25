@@ -56,7 +56,7 @@ def checkAndEditTag(tag, line, file):
                         word_index = line.rfind(' ', 0, potential_index)
         if word_index > 400 and word_index is not 1000:
             long_count += 1
-            print line
+            # print line
 
         if word_index < 999:  # something was found
             line = line[:word_index] + u' </b> ' + line[word_index:]
@@ -112,7 +112,7 @@ with open("ry_parsed.xml") as file_read:
 
     soup = BeautifulSoup(file_read, 'lxml')
 
-    perek_start = "2a.0"
+    perek_start = "2a.1"
     perek_end = ""
     perek_title = u"חמש עשרה נשים"  # set first title manually
     prev_daf_count = 1
@@ -152,9 +152,7 @@ with open("ry_parsed.xml") as file_read:
                     sections.append(Section(perek_title, perek_start, str(daf_num) + "." + str(comment_num)))
                     perek_start = str(daf_num) + "." + str(comment_num + 1)
 
-                perek_title = ""
-                for word in content.text.split()[2:]:
-                    perek_title += word
+                perek_title = u" ".join(content.text.split()[2:])
 
         prev_daf_count = comment_num
 
@@ -162,12 +160,12 @@ with open("ry_parsed.xml") as file_read:
             comments.append(bleach.clean(comment_text, tags=['b'], strip=True))
             print "does this happen?"
 
-        daf_ja.set_element([get_page(int(daf_num[:-1]), daf_num[-1:])], comments, [])
+        daf_ja.set_element([get_page(int(daf_num[:-1]), daf_num[-1])], comments, [])
     sections.append(Section(perek_title, perek_start, daf_num + "." + str(comment_num)))
 
 ja_to_xml(daf_ja.array(), ["daf", "comment"])
 
-print sections
+# print sections
 
 links = []
 
@@ -193,7 +191,7 @@ chapter_count = 0
 for section in sections:
     map_node = ArrayMapNode()
     map_node.add_title(section.title, "he", True)
-    map_node.add_title("Chapter" + str(chapter_count), "en", True)
+    map_node.add_title("Chapter " + str(chapter_count + 1), "en", True)
     map_node.wholeRef = "Ritva on Yevamot.{}-{}".format(section.start, section.end)
     map_node.includeSections = True
     map_node.depth = 0
@@ -206,9 +204,9 @@ index = {
     "title": "Ritva on Yevamot",
     "base_text_mapping": "commentary_increment_base_text_depth",
     "dependence": "Commentary",
-    "categories": ["Talmud", "Commentary"],
+    "categories": ["Talmud", "Bavli", "Commentary", "Ritva", "Seder Nashim"],
     "schema": index_schema.serialize(),
-    "alt_structs": { "Chapters": alt_schema.serialize() },
+    "alt_structs": { "Chapters": alt_schema.serialize()},
     "base_text_titles": ["Yevamot"]
 }
 
@@ -219,11 +217,11 @@ text_version = {
     'text': daf_ja.array()
 }
 
-print long_count
+# print long_count
 
-# post_index(index)
+post_index(index)
 
-# post_text("Ritva on Yevamot", text_version)
+post_text("Ritva on Yevamot", text_version, index_count="on")
 
 
 # TODO: address questions:
