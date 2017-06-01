@@ -217,8 +217,8 @@ index = {
 }
 
 text_version = {
-    'versionTitle': "Ritva on Yevamot",
-    'versionSource': "https://drive.google.com/drive/folders/0B4oYznKuBhPOV2twVGV2enpaTGM?usp=sharing",
+    'versionTitle': "Chidushei HaRitva Yevamot; Lvov, 1861.",
+    'versionSource': "http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId=NNL_ALEPH001096758",
     'language': 'he',
     'text': daf_ja.array()
 }
