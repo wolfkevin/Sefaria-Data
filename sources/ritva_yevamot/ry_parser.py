@@ -209,7 +209,6 @@ for section in sections:
 
 index = {
     "title": "Ritva on Yevamot",
-    "base_text_mapping": "commentary_increment_base_text_depth",
     "dependence": "Commentary",
     "categories": ["Talmud", "Bavli", "Commentary", "Ritva", "Seder Nashim"],
     "schema": index_schema.serialize(),
