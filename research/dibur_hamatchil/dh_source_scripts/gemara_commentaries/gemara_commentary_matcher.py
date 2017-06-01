@@ -47,26 +47,24 @@ class GemaraCommentaryMatcher:
             for icomment, comment_ref in enumerate(comment_ref_list):
                 while gemara_ref_list[gemara_ind].normal_last_section() != comment_ref.normal_last_section():
                     gemara_ind += 1
-                gemara_ref = gemara_ref_list[gemara_ind]
-                orig_gemara_ref = gemara_ref
+                gemara_ref_expanded = gemara_ref_list[gemara_ind]
+                orig_gemara_ref = gemara_ref_expanded
                 print u'----- {} Start ({}/{})-----'.format(orig_gemara_ref, icomment, len(comment_ref_list))
                 comment_tc = TextChunk(comment_ref, "he")
 
                 # let's extend the range of gemara_tc to account for weird rashba stuff
                 num_refs_to_expand = 2
-
-                gemara_ref_before = gemara_ref.prev_section_ref()
-                gemara_ref_after = gemara_ref.next_section_ref()
+                gemara_ref_before = gemara_ref_expanded.prev_section_ref()
+                gemara_ref_after = gemara_ref_expanded.next_section_ref()
                 if gemara_ref_before and len(gemara_ref_before.all_subrefs()) >= num_refs_to_expand:
-                    gemara_ref_expanded = gemara_ref_before.all_subrefs()[-num_refs_to_expand].to(gemara_ref)
+                    gemara_ref_expanded = gemara_ref_before.all_subrefs()[-num_refs_to_expand].to(gemara_ref_expanded)
                 if gemara_ref_after and len(gemara_ref_after.all_subrefs()) >= num_refs_to_expand:
                     gemara_ref_expanded = gemara_ref_expanded.to(gemara_ref_after.all_subrefs()[num_refs_to_expand - 1])
 
                 vtitle = 'William Davidson Edition - Aramaic' if mesechta in self.all_william else None
-                try:
-                    gemara_tc = TextChunk(gemara_ref_expanded, lang='he', vtitle=vtitle)
-                except Exception:
-                    gemara_tc = TextChunk(gemara_ref, lang='he', vtitle=vtitle)
+
+                gemara_tc = TextChunk(gemara_ref_expanded, lang='he', vtitle=vtitle)
+
 
                 matched = dibur_hamatchil_matcher.match_ref(gemara_tc, comment_tc, base_tokenizer=base_tokenizer,
                                                             dh_extract_method=dh_extraction_method, verbose=False,
