@@ -115,6 +115,7 @@ with open("ry_parsed.xml") as file_read:
     perek_start = "2a.1"
     perek_end = ""
     perek_title = u"חמש עשרה נשים"  # set first title manually
+    t_perek_title = u"חמש עשרה נשים"
     prev_daf_count = 1
 
     for daf in soup.find_all("daf")[1:]:
@@ -126,11 +127,15 @@ with open("ry_parsed.xml") as file_read:
         daf_num = str(getGematria(daf.h2.text.split()[1])) + 'a' if daf.h2.text.endswith(u'א') \
             else str(getGematria(daf.h2.text.split()[1])) + 'b'
 
-        comments = []
         comment_text = ""
         comment_num = 1  # so alt struct can know where to break
+        comments = []
 
         for content in daf.children:
+
+            if t_perek_title:
+                comments.append(u"<big><strong>{}</strong></big>".format(perek_title))
+                t_perek_title = ""
 
             if content.name is 'p':
                 comments.append(bleach.clean(content, tags=['b'], strip=True))
@@ -153,6 +158,8 @@ with open("ry_parsed.xml") as file_read:
                     perek_start = str(daf_num) + "." + str(comment_num + 1)
 
                 perek_title = u" ".join(content.text.split()[2:])
+                t_perek_title = u" ".join(content.text.split()[2:])
+
 
         prev_daf_count = comment_num
 
