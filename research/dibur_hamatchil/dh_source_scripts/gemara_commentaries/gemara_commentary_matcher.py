@@ -127,10 +127,10 @@ class GemaraCommentaryMatcher:
                 # log.write("ACCURACY - {}%\n".format(round(1.0 * num_matched / num_searched, 5) * 100))
                 print u'----- {} End -----'.format(orig_gemara_ref)
 
-            with open('{}/{}.json'.format(matched_dir, mesechta), 'wb') as out:
+            with open('{}/{}4.json'.format(matched_dir, mesechta), 'wb') as out:
                 json.dump(link_list, out, indent=4)
 
-            with open('{}/{}.json'.format(not_matched_dir, mesechta), 'wb') as out:
+            with open('{}/{}4.json'.format(not_matched_dir, mesechta), 'wb') as out:
                 json.dump(unlink_list, out, indent=4)
 
 
