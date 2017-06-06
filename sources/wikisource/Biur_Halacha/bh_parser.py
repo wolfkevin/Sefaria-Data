@@ -207,7 +207,7 @@ index = {
     "dependence": "Commentary",
     "categories": ["Halakhah", "Commentary", "Shulchan Arukh"],
     "schema": index_schema.serialize(),
-    "alt_structs": { "Categories": alt_schema.serialize() },
+    "alt_structs": { "Topic": alt_schema.serialize() },
     "base_text_titles": ["Shulchan Arukh, Orach_Chayim"]
 }
 
