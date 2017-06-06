@@ -43,13 +43,13 @@ def checkAndEditTag(tag, line, file):
         word_index = 1000
 
         # end of quote so assume DH ends right after this word
-        for word in [u"וכו'", u".", u'ק"ל']:
+        for word in [u"וכו'", u"."]:
             potential_index = line.find(word, 0, 1000)
             if potential_index is not -1 and potential_index < word_index:  # want to find earliest delimiter
                 word_index = line.find(' ', potential_index)
 
         # beginning of comment so assume DH is everything before this word
-        for word in [u"פי'", u"כלומר" , u"פירוש",  u"רשי", u'רש"י', u'ר"ת', u"קשי'", u'ר"י', u'נ"ל', u"הקשו", u"הק'", u'קשה', u"דכתב", u"וקשיא", u"אני אומ", u'וא"ת', u"ואיכא", u'י"ל', u"לא גרס", u'ל״ג', u"תוס'", u"כן הוא", u"ודעת", u"ויש", u"דפ'", u'רשב"א', u"ועוד", u"וכיון", u'י"א', u"וכתבו", u"יש לפרש", u"פירש", u"לפרושי"]:
+        for word in [u"פי'", u"כלומר" ,  u'ק"ל', u"פירוש",  u"רשי", u'רש"י', u'ר"ת', u"קשי'", u'ר"י', u'נ"ל', u"הקשו", u"הק'", u'קשה', u"דכתב", u"וקשיא", u"אני אומ", u'וא"ת', u"ואיכא", u'י"ל', u"לא גרס", u'ל״ג', u"תוס'", u"כן הוא", u"ודעת", u"ויש", u"דפ'", u'רשב"א', u"ועוד", u"וכיון", u'י"א', u"וכתבו", u"יש לפרש", u"פירש", u"לפרושי", u'ז"ל']:
             potential_index = line.find(word, 0, 1000)
             if potential_index is not -1 and potential_index < word_index:   # want to find earliest delimiter
                 if line[potential_index-1:line.find(' ', potential_index)] != u"אפי'":  # prevent 'אפי from being a delimiter
