@@ -77,7 +77,7 @@ def create_schema(en_he_parshiot):
         "schema": book.serialize(),
         "categories": ["Midrash"]
     }
-    post_index(index)
+    #post_index(index, server="http://ste.sefaria.org")
     return en_parshiot
 
 
@@ -165,17 +165,21 @@ if __name__ == "__main__":
     post_info = {}
     post_info["language"] = "en"
     post_info["server"] = sys.argv[2]
-    allowed_tags = ["book", "volume", "intro", "foreword", "part", "chapter", "p", "ftnote", "title", "ol"]
+    allowed_tags = ["book", "volume", "intro", "foreword", "part", "chapter", "p", "ftnote", "title", "ol", "ul", "table"]
     allowed_attributes = ["id"]
     grab_title_lambda = lambda x: x[0].tag == "title"
     p = re.compile("\d+a?\.")
     reorder_test_lambda = lambda x: x.tag == "title" and p.match(x.text) is not None
     def reorder_modify(text):
-        text = text.split(" ")[0]
-        if text.split(".")[-1] == "":
-            return text.split(".")[0]
+        text = text.split(" ")
+        marker = text[0]
+        text = " ".join(text[1:])
+        if marker.find(".") != marker.rfind("."):
+            marker = marker[0:-1]
+        if marker.split(".")[-1] == "":
+            return marker.split(".")[0]
         else:
-            return text.split(".")[-1]
+            return marker.split(".")[-1]
 
     if sys.argv[1] == "Buber":
         title = "Midrash Tanchuma Buber"

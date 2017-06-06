@@ -15,6 +15,28 @@ This allows for a steady accumulation of data to be saved on disk as an xml docu
 class CommentStore(dict):
     __metaclass__ = Singleton
 
+    def create_link(self, rid):
+        """
+        Generate link (or links) for a given rid. Since there are occasions where a given seif requires more than 1 link
+        this returns an array of link dictionaries.
+        :param rid:
+        :return:
+        """
+        data = self[rid]
+        links = [
+            {
+                'refs': [
+                    "{} {}:{}".format(data['base_title'], data['seif'], seif),
+                    "{} {}:{}".format(data["commentator_title"], data["commentator_siman"], data["commentator_seif"])
+                ],
+                'auto': True,
+                'generated_by': "Shulchan Arukh Comment Store",
+                'type': "commentary"
+            }
+            for seif in data["seif"]
+        ]
+        return links
+
 
 class Element(object):
     """
@@ -105,7 +127,8 @@ class Element(object):
             special['found_after'] = found_after
         self.Tag.append(special)
 
-    def _mark_children(self, pattern, start_mark, specials, add_child_callback=None, enforce_order=False):
+    def _mark_children(self, pattern, start_mark, specials, add_child_callback=None, enforce_order=False,
+                       derive_order_callback=getGematria, special_callback=lambda x:{}):
         """
         Mark up simanim in xml.
         :param pattern: regex pattern. The first capture group should indicate the siman number
@@ -116,6 +139,10 @@ class Element(object):
         should be the name of the xml element this data should be wrapped with. The 'end' key is the regex that will
         mark a return to standard parsing. If not set, the only a single line will be marked.
         :param function add_child_callback: Function to add child
+        :param derive_order_callback: Method to derive the order of the child. Will accept the first capture group of
+        pattern.
+        :param special_callback: An optional callback function that will operate on a regex match object and will
+        return a dictionary. This is essentially a way to generate kwargs for the add_child_callback method.
         :return:
         """
         if add_child_callback is None:
@@ -139,7 +166,7 @@ class Element(object):
             started = True
         else:
             started = False
-        current_child, child_num = [], -1
+        current_child, child_num, kwargs = [], -1, {}
         special_mode = False  # Special parsing mode captures data that exists outside ordered structure
         found_after, special_pattern, end_pattern = 0, None, None
 
@@ -163,9 +190,10 @@ class Element(object):
                     if new_child:
                         if child_num > 0:  # add the previous siman, will be -1 if this is the first siman marker in the text
                             assert len(current_child) > 0
-                            add_child_callback(u''.join(current_child), child_num, enforce_order)
+                            add_child_callback(u''.join(current_child), child_num, enforce_order=enforce_order, **kwargs)
                             current_child = []
-                        child_num = getGematria(new_child.group(1))  #Todo needs to be a callback
+                        child_num = derive_order_callback(new_child.group(1))
+                        kwargs = special_callback(new_child)
                         continue
 
                     special_pattern = is_special(line, specials)
@@ -194,7 +222,7 @@ class Element(object):
                 if special_mode:
                     self.add_special(u''.join(current_child), specials[special_pattern]['name'], found_after)
                 else:
-                    add_child_callback(u''.join(current_child), child_num, enforce_order)
+                    add_child_callback(u''.join(current_child), child_num, enforce_order=enforce_order, **kwargs)
 
     def load_xrefs_to_commentstore(self, *args, **kwargs):
         for child in self.get_child():
@@ -206,6 +234,23 @@ class Element(object):
     def load_comments_to_commentstore(self, *args, **kwargs):
         for child in self.get_child():
             child.load_comments_to_commentstore(*args, **kwargs)
+
+    def convert_pattern_to_itag(self, commentator, pattern, group=1, order_callback=getGematria):
+        """
+        Finds patterns and renders them as itags. This is helpful for references where the text is already on production
+        and properly linked, but there is still a need for itags.
+        :param commentator: Title of Commentator
+        :param pattern: regex to substitute
+        :param group: group to use to set the data order.
+        :param order_callback: Callback method used to decode the data order
+        :return:
+        """
+        if not self.multiple_children:
+            raise NotImplementedError
+
+        for child in self.get_child():
+            child.convert_pattern_to_itag(commentator, pattern, group, order_callback)
+
 
     def __unicode__(self):
         return unicode(self.Tag)
@@ -435,7 +480,7 @@ class OrderedElement(Element):
         self.num = int(soup_tag['num'])
         super(OrderedElement, self).__init__(soup_tag)
 
-    def validate_order(self, previous=None):
+    def validate_order(self, previous=None, *args, **kwargs):
         """
         Checks that num of this element follows that of previous
         :param previous: Previous element in an array of OrderedElements. If None will return True (useful for first element)
@@ -450,26 +495,31 @@ class OrderedElement(Element):
             else:
                 return True
 
-    def validate_complete(self, previous=None):
+    def validate_complete(self, previous=None, cyclical=False):
         """
         Checks that the num of this element is exactly 1 more than the previous element. If previous is None, will
         return True only if the num of self is 0 or 1.
         :param previous: Previous OrderedElement in array of elements. If first element, pass None.
+        :param cyclical: Used for seifim that use a cyclical (modulus) markup system (specifically, א,ב...ט,י,כ...ש,ת,א,ב)
         :return: bool
         """
         if previous is None:
             return self.num == 1 or self.num == 0
         else:
             assert isinstance(previous, OrderedElement)
-            return (self.num - previous.num) == 1
+            if cyclical:
+                return (int(self.Tag['label']) - int(previous.Tag['label'])) % 22 == 1
+            else:
+                return (self.num - previous.num) == 1
 
     @staticmethod
-    def validate_collection(element_list, complete=False, verbose=False):
+    def validate_collection(element_list, complete=False, verbose=False, cyclical=False):
         """
         Run a validation on an array of ordered elements
         :param list[OrderedElement] element_list: list of OrderedElement instances
         :param complete: True will run the validate_complete method, otherwise will check only ascending order.
         :param verbose: Set to True to view print statements regrading locations of missing elements
+        :param cyclical: Used for seifim that use a cyclical (modulus) markup system (specifically, א,ב...ט,י,כ...ש,ת,א,ב)
         :return: bool
         """
         passed = True
@@ -479,11 +529,15 @@ class OrderedElement(Element):
                 validation = element.validate_complete
             else:
                 validation = element.validate_order
-            if not validation(previous_element):
+            if not validation(previous_element, cyclical):
                 passed = False
                 if verbose:
                     if previous_element is None:
                         print 'First element is element {}'.format(element.num)
+                    elif cyclical:
+                        print u'misordered element: {} (element {}) followed by {} (element {})'\
+                            .format(he_num_to_char(previous_element.Tag['label']), previous_element.num,
+                                    he_num_to_char(element.Tag['label']), element.num)
                     else:
                         print 'misordered element: {} followed by {}'.format(previous_element.num, element.num)
             previous_element = element
@@ -526,14 +580,17 @@ class Volume(OrderedElement):
         """
         self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_siman, enforce_order=enforce_order)
 
-    def mark_seifim(self, pattern, start_mark=None, specials=None, enforce_order=False):
+    def mark_seifim(self, pattern, start_mark=None, specials=None, enforce_order=False, cyclical=False):
         errors = []
         for siman in self.get_child():
             assert isinstance(siman, Siman)
-            try:
-                siman.mark_seifim(pattern, start_mark, specials, enforce_order)
-            except DuplicateChildError as e:
-                errors.append(e.message)
+            if cyclical:
+                siman.mark_cyclical_seifim(pattern, start_mark, specials, enforce_order)
+            else:
+                try:
+                    siman.mark_seifim(pattern, start_mark, specials, enforce_order)
+                except DuplicateChildError as e:
+                    errors.append(e.message)
         return errors
 
     def format_text(self, start_special, end_special, name):
@@ -546,20 +603,20 @@ class Volume(OrderedElement):
                 errors.append(e.message)
         return errors
 
-    def mark_references(self, commentary_id, pattern, group=None):
+    def mark_references(self, commentary_id, pattern, group=None, cyclical=False):
         for child in self.get_child():
-            child.mark_references(self.get_book_id(), commentary_id, pattern, group=group)
+            child.mark_references(self.get_book_id(), commentary_id, pattern, group=group, cyclical=cyclical)
 
     def validate_simanim(self, complete=True, verbose=True):
         self.validate_collection(self.get_child(), complete, verbose)
 
-    def validate_seifim(self, complete=True, verbose=True):
+    def validate_seifim(self, complete=True, verbose=True, cyclical=False):
         for siman in self.get_child():
             assert isinstance(siman, Siman)
-            if not siman.validate_seifim(complete, verbose=False):
+            if not siman.validate_seifim(complete, verbose=False, cyclical=cyclical):
                 print "Found in Siman {}".format(siman.num)
                 if verbose:
-                    siman.validate_seifim(complete, verbose)
+                    siman.validate_seifim(complete, verbose, cyclical)
 
     def validate_references(self, pattern, code, group=1, key_callback=getGematria):
         """
@@ -656,11 +713,24 @@ class Siman(OrderedElement):
     def _add_seif(self, raw_text, seif_number, enforce_order=False):
         self._add_child(Seif, raw_text, seif_number, enforce_order)
 
+    def _add_cyclical_seif(self, raw_text, seif_number, label, enforce_order=False):
+        seif = self._add_child(Seif, raw_text, seif_number, enforce_order)
+        seif.Tag['label'] = label
+
     def mark_seifim(self, pattern, start_mark=None, specials=None, enforce_order=False):
         try:
             self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_seif, enforce_order=enforce_order)
         except DuplicateChildError as e:
             raise DuplicateChildError('Siman {}, Seif {}'.format(self.num, e.message))
+
+    def mark_cyclical_seifim(self, pattern, start_mark=None, specials=None, enforce_order=False):
+        def get_label(match_object):
+            label = he_ord(match_object.group(1))
+            return {'label': label}
+
+        self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_cyclical_seif,
+                            enforce_order=enforce_order, derive_order_callback=lambda x: len(self.get_child())+1,
+                            special_callback=get_label)
 
     def format_text(self, start_special, end_special, name):
         for seif in self.get_child():
@@ -670,13 +740,13 @@ class Siman(OrderedElement):
             except AssertionError as e:
                 raise AssertionError('Siman {}, {}'.format(self.num, e.message))
 
-    def mark_references(self, base_id, com_id, pattern, found=0, group=None):
+    def mark_references(self, base_id, com_id, pattern, found=0, group=None, cyclical=False):
         for child in self.get_child():
-            found = child.mark_references(base_id, com_id, self.num, pattern, found, group)
+            found = child.mark_references(base_id, com_id, self.num, pattern, found, group, cyclical)
         return found
 
-    def validate_seifim(self, complete=True, verbose=True):
-        return self.validate_collection(self.get_child(), complete, verbose)
+    def validate_seifim(self, complete=True, verbose=True, cyclical=False):
+        return self.validate_collection(self.get_child(), complete, verbose, cyclical)
 
     def validate_references(self, pattern, code, group=1, key_callback=getGematria):
         """
@@ -719,16 +789,16 @@ class Siman(OrderedElement):
             except MissingCommentError as e:
                 print e.message
 
-    def set_rid_on_seifim(self, base_id, book_id):
+    def set_rid_on_seifim(self, base_id, book_id, cyclical=False):
         for seif in self.get_child():
-            seif.set_rid(base_id, book_id, self.num)
+            seif.set_rid(base_id, book_id, self.num, cyclical)
 
     def locate_references(self, pattern):
         """
         For each match to pattern, output the seif at which pattern was found
         :param pattern:
         :return: list of integers that represent the seif number at which a match was found. E.g. if the pattern !@#$
-        was found once in seif 5 and twice in seif 7 this will return [1, 2].
+        was found once in seif 5 and twice in seif 7 this will return [5, 7, 7].
         """
         matches = []
         for seif in self.get_child():
@@ -803,16 +873,33 @@ class Seif(OrderedElement):
                 add_formatted_text(element_words, element_name=u'reg-text')
 
 
-    def set_rid(self, base_id, com_id, siman_num):
+    def set_rid(self, base_id, com_id, siman_num, cyclical=False):
+        """
+        Set the rid key on the Seif to be matched to it's equivalent footnote in the base text
+        :param base_id: Id of base text
+        :param com_id: Id of commentary
+        :param siman_num: siman number
+        :param cyclical: Uses the numerical order value of the letter with which the Siman was marked as a second data
+        point (i.e. ת resolves as 22). This is necessary for commentaries that cycle through the hebrew alphabet to mark
+        comments without using the letters as a numerical representation (באר הגולה on חושן משפט is an example of this
+        markup format - view source files for details).
+        :return:
+        """
         if com_id == 0:  # 0 is reserved to reference the base text
             raise AssertionError("Base text seifim do not have an rid")
 
-        self.rid = u'b{}-c{}-si{}-ord{}'.format(base_id, com_id, siman_num, self.num)
+        if cyclical:
+            assert self.Tag.get('label') is not None
+            order = u'{};{}'.format(self.Tag['label'], self.num)
+        else:
+            order = self.num
+
+        self.rid = u'b{}-c{}-si{}-ord{}'.format(base_id, com_id, siman_num, order)
         self.Tag['rid'] = self.rid
 
-    def mark_references(self, base_id, com_id, siman, pattern, found=0, group=None):
+    def mark_references(self, base_id, com_id, siman, pattern, found=0, group=None, cyclical=False):
         for child in self.get_child():
-            found = child.mark_references(base_id, com_id, siman, pattern, found, group)
+            found = child.mark_references(base_id, com_id, siman, pattern, found, group, cyclical)
         return found
 
     def grab_references(self, pattern):
@@ -849,7 +936,7 @@ class TextElement(Element):
     child = 'Xref'
     multiple_children = True
 
-    def mark_references(self, base_id, com_id, siman_num, pattern, found=0, group=None):
+    def mark_references(self, base_id, com_id, siman_num, pattern, found=0, group=None, cyclical=False):
         """
         Mark a single set of references (i.e. all references from shach to Shulchan Arukh) based on a regular expression
         :param base_id: id of text where the mark appears. 0 is reserved for Shulchan Arukh itself
@@ -859,6 +946,7 @@ class TextElement(Element):
         :param int found: Number of marks found in before this element.
         :param int group: If passed, the gematria of the text in this group will determine the comment order of this
          reference. If None, the order will just be set by counting the number of matches found by the expression
+        :param cyclical: Set to True for reference style that uses a cyclical pattern (i.e. א,ב,ג,ד,ה,ו,ז,ח,ט,י,כ,ל...ר,ש,ת,א,ב)
         :return: number of matches found in this element, offset by the number found before this element (adds to the
          `found` parameter passed to this method
         """
@@ -867,29 +955,44 @@ class TextElement(Element):
             if re.search(pattern, xref.text):
                 raise AssertionError('Pattern matches previously marked reference')
 
+        # Nested function can only modify a mutable object from the outer scope
+        count = [found]
+        def repl(s):
+            count[0] += 1
+            if group is None:
+                order = count[0]
+            elif cyclical:
+                order = u'{};{}'.format(he_ord(s.group(group)), count[0])
+            else:
+                order = getGematria(s.group(group))
+            return u'<xref id="b{}-c{}-si{}-ord{}">{}</xref>'.format(base_id, com_id, siman_num, order, s.group())
+
         pre_parsed_text = u''.join([unicode(c) for c in self.Tag.children])
-        words = pre_parsed_text.split()
-
-        for index, word in enumerate(words[:]):
-            matched_ref = re.search(pattern, word)
-            if matched_ref:
-                found += 1
-                if group is None:
-                    order = found
-                else:
-                    order = getGematria(matched_ref.group(group))
-                ref_id = u'b{}-c{}-si{}-ord{}'.format(base_id, com_id, siman_num, order)
-                words[index] = u'<xref id="{}">{}</xref>'.format(ref_id, word)
-
-        parsed_text = u'<{}>{}</{}>'.format(self.Tag.name, u' '.join(words), self.Tag.name)
+        parsed_text = u'<{}>{}</{}>'.format(self.Tag.name, re.sub(pattern, repl, pre_parsed_text), self.Tag.name)
         new_tag = BeautifulSoup(parsed_text, 'xml').find(self.Tag.name)
         self.Tag.replace_with(new_tag)
         self.Tag = new_tag
 
-        return found
+        return count[0]
 
     def load_comments_to_commentstore(self, *args, **kwargs):
         raise NotImplementedError("Can't load comments at TextElement depth")
+
+    def convert_pattern_to_itag(self, commentator, pattern, group=1, order_callback=getGematria):
+
+        def repl(s):
+            data_order = order_callback(s.group(group))
+            return u'<i data-commentator="{}" data-order="{}"></i>'.format(commentator, data_order)
+
+        # Make sure pattern will not touch the existing xrefs
+        for xref in self.Tag.find_all('xref'):
+            if re.search(pattern, xref.text):
+                raise AssertionError('Pattern matches previously marked reference')
+
+        tagged = re.sub(pattern, repl, unicode(self))
+        new_tag = BeautifulSoup(tagged, 'xml').find(self.Tag.name)
+        self.Tag.replace_with(new_tag)
+        self.Tag = new_tag
 
 
 class Xref(Element):
@@ -911,21 +1014,27 @@ class Xref(Element):
     def load_xrefs_to_commentstore(self, title, siman, seif):
         comment_store = CommentStore()
         if comment_store.get(self.id) is not None:
-            if comment_store[self.id]['seif'] == seif:
+            if seif in comment_store[self.id]['seif']:
                 message = "Xref with id '{}' appears twice. Same Seif as previous appearance.".format(self.id)
                 print message
             else:
                 message = "Xref with id '{}' appears twice. Different Seif as previous appearance.".format(self.id)
-                raise DuplicateCommentError(message)
+                print message
+                comment_store[self.id]['seif'].append(seif)
 
-        comment_store[self.id] = {
-            'base_title': title,
-            'siman': siman,
-            'seif': seif
-        }
+        else:
+            comment_store[self.id] = {
+                'base_title': title,
+                'siman': siman,
+                'seif': [seif]
+            }
 
     def load_comments_to_commentstore(self, *args, **kwargs):
         raise NotImplementedError("Can't load comments at Xref depth")
+
+    def render_itag(self):
+        data = CommentStore()[self.id]
+        return u'<i data-commentator="{}" data-order="{}"/>'.format(data['commentary_title'], data['commentator_seif'])
 
 module_locals = locals()
 

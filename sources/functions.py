@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import urllib
 import urllib2
 from urllib2 import URLError, HTTPError
@@ -15,6 +16,7 @@ from local_settings import *
 sys.path.insert(0, SEFARIA_PROJECT_PATH)
 from sefaria.model import *
 from sefaria.model.schema import AddressTalmud
+from data_utilities.dibur_hamatchil_matcher import match_ref
 from sefaria.utils.util import replace_using_regex as reg_replace
 import base64
 
@@ -63,6 +65,29 @@ eng_parshiot = ["Bereshit", "Noach", "Lech Lecha", "Vayera", "Chayei Sara", "Tol
 "V'Zot HaBerachah"]
 
 
+def perek_to_number(perek_num):
+    '''
+    Example: Input is "ראשון" and return is 1
+    :param perek_num:
+    :return:
+    '''
+    line = u"""  פרק ראשון   פרק שני   פרק שלישי   פרק רביעי   פרק חמישי   פרק ששי   פרק שביעי   פרק שמיני   פרק תשיעי   פרק עשירי   פרק אחד עשר   פרק שנים עשר   פרק שלשה עשר   פרק ארבעה עשר   פרק חמשה עשר   פרק ששה עשר   פרק שבעה עשר   פרק שמונה עשר   פרק תשעה עשר   פרק עשרים   פרק אחד ועשרים   פרק שנים ועשרים   פרק שלשה ועשרים   פרק ארבעה ועשרים   פרק חמשה ועשרים   פרק ששה ועשרים   פרק שבעה ועשרים   פרק שמונה ועשרים   פרק תשעה ועשרים   פרק שלשים"""
+    line = line.replace("\n", "")
+    line = line.split(u"פרק")[1:]
+    arr_nums = []
+    poss_num = 0
+    perek_num = perek_num.replace(" ", "")
+    for word in line:
+        word = word.replace(" ", "").replace(u"\xa0\xa0", "")
+        poss_num += 1
+        if perek_num == word:
+            return poss_num
+    print u"Not supporting {} yet".format(perek_num)
+    return u"Not supporting {} yet".format(perek_num)
+
+
+
+
 def removeExtraSpaces(txt):
     txt = txt.replace("\xc2\xa0", " ") #make sure we only have one kind of space, get rid of unicode space
     while txt.find("  ") >= 0:          #now get rid of all double spaces
@@ -87,6 +112,8 @@ def ChetAndHey(poss_siman, siman):
         poss_siman = poss_siman - 3
     if siman - 7 == poss_siman - 5 and poss_siman % 10 == 5:
         poss_siman = poss_siman + 3
+    if poss_siman == 20 and siman == 1:
+        return 2
 
     return poss_siman
 
@@ -150,6 +177,8 @@ def in_order_multiple_segments(line, curr_num, increment_by):
 
 
 def fixChetHay(poss_num, curr_num):
+    if poss_num == 20 and curr_num == 1:
+        return 2
     if poss_num == 8 and curr_num == 4:
         return 5
     elif poss_num == 5 and curr_num == 7:
@@ -205,6 +234,27 @@ def wordHasNekudot(word):
     data = data.replace(u"\u05C3", "")
     data = data.replace(u"\u05C4", "")
     return data != word.decode('utf-8')
+
+def strip_nekud(word):
+    data = word.replace(u"\u05B0", "")
+    data = data.replace(u"\u05B1", "")
+    data = data.replace(u"\u05B2", "")
+    data = data.replace(u"\u05B3", "")
+    data = data.replace(u"\u05B4", "")
+    data = data.replace(u"\u05B5", "")
+    data = data.replace(u"\u05B6", "")
+    data = data.replace(u"\u05B7", "")
+    data = data.replace(u"\u05B8", "")
+    data = data.replace(u"\u05B9", "")
+    data = data.replace(u"\u05BB", "")
+    data = data.replace(u"\u05BC", "")
+    data = data.replace(u"\u05BD", "")
+    data = data.replace(u"\u05BF", "")
+    data = data.replace(u"\u05C1", "")
+    data = data.replace(u"\u05C2", "")
+    data = data.replace(u"\u05C3", "")
+    data = data.replace(u"\u05C4", "")
+    return data
 
 
 def getHebrewParsha(eng_parsha):
@@ -262,6 +312,9 @@ def compileCommentaryIntoPage(title, daf):
     return page
 
 
+
+
+
 def lookForLineInCommentary(title, daf, line_n):
     total_count = 0
     ref = Ref(title+" "+AddressTalmud.toStr("en", daf)+":1")
@@ -282,7 +335,12 @@ def onlyOne(text, subset):
         return True
     return False
 
-
+def get_all_non_ascii(text):
+    non = filter(lambda x: ord(x) >= 128, text)
+    non_ascii_set = set()
+    for each_char in non:
+        non_ascii_set.add(each_char)
+    return non_ascii_set
 
 def replaceBadNodeTitlesHelper(title, replaceBadNodeTitles, bad_char, good_char):
     url = SEFARIA_SERVER+'api/index/'+title.replace(" ", "_")
@@ -295,8 +353,7 @@ def replaceBadNodeTitlesHelper(title, replaceBadNodeTitles, bad_char, good_char)
 def checkLengthsDicts(x_dict, y_dict):
     for daf in x_dict:
         if len(x_dict[daf]) != len(y_dict[daf]):
-            print "lengths off"
-            pdb.set_trace()
+            print "{} by {}".format(daf+1, len(x_dict[daf]) - len(y_dict[daf]))
 
 
 def weak_connection(func):
@@ -318,8 +375,48 @@ def weak_connection(func):
     return post_weak_connection
 
 
+def make_title(text):
+    '''
+    Takes as input a node named 'text' and capitalizes it appropriately
+    :param text:
+    :return:
+    '''
+    #first clean up text
+    if text[0] == " ":
+        text = text[:]
+    if text[-1] == " ":
+        text = text[:-1]
+
+    #just make sure there aren't double spaces in the name or code below fails
+    text = text.replace("  ", " ")
+    stop_words = ["a", "the", "on", "is", "of", "in", "to", "and", "by"]
+    roman_letters = ["i", "v", "x", "l"]
+    other_starts = ['"', "'", '(', '[']
+
+    #capitalize first letter no matter what so add the first word to new_text because it's fine as it is
+    text = text[0].upper() + text[1:].lower()
+    new_text = text.split(" ")[0] + " "
+
+    #capitalize non-stopwords
+    for word in text.split(" ")[1:]:
+        is_roman_numeral = filter(lambda x: x not in roman_letters, word) == ""
+        if is_roman_numeral:
+            new_text += word.upper() + " "
+        elif word not in stop_words:
+            if word[0] in other_starts:
+                new_text += word[0] + word[1].upper() + word[2:] + " "
+            else:
+                new_text += word[0].upper() + word[1:] + " "
+        else:
+            new_text += word + " "
+
+    if new_text[-1] == " ":  #remove last space
+        new_text = new_text[0:-1]
+
+    return new_text
+
 @weak_connection
-def post_index(index, server=SEFARIA_SERVER):
+def post_index(index, server=SEFARIA_SERVER, print_json=False):
     url = server+'/api/v2/raw/index/' + index["title"].replace(" ", "_")
     indexJSON = json.dumps(index)
     values = {
@@ -330,7 +427,10 @@ def post_index(index, server=SEFARIA_SERVER):
     req = urllib2.Request(url, data)
     try:
         response = urllib2.urlopen(req)
-        print response.read()
+        if print_json:
+            print response.read()
+        else:
+            print "success"
     except HTTPError as e:
         with open('errors.html', 'w') as errors:
             errors.write(e.read())
@@ -338,13 +438,13 @@ def post_index(index, server=SEFARIA_SERVER):
 
 
 def hasTags(comment):
-    mod_comment = removeAllStrings(comment)
+    mod_comment = removeAllTags(comment)
     return mod_comment != comment 
 
 
 @weak_connection
-def post_link(info):
-    url = SEFARIA_SERVER+'/api/links/'
+def post_link(info, server=SEFARIA_SERVER):
+    url = server+'/api/links/'
     infoJSON = json.dumps(info)
     values = {
         'json': infoJSON,
@@ -392,6 +492,50 @@ def post_link_weak_connection(info, repeat=10):
         sys.exit(1)
 
 
+
+def get_matches_for_dict_and_link(dh_dict, base_text_title, commentary_title, talmud=True, lang='he', word_threshold=0.27, server="", rashi_filter=None, dh_extract_method=lambda x: x):
+    def base_tokenizer(str):
+        str_list = str.split(" ")
+        return [str for str in str_list if len(str) > 0]
+
+
+    assert len(server) > 0, "Please specify a server"
+    results = {}
+    links = []
+    matched = 0
+    total = 0
+    for daf in dh_dict:
+        print daf
+        dhs = dh_dict[daf]
+        if talmud:
+            base_text_ref = "{} {}".format(base_text_title, AddressTalmud.toStr("en", daf))
+            comm_ref = "{} on {} {}".format(commentary_title, base_text_title, AddressTalmud.toStr("en", daf))
+        else:
+            base_text_ref = "{} {}".format(base_text_title, daf)
+            comm_ref = "{} on {} {}".format(commentary_title, base_text_title, daf)
+        base_text = TextChunk(Ref(base_text_ref), lang=lang)
+        comm_text = TextChunk(Ref(comm_ref), lang=lang)
+        results[daf] = match_ref(base_text, comm_text, base_tokenizer=base_tokenizer, word_threshold=word_threshold, rashi_filter=rashi_filter, dh_extract_method=dh_extract_method)
+        for count, link in enumerate(results[daf]):
+            if link:
+                base_end = link.normal()
+                comm_end = "{} on {} {}:{}".format(commentary_title, base_text_title, AddressTalmud.toStr("en", daf), count+1)
+                links.append({
+                    "refs": [base_end, comm_end],
+                    "auto": True,
+                    "type": "commentary",
+                    "generated_by": commentary_title+base_text_title
+                })
+                matched += 1
+            total += 1
+    print "Matched: {}".format(matched)
+    print "Total {}".format(total)
+    post_link(links, server=server)
+
+    return results
+
+
+
 @weak_connection
 def post_text(ref, text, index_count="off", skip_links=False, server=SEFARIA_SERVER):
     textJSON = json.dumps(text)
@@ -401,7 +545,10 @@ def post_text(ref, text, index_count="off", skip_links=False, server=SEFARIA_SER
     else:
         url = server+'/api/texts/'+ref+'?count_after=1'
     if skip_links:
-        url += '&skip_links={}'.format(skip_links)
+        if re.search(r'\?', url):
+            url += '&skip_links={}'.format(skip_links)
+        else:
+            url += '?skip_links={}'.format(skip_links)
     values = {'json': textJSON, 'apikey': API_KEY}
     data = urllib.urlencode(values)
     req = urllib2.Request(url, data)
@@ -414,6 +561,7 @@ def post_text(ref, text, index_count="off", skip_links=False, server=SEFARIA_SER
     except HTTPError, e:
         with open('errors.html', 'w') as errors:
             errors.write(e.read())
+
 
 
 def post_text_weak_connection(ref, text, index_count="off", repeat=10):
@@ -528,7 +676,7 @@ def add_term(en_title, he_title, scheme='toc_categories', server=SEFARIA_SERVER)
     post_term(term_dict, server)
 
 
-def get_index(ref, server='http://www.sefaria.org'):
+def get_index_api(ref, server='http://www.sefaria.org'):
     ref = ref.replace(" ", "_")
     url = server+'/api/v2/raw/index/'+ref
     req = urllib2.Request(url)
