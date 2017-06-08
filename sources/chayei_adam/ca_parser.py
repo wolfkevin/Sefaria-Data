@@ -443,8 +443,6 @@ post_link(na_links)
 Questions:
 - should we link from title all from OC kinda, some are siman, other si', others just in (), some link to 2 simanim, some x ad y (e.g 48), some 2 ()
 - what is @44
-- klal 61 is miswritten
-- what are we doing with the subtitles @11's
 
 Fixed:
 - klalim restart = made it long running count and will have alt struct
@@ -452,6 +450,8 @@ Fixed:
 - some klalim listed together (32, 33 #2) - skipped number and put it together
 - klal 26 (#2) is empty
 - no subtitle or partial (131 or 132 #2)
+- klal 61 is miswritten
+- what are we doing with the subtitles @11's
 
 
 
