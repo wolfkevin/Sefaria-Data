@@ -400,6 +400,7 @@ ca_index = {
     "categories": ["Halakhah"],
     "schema": index_schema.serialize(),
     "alt_structs": { "Topic": ca_alt_schema.serialize() },
+    "default_struct": "Topic"
 }
 
 na_index = {
@@ -408,7 +409,8 @@ na_index = {
     "categories": ["Halakhah", "Commentary"],
     "schema": na_index_schema.serialize(),
     "alt_structs": { "Topic": na_alt_schema.serialize() },
-    "base_text_titles": ["Chayei Adam"]
+    "base_text_titles": ["Chayei Adam"],
+    "default_struct": "Topic"
 }
 
 add_term("Klal", u"כלל", scheme="section_names")
