@@ -213,6 +213,93 @@ def test_ibid_find_9():
     print refs
     assert refs == [Ref('Genesis 1:2')]
 
+def test_ibid_find_10():
+    # The difference between test6^ is the Yerushalmi out of parenthesis
+    ind = library.get_index("Genesis")
+    inst = IndexIbidFinder(ind)
+
+    string = u'''(בבא קמא ע"ז ע"ב)'''
+    refs, _, _ = inst.find_in_segment(string, lang='he', citing_only=False, replace=True)
+    print refs
+    assert refs == [Ref('Bava Kamma 77b')]
+
+def test_ibid_find_11():
+    # The difference between test6^ is the Yerushalmi out of parenthesis
+    ind = library.get_index("Genesis")
+    inst = IndexIbidFinder(ind)
+
+    string = u'''(סנהדרין ע"ז ע"א)'''
+    refs, _, _ = inst.find_in_segment(string, lang='he', citing_only=False, replace=True)
+    print refs
+    assert refs == [Ref('Sanhedrin 77a')]
+
+
+def test_ibid_find_12():
+    # The difference between test6^ is the Yerushalmi out of parenthesis
+    ind = library.get_index("Genesis")
+    inst = IndexIbidFinder(ind)
+
+    string = u'''סנהדרין (ע"ז ע"א)'''
+    refs, _, _ = inst.find_in_segment(string, lang='he', citing_only=False, replace=True)
+    print refs
+    assert refs == [Ref('Sanhedrin 77a')]
+
+
+def test_ibid_find_13():
+    # The difference between test6^ is the Yerushalmi out of parenthesis
+    ind = library.get_index("Genesis")
+    inst = IndexIbidFinder(ind)
+
+    string = u'''(ע"ז ע"ו ע"ב) וכן ראה (שם ע"א) '''
+    refs, _, _ = inst.find_in_segment(string, lang='he', citing_only=False, replace=True)
+    print refs
+    assert refs == [Ref('Avodah Zarah 76b'), Ref('Avodah Zarah 71a')] # todo: fix it so that Ref('Avodah Zarah 76a')
+
+
+def test_ibid_find_13_1():
+    # The difference between test6^ is the Yerushalmi out of parenthesis
+    ind = library.get_index("Genesis")
+    inst = IndexIbidFinder(ind)
+
+    string = u'''(סנהדרין ע"ו ע"ב) וכן ראה (שם ע"ז ע"א) '''
+    refs, _, _ = inst.find_in_segment(string, lang='he', citing_only=False, replace=True)
+    print refs
+    assert refs == [Ref('Sanhedrin 76b'), Ref('Sanhedrin 77a')]
+
+
+def test_ibid_find_14():
+    # The difference between test6^ is the Yerushalmi out of parenthesis
+    ind = library.get_index("Genesis")
+    inst = IndexIbidFinder(ind)
+
+    string = u''' בראשית (מ"ב ד ה) '''
+    refs, _, _ = inst.find_in_segment(string, lang='he', citing_only=False, replace=True)
+    print refs
+    assert refs == [Ref('Genesis 42:4')]
+
+
+def test_ibid_find_15():
+    # The difference between test6^ is the Yerushalmi out of parenthesis
+    ind = library.get_index("Genesis")
+    inst = IndexIbidFinder(ind)
+
+    string = u''' (בראשית כ ה) וכן שם (מ"ב ד ה)'''
+    refs, _, _ = inst.find_in_segment(string, lang='he', citing_only=False, replace=True)
+    print refs
+    assert refs == [Ref('Genesis 20:5'), Ref('Genesis 42:4')]
+
+def test_ibid_find_16(): #todo: what would you really want in this test?
+    # The difference between test6^ is the Yerushalmi out of parenthesis
+    ind = library.get_index("Genesis")
+    inst = IndexIbidFinder(ind)
+
+    string = u''' (מ"ב ג יג) (בראשית כ ה) ושוב במלכים שם (מ"ב ג ד)'''
+    refs, _, _ = inst.find_in_segment(string, lang='he', citing_only=False, replace=True)
+    print refs
+    assert refs == [Ref('II Kings 3:13'), Ref('Genesis 20:5'), Ref('Genesis 42:3')]
+
+
+
 class TestIndexIbidFinder:
 
     @classmethod
