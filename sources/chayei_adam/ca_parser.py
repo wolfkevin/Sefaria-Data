@@ -378,10 +378,21 @@ na_index_schema.validate()
 ca_alt_schema = SchemaNode()
 na_alt_schema = SchemaNode()
 
+for section in sections:
 
+    map_node = ArrayMapNode()
+    map_node.add_title(section.title, "he", True)
+    map_node.add_title("temp", "en", True)
+    map_node.wholeRef = "Chayei Adam.{}-{}".format(section.start, section.end)
+    map_node.includeSections = True
+    map_node.depth = 0
 
-subtitle_schema = SchemaNode()
+    map_node.validate()
+    ca_alt_schema.append(map_node)
 
+    na_map_node = map_node.copy()
+    na_map_node.wholeRef = "Nishmat Adam.{}-{}".format(section.start, section.end)
+    na_alt_schema.append(na_map_node)
 
 
 index = {
