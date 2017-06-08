@@ -395,26 +395,47 @@ for section in sections:
     na_alt_schema.append(na_map_node)
 
 
-index = {
+ca_index = {
     "title": "Chayei Adam",
-    "base_text_mapping": "commentary_increment_base_text_depth",
-    "dependence": "Commentary",
-    "categories": ["Halakhah", "Commentary", "Shulchan Arukh"],  # TODO: change
+    "categories": ["Halakhah"],
     "schema": index_schema.serialize(),
-    "alt_structs": { "Categories": alt_schema.serialize() },
-    "base_text_titles": ["Shulchan Arukh, Orach_Chayim"]  # TODO: change
+    "alt_structs": { "Topic": ca_alt_schema.serialize() },
 }
 
-post_index(index)
+na_index = {
+    "title": "Nishmat Adam",
+    "dependence": "Commentary",
+    "categories": ["Halakhah", "Commentary"],
+    "schema": na_index_schema.serialize(),
+    "alt_structs": { "Topic": na_alt_schema.serialize() },
+    "base_text_titles": ["Chayei Adam"]
+}
 
-text_version = {
-    'versionTitle': "Chayei Adam",
-    'versionSource': "https://drive.google.com/drive/folders/0B4oYznKuBhPOV2twVGV2enpaTGM?usp=sharing",
+add_term("Klal", u"כלל", scheme="section_names")
+
+post_index(ca_index)
+post_index(na_index)
+
+ca_text_version = {
+    'versionTitle': "Chayei Adam, Vilna, 1843",
+    'versionSource': "http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId=NNL_ALEPH001873955",
     'language': 'he',
     'text': klalim_ja.array()
 }
 
-post_text("Chayei Adam", text_version)
+na_text_version = {
+    'versionTitle': "Chayei Adam, Warsaw, 1888",
+    'versionSource': "http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId=NNL_ALEPH001873393",
+    'language': 'he',
+    'text': nishmat_ja.array()
+}
+
+post_text("Chayei Adam", ca_text_version)
+post_link(self_links)
+
+post_text("Nishmat Adam", na_text_version)
+post_link(na_links)
+
 
 
 # TODO: address questions:
