@@ -13,7 +13,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "sefaria.settings"
 
 from data_utilities.util import ja_to_xml, traverse_ja, getGematria, numToHeb
 from sefaria.datatype import jagged_array
-from sources.functions import post_index, post_text
+from sources.functions import post_index, post_text, post_link, add_term
 from sefaria.model import *
 
 reload(sys)
@@ -35,6 +35,9 @@ local_foot_count = 0
 
 CHELEK_BET_ADDITION = 69
 
+na_links = []
+self_links = []
+
 
 tags = {}
 tags['00'] = 'klal_num'
@@ -49,6 +52,7 @@ mapping = dict.fromkeys(map(ord, u":.\n)"))  #chars to eliminate when parsing ch
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
 
+
 def getRidOfSofit(txt):
     if txt.find("ך")>=0:
         txt = txt.replace("ך", "כ")
@@ -59,6 +63,31 @@ def getRidOfSofit(txt):
     if txt.find("ץ")>=0:
         txt = txt.replace("ץ", "צ")
     return txt
+
+
+def selfLink(klal_num, index, klal_link_num, par_index):
+    return {
+        'refs': [
+            "Chayei Adam.{}.{}".format(klal_num, index),
+            "Chayei Adam.{}.{}".format(klal_link_num, getGematria(getRidOfSofit(par_index)))
+        ],
+        'type': 'reference',
+        'auto': True,
+        'generated_by': 'Chayei Adam self linker'
+    }
+
+
+def Ca2NaLink(ca_klal_num, ca_seif_number, na_seif_number):
+    return {
+        'refs': [
+            "Chayei Adam.{}.{}".format(ca_klal_num, ca_seif_number),
+            "Nishmat Adam.{}.{}".format(ca_klal_num, na_seif_number)
+        ],
+        'type': 'reference',
+        'auto': True,
+        'generated_by': 'Chayei Adam to Nishmat Adam linker'
+    }
+
 
 def checkForFootnotes(line):
 
@@ -72,18 +101,11 @@ def checkForFootnotes(line):
         if end_footnote < footnote_index:  # when footnote appears at end of comment cant find ' '
             end_footnote = len(line)  # so use len of line as end_footnote index
 
-        letter = unicode(line[footnote_index+1:end_footnote])
-        # footnote_num = getGematria(letter)
+        letter = unicode(line[footnote_index+1:end_footnote]).translate(mapping)
 
-        # if footnote_num is local_foot_count + 1 or footnote_num is 1:
-        #     local_foot_count = footnote_num
-        #
-        # else:
-        #     print "FOOTNOTE COUNT OFF", line
-
-        # add footnote to array based off where it is found
-        footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter.translate(mapping))
-        line = line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" data-order="{}"></i>'.format("Nishmat Adam", ca_footnote_count))
+        footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
+        na_links.append(Ca2NaLink(klal_count, comment_count, getGematria(letter)))
+        line = line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" letter="{}" data-order="{}"></i>'.format("Nishmat Adam", letter, ca_footnote_count))
 
         ca_footnote_count += 1
 
@@ -143,6 +165,77 @@ def checkAndEditTag(tag, line, file):
 
     return tag, line
 
+
+def getSelfLinks(index, comment, klal_num, addition):
+    comment_words = comment.text.split()
+
+    for klal_index, word in enumerate(comment_words):
+
+        # self links formatted as:  ___ 'כלל ___ סי
+
+        if u'כלל' in word \
+                and len(comment_words[klal_index:]) > 3 \
+                and any(word in comment_words[klal_index+2] for word in [u'דין', u"סי'", u'סימן']) \
+                and getGematria(comment_words[klal_index+1]) < 224 \
+                and getGematria(comment_words[klal_index+3]) < 58:
+            # and not any(word in comment_words[klal_index-1] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א']) \
+
+            # if reference to other of his works before reference
+            if any(word in comment_words[klal_index-1] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א']):
+                #     for t_word in comment_words[klal_index-3:klal_index+4]:
+                #         print t_word
+                #     print "\n"
+                continue
+
+            # if reference to other work after reference
+            if len(comment_words[klal_index:]) > 4 \
+                    and any(word in comment_words[klal_index+4] for word in [u'נ"א']):
+                #     for t_word in comment_words[klal_index-2:klal_index+5]:
+                #         print t_word
+                #     print "\n"
+                continue
+
+            klal_link_num = getGematria(comment_words[klal_index+1])
+
+            # print comment_words[klal_index-1]
+            if comment_words[klal_index+1] == u'הקודם':
+                klal_link_num = klal_num - 1
+
+            elif any(word in comment_words[klal_index-1] for word in [u"ברכות", u"תפלה"]):
+                if klal_link_num > CHELEK_BET_ADDITION:
+                    print "I thought you were a tefillah or brachot", comment_words[klal_index+1], "in", klal_num, "seif", index+1
+
+            elif any(word in comment_words[klal_index-1] for word in [u"שבת", u"לולב", u"תענית", u"פסח"]):
+                klal_link_num += CHELEK_BET_ADDITION
+
+            else:
+                if addition is not 0 and klal_num is not 207:
+                    klal_link_num += CHELEK_BET_ADDITION
+
+                if u'קמן' in comment_words[klal_index-1] or u'קמן' in comment_words[klal_index-2]:
+                    if klal_num > klal_link_num:
+                       print "you should be more", comment_words[klal_index+1], "in", klal_num, "seif", index+1
+
+                elif u'עיל' in comment_words[klal_index-1] or u'עיל' in comment_words[klal_index-2]:
+                    if klal_link_num > klal_num:
+                       print "you should be less happenend", comment_words[klal_index+1], "in", klal_num, "seif", index+1
+
+            offset = 3
+
+            # sometimes links to multiple simanim, so get all of them
+            while len(comment_words[klal_index:]) > offset + 2:
+                if getGematria(getRidOfSofit(comment_words[klal_index+offset])) + 1 \
+                        == getGematria(getRidOfSofit(comment_words[klal_index+offset+1])):
+                    self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+offset+1]))
+                    offset += 1
+
+                else:
+                    if u'וסי' in comment_words[klal_index+4]:
+                        self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+5]))
+                    break
+
+            self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+3]))
+
 opener = urllib2.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 page = opener.open("https://he.wikisource.org/w/index.php?title=%D7%97%D7%99%D7%99_%D7%90%D7%93%D7%9D&printable=yes")
@@ -192,6 +285,7 @@ with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_wr
 klalim_ja = jagged_array.JaggedArray([[]])   # JA of [Klal[comment, comment]]]
 nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 
+
 with open("nishmat_adam.txt") as file_read:
 
     na_footnote_count = -1
@@ -208,24 +302,15 @@ with open("nishmat_adam.txt") as file_read:
             if letter != footnote.letter:
                 print "letters off "
 
-            # print "klal:", footnote.klal_num, "#:", footnote.comment_num, "letter:", footnote.letter
-            # print comment
-            # print footnote.comment
-
         elif line[1:3] == '22':
 
             na_footnote_count += 1
 
             letter = unicode(line[line.index('(')+1:line.index(')')])
             footnote = footnotes[na_footnote_count]
-            # print "\nfound:", letter, "from ca:", footnote.letter
 
         else:
             print "ERROR what is this", line
-
-ja_to_xml(nishmat_ja.array(), ["klal", "footnote"])
-
-self_links = []
 
 with open("ca_parsed.xml") as file_read:
 
@@ -258,66 +343,9 @@ with open("ca_parsed.xml") as file_read:
         klal_title_added = False
 
         for index, comment in enumerate(klal.find_all("comment")):
-            if comment.text.find(u'כלל') != -1:
-                comment_words = comment.text.split()
-                count_match = 0
-                for klal_index, word in enumerate(comment_words):
-                    if u'כלל' in word \
-                            and len(comment_words[klal_index:]) > 3 \
-                            and any(word in comment_words[klal_index+2] for word in [u'דין', u"סי'", u'סימן']) \
-                            and not any(word in comment_words[klal_index-1] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א']) \
-                            and getGematria(comment_words[klal_index+1]) < 224 \
-                            and getGematria(comment_words[klal_index+3]) < 58:
 
-                        if len(comment_words[klal_index:]) > 4:
-                            if any(word in comment_words[klal_index+4] for word in [u'נ"א']):
-                                continue
-
-                            offset = 3
-
-                            while getGematria(getRidOfSofit(comment_words[klal_index+offset])) + 1 == getGematria(getRidOfSofit(comment_words[klal_index+offset+1])):
-                                #TODO: add to links
-                                if klal_num > addition:
-                                    self_links.append([getGematria(comment_words[klal_index+1]) + CHELEK_BET_ADDITION, getGematria(comment_words[klal_index+3])])
-
-                                print "double:", comment_words[klal_index+offset], comment_words[klal_index+offset+1]
-
-                                offset += 1
-
-                                if offset + 2 > len(comment_words[klal_index:]):
-                                    break
-
-                        klal_link_num = getGematria(comment_words[klal_index+1])
-
-                        if comment_words[klal_index+1] == u'הקודם':
-                            klal_link_num = klal_num - 1
-
-                        else:
-                            if klal_link_num > 154:
-                                print comment_words[klal_index+1]
-
-                            if klal_link_num > CHELEK_BET_ADDITION:
-                                klal_link_num += CHELEK_BET_ADDITION
-
-                        self_links.append([klal_link_num, getGematria(comment_words[klal_index+3])])
-
-                        # print comment_words[klal_index-1], comment_words[klal_index+1], comment_words[klal_index+3]
-                                # not any(word in comment_words[klal_index+4] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א'])
-                                                            #TODO: kodem
-                                # print comment_words[klal_index+1], comment_words[klal_index+3]
-
-
-                # if word before is ח"א
-                # if len(next_words) > 3 and any(word in next_words[2] for word in [u'דין', u"סי'", u'סימן']):
-                #     if getGematria(next_words[1]) < 224 and getGematria(next_words[3]) < 58:
-                #         if next_words[1] == u'הקודם':
-                #             print "kodem"
-                #         # print next_words[1], next_words[3], getGematria(next_words[3])
-                #         if len(next_words) > 4: print next_words[4]
-                #        # print comment.text
-                #         count_postives +=1
-                #
-                #     #re.compile(^klal _ (siman|din|si))
+            if comment.text.find(u'כלל') != -1:  # check for self links in the text
+                getSelfLinks(index, comment, klal_num, addition)
 
             if klal_title_added:
                 comments.append(comment.text)
@@ -334,21 +362,8 @@ with open("ca_parsed.xml") as file_read:
             klal_num += addition
 
 
-ja_to_xml(nishmat_ja.array(), ["klal", "comment"])
-
-links = []
-
-# for comment in traverse_ja(klalim_ja.array()):
-#     links.append({
-#         'refs': [
-#             # TODO: edit
-#             # 'Shulchan_Arukh, Orach_Chayim.{}.{}'.format(comment['indices'][0] - 1, comment['indices'][1] - 1),
-#             'Chayei Adam.{}.{}'.format(*[i - 1 for i in comment['indices']])
-#         ],
-#         'type': 'commentary',
-#         'auto': True,
-#         'generated_by': 'Chayei Adam linker'
-#     })
+ja_to_xml(nishmat_ja.array(), ["klal", "siman"], "nishmat_output.xml")
+ja_to_xml(klalim_ja.array(), ["klal", "siman"], "chayei_output.xml")
 
 index_schema = JaggedArrayNode()
 index_schema.add_primary_titles("Chayei Adam", u"חיי אדם")
@@ -357,26 +372,8 @@ index_schema.validate()
 
 alt_schema = SchemaNode()
 
-# for section in sections:
-#     map_node = SchemaNode()
-#     map_node.add_title(section.title, "he", True)
-#     map_node.add_title("temp", "en", True)
-#     alt_schema.append(map_node)
-#
-#     start = section.start
-#
-#     for subtitle in subtitles[section.start:section.end]
-#         map_node = ArrayMapNode()
-#         map_node.add_title(subtitle.title, "he", True)
-#         map_node.add_title(str(subtitle.klal_num), "en", True)
-#         map_node.wholeRef = "Chayei Adam.{}".format(subtitle.klal_num)
-#         map_node.includeSections = True
-#         map_node.depth = 0
-#         map_node.validate()
-#
-#     map_node.wholeRef = "Chayei Adam.{}-{}".format(section.start, section.end)
-#     map_node.includeSections = True
-#     map_node.validate()
+ca_alt_schema = SchemaNode()
+na_alt_schema = SchemaNode()
 
 
 
