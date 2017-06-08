@@ -367,10 +367,13 @@ ja_to_xml(klalim_ja.array(), ["klal", "siman"], "chayei_output.xml")
 
 index_schema = JaggedArrayNode()
 index_schema.add_primary_titles("Chayei Adam", u"חיי אדם")
-index_schema.add_structure(["Klal", "Comment"])
+index_schema.add_structure(["Klal", "Siman"])
 index_schema.validate()
 
-alt_schema = SchemaNode()
+na_index_schema = JaggedArrayNode()
+na_index_schema.add_primary_titles("Nishmat Adam", u"נשמת אדם")
+na_index_schema.add_structure(["Klal", "Siman"])
+na_index_schema.validate()
 
 ca_alt_schema = SchemaNode()
 na_alt_schema = SchemaNode()
