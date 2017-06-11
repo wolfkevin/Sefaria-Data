@@ -350,7 +350,7 @@ with open("ca_parsed.xml") as file_read:
             if klal_title_added:
                 comments.append(comment.text)
             else:
-                comments.append(u"<b>{}</b><br>{}".format(klal.find("klal_title").text, comment.text))
+                comments.append(u"<big><strong>{}</strong></big><br>{}".format(klal.find("klal_title").text, comment.text))
                 klal_title_added = True
             # if comment.i:
             #     footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
