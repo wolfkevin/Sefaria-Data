@@ -326,7 +326,7 @@ with open("ca_parsed.xml") as file_read:
         # else find the heading of the last section klal before this next section and set that as klal end
 
         end = 154 if index + 1 >= len(found_sections) \
-            else getKlalNum(found_sections[index].parent)
+            else getKlalNum(found_sections[index+1].parent)
 
         end += CHELEK_BET_ADDITION
         sections.append(Section(section.text, start, end))
