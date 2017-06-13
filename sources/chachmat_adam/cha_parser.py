@@ -1,3 +1,13 @@
+index_schema = JaggedArrayNode()
+index_schema.add_primary_titles("Chochmat Adam", u"חכמת אדם")
+index_schema.add_structure(["Klal", "Siman"])
+index_schema.validate()
+
+ba_index_schema = JaggedArrayNode()
+ba_index_schema.add_primary_titles("Binat Adam", u"בינת אדם")
+ba_index_schema.add_structure(["Klal", "Siman"])
+ba_index_schema.validate()
+
 ca_alt_schema = SchemaNode()
 ba_alt_schema = SchemaNode()
 
