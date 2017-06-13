@@ -15,3 +15,17 @@ ba_index = {
     "base_text_titles": ["Chochmat Adam"],
     "default_struct": "Topic"
 }
+
+ca_text_version = {
+    'versionTitle': "Hokhmat Adam, Vilna, 1844",
+    'versionSource': "http://dlib.rsl.ru/viewer/01006560322#?page=5",
+    'language': 'he',
+    'text': chochmat_ja.array()
+}
+
+na_text_version = {
+    'versionTitle': "Hokhmat Adam, Vilna, 1844",
+    'versionSource': "http://dlib.rsl.ru/viewer/01006560322#?page=5",
+    'language': 'he',
+    'text': binat_ja.array()
+}
