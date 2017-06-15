@@ -232,25 +232,33 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
                 klal_link_num += CHELEK_BET_ADDITION
 
             else:
-                if addition is not 0 and klal_num is not 207:
+                if addition is not 0 and cur_klal_num is not 207:
                     klal_link_num += CHELEK_BET_ADDITION
 
                 if u'קמן' in comment_words[klal_index-1] or u'קמן' in comment_words[klal_index-2]:
-                    if klal_num > klal_link_num:
-                       print "you should be more", comment_words[klal_index+1], "in", klal_num, "seif", index+1
+                    if cur_klal_num > klal_link_num or \
+                            (klal_link_num == cur_klal_num and cur_siman >= getGematria(comment_words[klal_index+3])):
+                        print "you should be more", comment_words[klal_index+1], "in", klal_num, "siman", siman
+                        print comment_words[1], comment_words[2], comment_words[3]
+                        continue
 
                 elif u'עיל' in comment_words[klal_index-1] or u'עיל' in comment_words[klal_index-2]:
-                    if klal_link_num > klal_num:
-                       print "you should be less happenend", comment_words[klal_index+1], "in", klal_num, "seif", index+1
+                    if klal_link_num > cur_klal_num or \
+                            (klal_link_num == cur_klal_num and getGematria(comment_words[klal_index+3])) >= cur_siman:
+                        print "you should be less happenend", comment_words[klal_index+1], "in", cur_klal_num, "siman", cur_siman
+                        print comment_words[1], comment_words[2], comment_words[3]
+                        continue
 
             offset = 3
 
-            # sometimes links to multiple simanim, so get all of them
-            while len(comment_words[klal_index:]) > offset + 2:
-                if getGematria(getRidOfSofit(comment_words[klal_index+offset])) + 1 \
-                        == getGematria(getRidOfSofit(comment_words[klal_index+offset+1])):
-                    self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+offset+1]))
-                    offset += 1
+            self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+3]))
+            multipleSimanim(comment_words[klal_index:], 3, klal_link_num)
+
+
+
+        elif (u'קמן' in word or u'עיל' in word) \
+                and len(comment_words[klal_index:]) > 2 \
+                and (not (u'כלל' in comment_words[klal_index+1])) \
                 and any(sim in comment_words[klal_index+1] for sim in [u'דין', u"סי'", u'סימן']) \
 
                 else:
