@@ -83,7 +83,7 @@ def Ca2NaLink(ca_klal_num, ca_seif_number, na_seif_number):
             "Chayei Adam.{}.{}".format(ca_klal_num, ca_seif_number),
             "Nishmat Adam.{}.{}".format(ca_klal_num, na_seif_number)
         ],
-        'type': 'reference',
+        'type': 'commentary',
         'auto': True,
         'generated_by': 'Chayei Adam to Nishmat Adam linker'
     }
