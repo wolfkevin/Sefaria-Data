@@ -177,7 +177,21 @@ def checkAndEditTag(tag, line, file):
     return tag, line
 
 
-def getSelfLinks(index, comment, klal_num, addition):
+# sometimes links to multiple simanim, so get all of them
+def multipleSimanim(words, offset, klal_link_num):
+    while len(words) > offset + 2:
+        if getGematria(getRidOfSofit(words[offset])) + 1 \
+                == getGematria(getRidOfSofit(words[offset+1])):
+            self_links.append(selfLink(klal_num, index+1, klal_link_num, words[offset+1]))
+            offset += 1
+
+        else:
+            if u'וסי' in words[offset+1]:
+                self_links.append(selfLink(klal_num, index+1, klal_link_num, words[offset+2]))
+            break
+
+
+def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
     comment_words = comment.text.split()
 
     for klal_index, word in enumerate(comment_words):
