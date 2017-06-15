@@ -417,7 +417,7 @@ ca_index = {
 na_index = {
     "title": "Nishmat Adam",
     "dependence": "Commentary",
-    "categories": ["Halakhah", "Commentary"],
+    "categories": ["Halakhah", "Commentary", "Chayei Adam"],
     "schema": na_index_schema.serialize(),
     "alt_structs": { "Topic": na_alt_schema.serialize() },
     "base_text_titles": ["Chayei Adam"],
