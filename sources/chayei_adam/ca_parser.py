@@ -203,7 +203,6 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
                 and any(sim in comment_words[klal_index+2] for sim in [u'דין', u"סי'", u'סימן']) \
                 and getGematria(comment_words[klal_index+1]) < 224 \
                 and getGematria(comment_words[klal_index+3]) < 58:
-            # and not any(word in comment_words[klal_index-1] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א']) \
 
             # if reference to other of his works before reference
             if any(word in comment_words[klal_index-1] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א']):
