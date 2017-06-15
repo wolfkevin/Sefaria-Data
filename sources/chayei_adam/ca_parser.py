@@ -85,7 +85,12 @@ def Ca2NaLink(ca_klal_num, ca_seif_number, na_seif_number):
         ],
         'type': 'commentary',
         'auto': True,
-        'generated_by': 'Chayei Adam to Nishmat Adam linker'
+        'generated_by': 'Chayei Adam to Nishmat Adam linker',
+        'inline_reference': {
+            'data-commentator': "Nishmat Adam",
+            "data-order": na_seif_number
+        }
+
     }
 
 
@@ -104,10 +109,16 @@ def checkForFootnotes(line):
         letter = unicode(line[footnote_index+1:end_footnote]).translate(mapping)
 
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
-        na_links.append(Ca2NaLink(klal_count, comment_count, getGematria(letter)))
-        line = line.replace(line[footnote_index:end_footnote], u'<i data-commentator="{}" letter="{}" data-order="{}"></i>'.format("Nishmat Adam", letter, ca_footnote_count))
+        letter_num = getGematria(letter)
+        na_links.append(Ca2NaLink(klal_count, comment_count, letter_num))
 
         ca_footnote_count += 1
+
+        line = line.replace(line[footnote_index:end_footnote],
+                        u'<i data-commentator="{}" data-order="{}"></i>'
+                            .format("Nishmat Adam", letter_num))
+    return line
+
 
 
 def checkAndEditTag(tag, line, file):
@@ -117,7 +128,7 @@ def checkAndEditTag(tag, line, file):
     if tag is 'list_comment':
         line = '<b>' + line.replace("@55", " </b> ", 1)
 
-        checkForFootnotes(line)
+        line = checkForFootnotes(line)
 
     elif tag is 'klal_num':
         file.write("</klal><klal>")  # adding this makes it much easier to parse klalim
@@ -160,7 +171,7 @@ def checkAndEditTag(tag, line, file):
 
     elif tag is 'comment':
 
-        checkForFootnotes(line)
+        line = checkForFootnotes(line)
         # print footnotes[ca_footnote_count]
 
     return tag, line
