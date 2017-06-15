@@ -221,9 +221,8 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
 
             klal_link_num = getGematria(comment_words[klal_index+1])
 
-            # print comment_words[klal_index-1]
-            if comment_words[klal_index+1] == u'הקודם':
-                klal_link_num = klal_num - 1
+            if u'קודם' in comment_words[klal_index+1]:
+                klal_link_num = cur_klal_num - 1
 
             elif any(word in comment_words[klal_index-1] for word in [u"ברכות", u"תפלה"]):
                 if klal_link_num > CHELEK_BET_ADDITION:
