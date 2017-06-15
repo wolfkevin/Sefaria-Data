@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import os, sys
 
-import urllib2
+import urllib2, bleach
 from bs4 import BeautifulSoup
 
 from collections import namedtuple
