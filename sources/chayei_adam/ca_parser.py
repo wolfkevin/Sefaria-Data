@@ -186,7 +186,7 @@ def getSelfLinks(index, comment, klal_num, addition):
 
         if u'כלל' in word \
                 and len(comment_words[klal_index:]) > 3 \
-                and any(word in comment_words[klal_index+2] for word in [u'דין', u"סי'", u'סימן']) \
+                and any(sim in comment_words[klal_index+2] for sim in [u'דין', u"סי'", u'סימן']) \
                 and getGematria(comment_words[klal_index+1]) < 224 \
                 and getGematria(comment_words[klal_index+3]) < 58:
             # and not any(word in comment_words[klal_index-1] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א']) \
@@ -239,6 +239,7 @@ def getSelfLinks(index, comment, klal_num, addition):
                         == getGematria(getRidOfSofit(comment_words[klal_index+offset+1])):
                     self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+offset+1]))
                     offset += 1
+                and any(sim in comment_words[klal_index+1] for sim in [u'דין', u"סי'", u'סימן']) \
 
                 else:
                     if u'וסי' in comment_words[klal_index+4]:
