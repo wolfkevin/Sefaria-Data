@@ -249,7 +249,6 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
                         print comment_words[1], comment_words[2], comment_words[3]
                         continue
 
-            offset = 3
 
             self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+3]))
             multipleSimanim(comment_words[klal_index:], 3, klal_link_num)
@@ -260,13 +259,39 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
                 and len(comment_words[klal_index:]) > 2 \
                 and (not (u'כלל' in comment_words[klal_index+1])) \
                 and any(sim in comment_words[klal_index+1] for sim in [u'דין', u"סי'", u'סימן']) \
+                and getGematria(comment_words[klal_index+2]) < 58:
 
-                else:
-                    if u'וסי' in comment_words[klal_index+4]:
-                        self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+5]))
-                    break
+            siman_link_num = getGematria(getRidOfSofit(comment_words[klal_index+2]))
 
-            self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+3]))
+            if u'קמן' in word:
+                if cur_siman >= siman_link_num:
+                   print "you should be more", comment_words[klal_index+2], "in", cur_klal_num+CHELEK_BET_ADDITION, "siman", cur_siman
+                   print comment_words[1], comment_words[2], comment_words[3]
+
+                   continue
+
+            elif u'עיל' in word:
+                if siman_link_num >= cur_siman:
+                    print "you should be less happenend", comment_words[klal_index+2], "in", cur_klal_num+CHELEK_BET_ADDITION, "siman", cur_siman
+                    print comment_words[1], comment_words[2], comment_words[3]
+                    print u'כלל' in comment_words[klal_index+1]
+                    continue
+
+            self_links.append(selfLink(cur_klal_num, cur_siman, cur_klal_num, comment_words[klal_index+2]))
+            multipleSimanim(comment_words[klal_index:], 2, cur_klal_num)
+
+        elif (u'קמן' in word or u'עיל' in word) \
+            and len(comment_words[klal_index:]) > 2 \
+            and (not (u'כלל' in comment_words[klal_index+1])) \
+            and any(sim in comment_words[klal_index+1] for sim in [u'דין', u"סי'", u'סימן']) \
+            and u'קודם' in comment_words[klal_index+2]:
+
+            self_links.append(selfLink(cur_klal_num, cur_siman, cur_klal_num, numToHeb(cur_siman - 1)))
+
+            print comment_words[1], comment_words[2], comment_words[3]
+
+
+
 
 opener = urllib2.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
@@ -374,13 +399,16 @@ with open("ca_parsed.xml") as file_read:
 
         klal_title_added = False
 
-        for index, comment in enumerate(klal.find_all("comment")):
+        for siman, comment in enumerate(klal.find_all("comment")):
 
             if comment.text.find(u'כלל') != -1:  # check for self links in the text
-                getSelfLinks(index, comment, klal_num, addition)
+                getSelfLinks(siman + 1, comment, klal_num, addition)
 
             if klal_title_added:
-                comments.append(comment.text)
+                print comment
+                print comment.text
+                print bleach.clean(comment, tags=['i'], attributes=['data-commentator', 'data-order'], strip=True)
+                comments.append(bleach.clean(comment, tags=['i'], attributes=['data-commentator', 'data-order'], strip=True))
             else:
                 comments.append(u"<big><strong>{}</strong></big><br>{}".format(klal.find("klal_title").text, comment.text))
                 klal_title_added = True
