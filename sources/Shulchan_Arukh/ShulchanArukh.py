@@ -860,33 +860,64 @@ class Seif(OrderedElement):
             else:
                 self.add_special(u' '.join(words), element_name)
 
-        assert self.Tag.string is not None  # This can happen if xml elements are already present of if Tag is self-closing.
+        assert self.Tag.string is not None  # This can happen if xml elements are already present or if Tag is self-closing.
         text_array = self.Tag.string.extract().split()
 
         is_special = False
         element_words = []
         for word in text_array:
+
             if re.search(start_special, word):
                 if is_special:  # Two consecutive special patterns have been found
                     raise AssertionError('Seif {}: Two consecutive formatting patterns ({}) found'.format(self.num, start_special))
+
                 else:
-                    word = re.sub(start_special, u'', word)
+                    split_by_pattern = re.split(start_special, word)
+                    assert len(split_by_pattern) == 2
+
+                    word_is_special = True
+                    # add whatever appeared before the pattern
+                    if split_by_pattern[0] != u'':
+                        element_words.append(split_by_pattern[0])
+                        word_is_special = False
+
                     if len(element_words) > 0:
-                        element_words.append(u'')  # adds a space to the end of the text element
+                        if u'' in split_by_pattern:  # True when pattern is not in the middle of a word
+                            element_words.append(u'')  # adds a space to the end of the text element
                         self.add_special(u' '.join(element_words), name=u'reg-text')
-                    element_words = []
+
+                    # add whatever appeared after the pattern
+                    if split_by_pattern[1] != u'':
+                        element_words = [split_by_pattern[1]]
+                    else:
+                        element_words = []
                     is_special = True
 
             elif re.search(end_special, word):
+                split_by_pattern = re.split(end_special, word)
+                assert len(split_by_pattern) == 2
+                word_is_special = False
                 if is_special:
+                    # add whatever appeared before the markup
+                    if split_by_pattern[0] != u'':
+                        word_is_special = True
+                        element_words.append(split_by_pattern[0])
+
                     assert len(element_words) > 0  # Do not allow formatted text with no text
-                    element_words.append(u'')
+                    if u'' in split_by_pattern:  # True when pattern is not in the middle of a word
+                        element_words.append(u'')
                     self.add_special(u' '.join(element_words), name=name)
-                    element_words = []
                     is_special = False
 
-                word = re.sub(end_special, u'', word)
-            element_words.append(word)
+                    if split_by_pattern[1] != u'':  # add whatever appeared after pattern
+                        element_words = [split_by_pattern[1]]
+                    else:
+                        element_words = []
+
+                else:
+                    element_words.append(re.sub(end_special, u'', word))
+            else:
+                element_words.append(word)
         else:
             if is_special:
                 add_formatted_text(element_words, element_name=name)
@@ -959,8 +990,12 @@ class Seif(OrderedElement):
         if re.search(u'@', seif_text):
             # raise AssertionError("found @ marker in xml at {}:{}".format(self.Tag.parent['num'], self.num))
             print "found @ marker in xml at {}:{}".format(self.Tag.parent['num'], self.num)
-        seif_text = re.sub(u' <i data-commentator', u'<i data-commentator', seif_text)  # Remove space between text and itag
+        seif_text = re.sub(u'(<i data-commentator.*?></i>) +', ur'\1', seif_text)  # Remove space between text and itag
         seif_text = seif_text.replace(u'\n', u' ')
+        seif_text = seif_text.replace(u'*', u'')
+        seif_text = re.sub(ur'([^ ](?=\())|(\)(?=[^ ]))', ur'\g<0> ', seif_text)  # Parenthesis have spaces before and after
+        seif_text = re.sub(ur'\( | +[:)]', lambda x: x.group(0).replace(u' ', u''), seif_text)  # No spaces padding parenthesis or colon
+        seif_text = re.sub(u' +(</[^\u05d0-\u05ea ]*>:?)$', ur'\g<1>', seif_text)  # clean up spaces before the final html closing tag
         seif_text = re.sub(u' {2,}', u' ', seif_text)
         seif_text = re.sub(u'~br~', u'<br>', seif_text)
         return unescape(seif_text)
@@ -976,7 +1011,7 @@ class Seif(OrderedElement):
             commentary_ref = u'{} on {} {}:{}'.format(link_record['commentator_title'], link_record['base_title'],
                                                       link_record['commentator_siman'], link_record['commentator_seif'])
             itag = {
-                'data-commentator': u'{} on {}'.format(link_record['commentator_title'], link_record['base_title']),
+                'data-commentator': u'{}'.format(link_record['commentator_title']),
                 'data-order': link_record['commentator_seif']
             }
             if self.Tag.has_attr('label'):
@@ -1061,6 +1096,7 @@ class TextElement(Element):
             if isinstance(sub_element, Tag) and sub_element.name == u'xref':
                 text_list.append(Xref(sub_element).render())
             else:
+                # text_list.append(re.sub(u'(^ +)|( +$)', u'', unicode(sub_element)))
                 text_list.append(unicode(sub_element))
 
         if self.Tag.name == u'ramah':

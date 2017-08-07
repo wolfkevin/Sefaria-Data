@@ -2,7 +2,6 @@
 from data_utilities import dibur_hamatchil_matcher as dhm
 from sefaria.model import *
 from sefaria.utils import hebrew
-from research.dibur_hamatchil.dh_source_scripts import mishnah_berurah
 import regex as re
 import pickle
 
@@ -65,18 +64,19 @@ class TestDHMatcher:
             mbRef = Ref('Mishnah Berurah {}'.format(sim))
             octc = TextChunk(ocRef,"he")
             mbtc = TextChunk(mbRef,"he")
-            matched = dhm.match_ref(octc,mbtc,base_tokenizer=mb_base_tokenizer,dh_extract_method=mb_dh_extraction_method,with_abbrev_matches=True)
-
-            abbrevs = [am for seg in matched['abbrevs'] for am in seg]
-            print 'ABBREVS'
-            for am in abbrevs:
-                print u'{}'.format(am)
-
+            matched = dhm.match_ref(octc, mbtc, base_tokenizer=mb_base_tokenizer, dh_extract_method=mb_dh_extraction_method, with_abbrev_matches=True)
+            matched['abbrevs'] = [[unicode(am) for am in seg] for seg in matched['abbrevs']]
             all_matched.append(matched)
         #pickle.dump(all_matched, open('mb_matched.pkl','wb'))
-        comparison = pickle.load(open('mb_matched.pkl','rb'))
+        comparison = pickle.load(open('mb_matched.pkl', 'rb'))
         #comparison = [comparison[1]]
         assert comparison == all_matched
+
+    def test_empty_comment(self):
+        daftext = u'אע״ג שאמרו ככה בלה בלה בלה'.split()
+        rashi = [u'', u'אף על גב שאמרו']
+        matched = dhm.match_text(daftext, rashi, verbose=True)
+
 
 
 class TestDHMatcherFunctions:
@@ -108,9 +108,18 @@ class TestDHMatcherFunctions:
         assert ismatch == False
 
 
-    def test_GetAllMatches(self):
+    def test_GetAllMatches_nonempty(self):
         daftext = sp(u'אע״ג שאמרו ככה בלה בלה בלה')
         rashi = [u'אף על גב שאמרו']
+        daf = dhm.GemaraDaf(daftext,rashi)
+        textMatchList = dhm.GetAllMatches(daf,daf.allRashi[0],0,len(daf.allWords)-1,0.27,0.2)
+        for tm in textMatchList:
+            print u'{}'.format(tm)
+
+    def test_GetAllMatches_empty(self):
+        print 'yo'
+        daftext = u'אע״ג שאמרו ככה בלה בלה בלה'.split()
+        rashi = [u'', u'אף על גב שאמרו']
         daf = dhm.GemaraDaf(daftext,rashi)
         textMatchList = dhm.GetAllMatches(daf,daf.allRashi[0],0,len(daf.allWords)-1,0.27,0.2)
         for tm in textMatchList:
@@ -126,7 +135,7 @@ class TestDHMatcherFunctions:
     # test full matches and 1 word missing matches at end of daf
 
     def test_GetAllApproximateMatchesWithWordSkip_one_rashi_skip(self):
-        textMatchList = dhm.GetAllApproximateMatchesWithWordSkip(daf,daf.allRashi[5],0,len(daf.allWords) - 1,0,0)
+        textMatchList = dhm.GetAllMatches(daf,daf.allRashi[5],0,len(daf.allWords) - 1,0,0)
         assert daf.allRashi[5].startingText == textMatchList[0].textToMatch
         assert len(textMatchList) == 1
         assert textMatchList[0].textMatched == u'משעה שהכהנים נכנסים לאכול'
@@ -134,7 +143,7 @@ class TestDHMatcherFunctions:
         assert textMatchList[0].endWord == 3
 
     def test_GetAllApproximateMatchesWithWordSkip_one_skip(self):
-        textMatchList = dhm.GetAllApproximateMatchesWithWordSkip(daf,daf.allRashi[1],0,len(daf.allWords) - 1,0,0)
+        textMatchList = dhm.GetAllMatches(daf,daf.allRashi[1],0,len(daf.allWords) - 1,0,0)
         assert daf.allRashi[1].startingText == textMatchList[0].textToMatch
         assert len(textMatchList) == 2
         assert textMatchList[0].textMatched == u'עד סוף האשמורה הראשונה דברי רבי אליעזר.'
@@ -146,7 +155,7 @@ class TestDHMatcherFunctions:
 
     def test_GetAllApproximateMatchesWithWordSkip_two_skip(self):
         #skip 2 word
-        textMatchList = dhm.GetAllApproximateMatchesWithWordSkip(daf,daf.allRashi[2],0,len(daf.allWords) - 1,0,0)
+        textMatchList = dhm.GetAllMatches(daf,daf.allRashi[2],0,len(daf.allWords) - 1,0,0)
         assert daf.allRashi[2].startingText == textMatchList[0].textToMatch
         assert len(textMatchList) == 2
         assert textMatchList[0].textMatched == u'עד סוף האשמורה הראשונה דברי רבי אליעזר.'
@@ -157,7 +166,7 @@ class TestDHMatcherFunctions:
         assert textMatchList[1].endWord == 11
 
     def test_GetAllApproximateMatchesWithWordSkip_two_skip_at_end(self):
-        textMatchList = dhm.GetAllApproximateMatchesWithWordSkip(daf, daf.allRashi[3], 0, len(daf.allWords) - 1, 0, 0)
+        textMatchList = dhm.GetAllMatches(daf, daf.allRashi[3], 0, len(daf.allWords) - 1, 0, 0)
         assert len(textMatchList) == 2
         assert textMatchList[0].textMatched == u'עד סוף האשמורה הראשונה דברי'
         assert textMatchList[0].startWord == 5
@@ -168,21 +177,21 @@ class TestDHMatcherFunctions:
 
 
     def test_GetAllApproximateMatchesWithWordSkip_rashi_skip_end_of_daf(self):
-        textMatchList = dhm.GetAllApproximateMatchesWithWordSkip(daf, daf.allRashi[6], 0, len(daf.allWords) - 1, 0, 0)
+        textMatchList = dhm.GetAllMatches(daf, daf.allRashi[6], 0, len(daf.allWords) - 1, 0, 0)
         assert len(textMatchList) == 1
         assert textMatchList[0].textMatched == u'בניו מבית המשתה אמרו לו'
         assert textMatchList[0].startWord == 24
         assert textMatchList[0].endWord == 28
 
     def test_GetAllApproximateMatchesWithWordSkip_mismatch_on_last_word_of_daf(self):
-        textMatchList = dhm.GetAllApproximateMatchesWithWordSkip(daf, daf.allRashi[7], 0, len(daf.allWords) - 1, 0, 0)
+        textMatchList = dhm.GetAllMatches(daf, daf.allRashi[7], 0, len(daf.allWords) - 1, 0, 0)
         assert len(textMatchList) == 1
         assert textMatchList[0].textMatched == u'עד סוף האשמורה הראשונה דברי רבי'
         assert textMatchList[0].startWord == 5
         assert textMatchList[0].endWord == 10
 
     def test_GetAllApproximateMatchesWithWordSkip_small_rashi(self):
-        textMatchList = dhm.GetAllApproximateMatchesWithWordSkip(daf, daf.allRashi[8], 0, len(daf.allWords) - 1, 0, 0)
+        textMatchList = dhm.GetAllMatches(daf, daf.allRashi[8], 0, len(daf.allWords) - 1, 0, 0)
         assert len(textMatchList) == 2
         assert textMatchList[0].textMatched == u'וחכמים אומרים עד חצות'
         assert textMatchList[0].startWord == 12
@@ -192,11 +201,11 @@ class TestDHMatcherFunctions:
         assert textMatchList[1].endWord == 15
 
     def test_GetAllApproximateMatchesWithWordSkip_too_skips(self):
-        textMatchList = dhm.GetAllApproximateMatchesWithWordSkip(daf, daf.allRashi[9], 0, len(daf.allWords) - 1, 0, 0)
+        textMatchList = dhm.GetAllMatches(daf, daf.allRashi[9], 0, len(daf.allWords) - 1, 0, 0)
         assert len(textMatchList) == 0
 
     def test_GetAllApproximateMatchesWithWordSkip_max_skips(self):
-        textMatchList = dhm.GetAllApproximateMatchesWithWordSkip(daf, daf.allRashi[10], 0, len(daf.allWords) - 1, 0, 0)
+        textMatchList = dhm.GetAllMatches(daf, daf.allRashi[10], 0, len(daf.allWords) - 1, 0, 0)
         assert len(textMatchList) == 1
         assert textMatchList[0].textMatched == u'וחכמים אומרים עד חצות ר"ג אומר עד שיעלה עמוד השחר.'
         assert textMatchList[0].startWord == 12
