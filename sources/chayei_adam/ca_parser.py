@@ -86,11 +86,11 @@ def getRidOfSofitAndDash(txt):
     return txt
 
 
-def selfLink(klal_num, index, klal_link_num, par_index):
+def selfLink(klal_num, siman_num, klal_link_num, siman_link_num):
     return {
         'refs': [
-            "Chayei Adam.{}.{}".format(klal_num, index),
-            "Chayei Adam.{}.{}".format(klal_link_num, getGematria(getRidOfSofit(par_index)))
+            "Chayei Adam.{}.{}".format(klal_num, siman_num),
+            "Chayei Adam.{}.{}".format(klal_link_num, getGematria(getRidOfSofitAndDash(siman_link_num)))
         ],
         'type': 'reference',
         'auto': True,
