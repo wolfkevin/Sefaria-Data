@@ -305,107 +305,136 @@ def getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addi
     elif any(word in comment_words[klal_index - 1] for word in [u"ברכות", u"תפלה"]):
         pass
 
-opener = urllib2.build_opener()
-opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-page = opener.open("https://he.wikisource.org/w/index.php?title=%D7%97%D7%99%D7%99_%D7%90%D7%93%D7%9D&printable=yes")
-soup = BeautifulSoup(page, 'html.parser')
+    elif referencesChelekBet(comment_words, klal_index):
+        klal_link_num += CHELEK_BET_ADDITION
 
-header = soup.find(id=".D7.A1.D7.93.D7.A8_.D7.94.D7.99.D7.95.D7.9D")  # get seder hayom section
-header = header.parent
+    else:
+        if addition is not 0 and cur_klal_num is not 207:
+            klal_link_num += CHELEK_BET_ADDITION
 
-section_start_num = 1  # start of first section of halachot
-section_end_num = 0  # end is added to start
+        if (u'קמן' in comment_words[klal_index - 1] or u'קמן' in comment_words[klal_index - 2]) and \
+                not isUpcoming(cur_siman, getGematria(comment_words[klal_index + 3]), cur_klal_num, klal_link_num,):
+            print "you should be more", comment_words[klal_index + 1], "in", cur_klal_num, "siman", cur_siman
+            return -1
 
-for section in header.find_next_siblings("h3"):
-    bullets = section.find_next_sibling("ul")
-    section_end_num = len(bullets.find_all("li")) + section_start_num - 1
-    sections.append(Section(section.text, section_start_num, section_end_num))
-    section_start_num = section_end_num + 1
+        elif (u'עיל' in comment_words[klal_index - 1] or u'עיל' in comment_words[klal_index - 2]) and \
+                isUpcoming(cur_siman, getGematria(comment_words[klal_index + 3]), cur_klal_num, klal_link_num):
+            print "you should be less happened", comment_words[
+                klal_index + 1], "in", cur_klal_num, "siman", cur_siman
+            return -1
 
-
-with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_write:
-
-    file_write.write("<root><klal>")
-
-    for line in file_read:
-
-        if line[:1] is '$':
-            tag = 'section'
-            line = line[1:]
-
-            if u'הלכות' not in line:
-                tag = 'mini' + tag
-
-        elif line[:1] is '@':
-            tag = tags[line[1:3]]
-            line = line[3:]
-            tag, line = checkAndEditTag(tag, line, file_write)
-
-        # else:
-        #     tag = 'p'
-        #     line = line.replace('@44', '<b>')
-        #     line = line.replace('@55', '</b>')
-
-        file_write.write(u"<{}>{}</{}>".format(tag, line.strip(), tag))
-
-    file_write.write("</klal></root>")
+    return klal_link_num
 
 
-klalim_ja = jagged_array.JaggedArray([[]])   # JA of [Klal[comment, comment]]]
-nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
+def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
+    comment_words = comment.split()
 
+    index_t = 0
+    self_links_t = []
+    list_t = []
 
-with open("nishmat_adam.txt") as file_read:
+    # for i, j in enumerate(comment_words):
+    #      if u'כלל' in j:
+    #          list_t.append(i)
 
-    na_footnote_count = -1
+    for klal_index, word in enumerate(comment_words):
 
-    for line in file_read:
+        # self links formatted as:  ___ 'כלל ___ סי
+        if isRegularReference(word, comment_words, klal_index):
 
-        if line[1:3] == '11':
+            # if reference to other of his works before reference
+            if isReferenceToAnotherWork(comment_words, klal_index):
+                continue
+            #     for t_word in comment_words[klal_index-2:klal_index+5]:
+            #         print t_word
+            #     print "\n"
 
-            line = '<b>' + line[3:].strip().replace('@33', "</b>", 1)
+            klal_link_num = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addition)
 
-            #TODO: D3 or leave as is
-            nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], line, "")
+            if klal_link_num is -1:
+                continue
 
-            if letter != footnote.letter:
-                print "letters off "
+            # self_links.append(selfLink(cur_klal_num, cur_siman + 1, klal_link_num, comment_words[klal_index + 3]))
+            addMultipleSimanim(self_links_t, comment_words[klal_index:], 3, klal_index, klal_link_num)
 
-        elif line[1:3] == '22':
+            # self_links_t.append(createLinkInsert(link_offset, klal_link_num, siman_link))
 
-            na_footnote_count += 1
+        elif isReferenceToPreviousOrUpcoming(word, comment_words, klal_index):
 
-            letter = unicode(line[line.index('(')+1:line.index(')')])
-            footnote = footnotes[na_footnote_count]
+            siman_link_num = getGematria(getRidOfSofitAndDash(comment_words[klal_index + 2]))
 
+            klal_link_num = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addition)
+
+            if u'קמן' in word and not isUpcoming(cur_siman, siman_link_num):
+                print "you should be more", comment_words[
+                    klal_index + 2], "in", cur_klal_num + CHELEK_BET_ADDITION, "siman", cur_siman
+                continue
+
+            elif u'עיל' in word and isUpcoming(cur_siman, siman_link_num):
+                print "you should be less happened", comment_words[
+                    klal_index + 2], "in", cur_klal_num + CHELEK_BET_ADDITION, "siman", cur_siman
+                continue
+
+            # self_links.append(selfLink(cur_klal_num, cur_siman, cur_klal_num, comment_words[klal_index + 2]))
+            addMultipleSimanim(self_links_t, comment_words[klal_index:], 2, klal_index, klal_link_num)
+
+    for l in reversed(self_links_t):
+        negative_offset = 0
+        while any(word in comment_words[l.offset][negative_offset - 1] for word in [u'.', u':', u')']):
+            negative_offset -= 1
+        if negative_offset < 0:
+            comment_words.insert(l.offset + 1, l.insert + comment_words[l.offset][negative_offset:])
+            comment_words[l.offset] = comment_words[l.offset][:negative_offset]
         else:
-            print "ERROR what is this", line
+            comment_words.insert(l.offset + 1, l.insert)
 
-with open("ca_parsed.xml") as file_read:
+    return " ".join(comment_words)
 
-    soup = BeautifulSoup(file_read, 'lxml')
 
+def getSederHayomSectionTitlesFromWikitext(sections):
+    opener = urllib2.build_opener()
+    opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+    page = opener.open(
+        "https://he.wikisource.org/w/index.php?title=%D7%97%D7%99%D7%99_%D7%90%D7%93%D7%9D&printable=yes")
+    soup = BeautifulSoup(page, 'html.parser')
+
+    header = soup.find(id=".D7.A1.D7.93.D7.A8_.D7.94.D7.99.D7.95.D7.9D").parent  # get seder hayom section
+
+    section_start_num = 1  # start of first section of halachot
+
+    for section in header.find_next_siblings("h3"):
+        bullets = section.find_next_sibling("ul")
+        section_end_num = len(bullets.find_all("li")) + section_start_num - 1
+        sections.append(Section(section.text, section_start_num, section_end_num))
+        section_start_num = section_end_num + 1
+
+
+def getChelekBetSectionTitles(soup, sections):
     found_sections = soup.find_all("section")
 
-    start = 1 + CHELEK_BET_ADDITION  # all sections gotten from the text are from chelek bet
+    start = 1 + CHELEK_BET_ADDITION  # all sections from the text are from chelek bet
 
     for index, section in enumerate(found_sections):
-
         # end is 154 if this is last section
         # else find the heading of the last section klal before this next section and set that as klal end
-
         end = 154 if index + 1 >= len(found_sections) \
-            else getKlalNum(found_sections[index+1].parent)
+            else getKlalNum(found_sections[index + 1].parent)
 
         end += CHELEK_BET_ADDITION
         sections.append(Section(section.text, start, end))
         start = end + 1
 
+
+def isStartOfChelekBet(klal_num, addition):
+    return klal_num == 69 and addition is 0
+
+
+def getKlalim(soup, klalim_ja):
     addition = 0
 
     for klal in soup.find_all("klal")[1:]:  # [1:] because first klal is empty
 
-        klal_num = getKlalNum(klal) + addition
+        klal_num = getKlalNum(klal) + addition  # need to add addition bc could be a part of chelek א or ב
 
         comments = []
 
@@ -413,28 +442,107 @@ with open("ca_parsed.xml") as file_read:
 
         for siman, comment in enumerate(klal.find_all("comment")):
 
-            if comment.text.find(u'כלל') != -1:  # check for self links in the text
-                getSelfLinks(siman + 1, comment, klal_num, addition)
+            comment_text = bleach.clean(comment, tags=['i', 'strong', 'big', 'small', 'br'], attributes=['data-commentator', 'data-order'], strip=True)
+
+            klal_index = comment_text.find(u'כלל')
+
+            if klal_index is not -1:  # check for self links in the text
+                word_before_klal_idx=comment_text[:comment_text[:klal_index].rfind(' ')].rfind(' ')
+                comment_w_links = getSelfLinks(siman + 1, comment_text[word_before_klal_idx:], klal_num, addition)
+                comment_text = comment_text[:word_before_klal_idx+1] + comment_w_links
+
+            while comment.next_sibling and comment.next_sibling.name == 'list_comment':
+                comment_text += u"<br><b>" + comment.next_sibling.text.replace("@55", u"</b> ", 1)
+                comment = comment.next_sibling
 
             if klal_title_added:
-                print comment
-                print comment.text
-                print bleach.clean(comment, tags=['i'], attributes=['data-commentator', 'data-order'], strip=True)
-                comments.append(bleach.clean(comment, tags=['i'], attributes=['data-commentator', 'data-order'], strip=True))
-            else:
-                comments.append(u"<big><strong>{}</strong></big><br>{}".format(klal.find("klal_title").text, comment.text))
+                comments.append(removeExtraSpaces(comment_text))
+
+            else:  # add klal title to beginning of comment
+                comments.append(
+                    u"<big><strong>{}</strong></big><br>{}".format(klal.find("klal_title").text, removeExtraSpaces(comment_text)))
                 klal_title_added = True
-            # if comment.i:
-            #     footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
+                # if comment.i:
+                #     footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
 
         klalim_ja.set_element([klal_num - 1], comments, [])
 
-        if klal_num == 69 and addition is 0:  # if the current klal > prev klal it means its the start of chelek bet
+        if isStartOfChelekBet(klal_num, addition):
             addition = CHELEK_BET_ADDITION
             klal_num += addition
 
 
-ja_to_xml(nishmat_ja.array(), ["klal", "siman"], "nishmat_output.xml")
+def createEasierToParseCA():
+    with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_write:
+
+        file_write.write("<root><klal>")
+
+        for line in file_read:
+
+            if line[:1] is '$':
+                tag = 'section'
+                line = line[1:]
+
+            elif line[:1] is '@':
+                tag = tags[line[1:3]]
+                line = line[3:]
+                tag, line = checkAndEditTag(tag, line, file_write)
+
+            file_write.write(u"<{}>{}</{}>".format(tag, line.strip(), tag))
+
+        file_write.write("</klal></root>")
+
+
+sections = []
+Section = namedtuple('Section', ['title', 'start', 'end'])
+
+klal_titles = []
+KlalTitle = namedtuple('KlalTitle', ['num', 'title'])
+
+footnotes = {}  # needs to be a dict bc of double klalim
+Footnote = namedtuple('Footnote', ['klal_num', 'comment_num', 'letter'])
+
+# getSederHayomSectionTitlesFromWikitext(sections)
+
+createEasierToParseCA()
+
+nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
+
+# with open("nishmat_adam.txt") as file_read:
+#     na_footnote_count = -1
+#
+#     for line in file_read:
+#
+#         if line[1:3] == '11':
+#
+#             line = '<b>' + line[3:].strip().replace('@33', "</b>", 1)
+#
+#             # TODO: D3 or leave as is
+#             nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], line, "")
+#
+#             if letter != footnote.letter:
+#                 print "letters off "
+#
+#         elif line[1:3] == '22':
+#
+#             na_footnote_count += 1
+#
+#             letter = unicode(line[line.index('(') + 1:line.index(')')])
+#             footnote = footnotes[na_footnote_count]
+#
+#         else:
+#             print "ERROR what is this", line
+
+klalim_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comment, comment]]]
+
+with open("ca_parsed.xml") as file_read:
+    soup = BeautifulSoup(file_read, 'lxml')
+
+    getChelekBetSectionTitles(soup, sections)
+
+    getKlalim(soup, klalim_ja)
+
+# ja_to_xml(nishmat_ja.array(), ["klal", "siman"], "nishmat_output.xml")
 ja_to_xml(klalim_ja.array(), ["klal", "siman"], "chayei_output.xml")
 
 index_schema = JaggedArrayNode()
@@ -451,7 +559,6 @@ ca_alt_schema = SchemaNode()
 na_alt_schema = SchemaNode()
 
 for section in sections:
-
     map_node = ArrayMapNode()
     map_node.add_title(section.title, "he", True)
     map_node.add_title("temp", "en", True)
@@ -463,15 +570,15 @@ for section in sections:
     ca_alt_schema.append(map_node)
 
     na_map_node = map_node.copy()
+
     na_map_node.wholeRef = "Nishmat Adam.{}-{}".format(section.start, section.end)
     na_alt_schema.append(na_map_node)
-
 
 ca_index = {
     "title": "Chayei Adam",
     "categories": ["Halakhah"],
     "schema": index_schema.serialize(),
-    "alt_structs": { "Topic": ca_alt_schema.serialize() },
+    "alt_structs": {"Topic": ca_alt_schema.serialize()},
     "default_struct": "Topic"
 }
 
@@ -480,15 +587,12 @@ na_index = {
     "dependence": "Commentary",
     "categories": ["Halakhah", "Commentary", "Chayei Adam"],
     "schema": na_index_schema.serialize(),
-    "alt_structs": { "Topic": na_alt_schema.serialize() },
+    "alt_structs": {"Topic": na_alt_schema.serialize()},
     "base_text_titles": ["Chayei Adam"],
     "default_struct": "Topic"
 }
 
 add_term("Klal", u"כלל", scheme="section_names")
-
-post_index(ca_index)
-post_index(na_index)
 
 ca_text_version = {
     'versionTitle': "Chayei Adam, Vilna, 1843",
@@ -504,11 +608,14 @@ na_text_version = {
     'text': nishmat_ja.array()
 }
 
-post_text("Chayei Adam", ca_text_version)
-post_link(self_links)
-
-post_text("Nishmat Adam", na_text_version)
-post_link(na_links)
+# post_index(ca_index)
+# post_index(na_index)
+#
+# post_text("Chayei Adam", ca_text_version)
+# # post_link(self_links)
+#
+# post_text("Nishmat Adam", na_text_version, index_count='on')
+# post_link(na_links)
 
 
 
@@ -517,6 +624,8 @@ post_link(na_links)
 Questions:
 - should we link from title all from OC kinda, some are siman, other si', others just in (), some link to 2 simanim, some x ad y (e.g 48), some 2 ()
 - what is @44
+- get rid of @ sign figure out whats uppp with that fml
+
 
 Fixed:
 - klalim restart = made it long running count and will have alt struct
