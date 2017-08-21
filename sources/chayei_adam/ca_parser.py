@@ -70,18 +70,18 @@ def selfLink(klal_num, index, klal_link_num, par_index):
     }
 
 
-def Ca2NaLink(ca_klal_num, ca_seif_number, na_seif_number):
+def Ca2NaLink(ca_klal_num, ca_siman_number, na_siman_number):
     return {
         'refs': [
-            "Chayei Adam.{}.{}".format(ca_klal_num, ca_seif_number),
-            "Nishmat Adam.{}.{}".format(ca_klal_num, na_seif_number)
+            "Chayei Adam.{}.{}".format(ca_klal_num, ca_siman_number),
+            "Nishmat Adam.{}.{}".format(ca_klal_num, na_siman_number)
         ],
         'type': 'commentary',
         'auto': True,
         'generated_by': 'Chayei Adam to Nishmat Adam linker',
         'inline_reference': {
             'data-commentator': "Nishmat Adam",
-            "data-order": na_seif_number
+            "data-order": na_siman_number
         }
 
     }
