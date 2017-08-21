@@ -42,6 +42,7 @@ SelfLink = namedtuple('SelfLink', ['insert', 'offset'])
 
 mapping = dict.fromkeys(map(ord, u":.\n)"))  # chars to eliminate when parsing chayei adam numbers
 
+
 def isGematria(txt):
     txt = re.sub('[\', ":.\n)]', '', txt)
     if txt.find("טו")>=0:
@@ -67,9 +68,9 @@ def isGematria(txt):
     return True
 
 
-
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
+
 
 def getRidOfSofitAndDash(txt):
     if txt == None:
@@ -111,7 +112,6 @@ def Ca2NaLink(ca_klal_num, ca_siman_number, na_siman_number):
             'data-commentator': "Nishmat Adam",
             "data-order": na_siman_number
         }
-
     }
 
 
@@ -142,13 +142,11 @@ def checkForNaFootnotes(line):
 
 def isADoubleKlal(klal_num, line):
     # type: (int, str) -> bool
-
     return klal_num + 1 is getGematria(line.split()[2])
 
 
 def klalNumIsOff(klal_num, klal_count):
     # type: (int, int) -> bool
-
     return (klal_num is not klal_count + 1) \
            and (klal_num + CHELEK_BET_ADDITION is not klal_count + 1) \
            and (klal_num is not 1)
@@ -196,7 +194,6 @@ def checkAndEditTag(tag, line, file):
             comment_count += 1
 
     elif 'comment' in tag:
-
         line = checkForNaFootnotes(line)
 
     # can also be footer or klal_title but those don't need to be edited
@@ -329,13 +326,7 @@ def getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addi
 def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
     comment_words = comment.split()
 
-    index_t = 0
     self_links_t = []
-    list_t = []
-
-    # for i, j in enumerate(comment_words):
-    #      if u'כלל' in j:
-    #          list_t.append(i)
 
     for klal_index, word in enumerate(comment_words):
 
@@ -345,9 +336,6 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
             # if reference to other of his works before reference
             if isReferenceToAnotherWork(comment_words, klal_index):
                 continue
-            #     for t_word in comment_words[klal_index-2:klal_index+5]:
-            #         print t_word
-            #     print "\n"
 
             klal_link_num = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addition)
 
@@ -502,36 +490,36 @@ KlalTitle = namedtuple('KlalTitle', ['num', 'title'])
 footnotes = {}  # needs to be a dict bc of double klalim
 Footnote = namedtuple('Footnote', ['klal_num', 'comment_num', 'letter'])
 
-# getSederHayomSectionTitlesFromWikitext(sections)
+getSederHayomSectionTitlesFromWikitext(sections)
 
 createEasierToParseCA()
 
 nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 
-# with open("nishmat_adam.txt") as file_read:
-#     na_footnote_count = -1
-#
-#     for line in file_read:
-#
-#         if line[1:3] == '11':
-#
-#             line = '<b>' + line[3:].strip().replace('@33', "</b>", 1)
-#
-#             # TODO: D3 or leave as is
-#             nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], line, "")
-#
-#             if letter != footnote.letter:
-#                 print "letters off "
-#
-#         elif line[1:3] == '22':
-#
-#             na_footnote_count += 1
-#
-#             letter = unicode(line[line.index('(') + 1:line.index(')')])
-#             footnote = footnotes[na_footnote_count]
-#
-#         else:
-#             print "ERROR what is this", line
+with open("nishmat_adam.txt") as file_read:
+    na_footnote_count = -1
+
+    for line in file_read:
+
+        if line[1:3] == '11':
+
+            line = '<b>' + line[3:].strip().replace('@33', "</b>", 1)
+
+            # TODO: D3 or leave as is
+            nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], line, "")
+
+            if letter != footnote.letter:
+                print "letters off "
+
+        elif line[1:3] == '22':
+
+            na_footnote_count += 1
+
+            letter = unicode(line[line.index('(') + 1:line.index(')')])
+            footnote = footnotes[na_footnote_count]
+
+        else:
+            print "ERROR what is this", line
 
 klalim_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comment, comment]]]
 
@@ -542,7 +530,7 @@ with open("ca_parsed.xml") as file_read:
 
     getKlalim(soup, klalim_ja)
 
-# ja_to_xml(nishmat_ja.array(), ["klal", "siman"], "nishmat_output.xml")
+ja_to_xml(nishmat_ja.array(), ["klal", "siman"], "nishmat_output.xml")
 ja_to_xml(klalim_ja.array(), ["klal", "siman"], "chayei_output.xml")
 
 index_schema = JaggedArrayNode()
