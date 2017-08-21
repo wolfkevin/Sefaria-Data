@@ -115,8 +115,7 @@ def Ca2NaLink(ca_klal_num, ca_siman_number, na_siman_number):
     }
 
 
-def checkForFootnotes(line):
-
+def checkForNaFootnotes(line):
     global klal_count, comment_count, ca_footnote_count, local_foot_count
 
     while '#' in line:
@@ -127,7 +126,7 @@ def checkForFootnotes(line):
         if end_footnote < footnote_index:  # when footnote appears at end of comment cant find ' '
             end_footnote = len(line)  # so use len of line as end_footnote index
 
-        letter = unicode(line[footnote_index+1:end_footnote]).translate(mapping)
+        letter = unicode(line[footnote_index + 1:end_footnote]).translate(mapping)
 
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
         letter_num = getGematria(letter)
@@ -136,47 +135,53 @@ def checkForFootnotes(line):
         ca_footnote_count += 1
 
         line = line.replace(line[footnote_index:end_footnote],
-                        u'<i data-commentator="{}" data-order="{}"></i>'
+                            u'<i data-commentator="{}" data-order="{}"></i>'
                             .format("Nishmat Adam", letter_num))
     return line
 
 
+def isADoubleKlal(klal_num, line):
+    # type: (int, str) -> bool
+
+    return klal_num + 1 is getGematria(line.split()[2])
+
+
+def klalNumIsOff(klal_num, klal_count):
+    # type: (int, int) -> bool
+
+    return (klal_num is not klal_count + 1) \
+           and (klal_num + CHELEK_BET_ADDITION is not klal_count + 1) \
+           and (klal_num is not 1)
+
 
 def checkAndEditTag(tag, line, file):
+    # type: (str, str, file) -> (str, str)
 
     global klal_count, comment_count, ca_footnote_count, local_foot_count
 
-    if tag is 'list_comment':
-        line = '<b>' + line.replace("@55", " </b> ", 1)
-
-        line = checkForFootnotes(line)
-
-    elif tag is 'klal_num':
+    if tag is 'klal_num':
         file.write("</klal><klal>")  # adding this makes it much easier to parse klalim
 
         local_foot_count = 0
 
         klal_num = getGematria(line.split()[1])
 
+        if len(line.split()) > 2:  # klal number should not be longer than 2 words
 
-        if len(line.split()) > 2:  # abnormally long line
-
-            if klal_num + 1 is getGematria(line.split()[2]):  # its a double klal
+            if isADoubleKlal(klal_num, line):
                 klal_count += 2
 
             else:  # klal_title is on same line as klal and should be moved down and split
                 file.write(u"<{}>{}</{}>".format(tag, ' '.join(line.split()[:2]), tag))  # write klal num to file
-                tag ='klal_title'
+                tag = 'klal_title'
                 line = ' '.join(line.split()[2:])  # create klal title from rest of words that aren't klal num
                 klal_count += 1
 
-        elif klal_num is klal_count + 1 or klal_num + CHELEK_BET_ADDITION is klal_count + 1 or klal_num is 1:
-            klal_count += 1
-
-        else:
+        elif klalNumIsOff(klal_num, klal_count):
             print "KLAL NUMBER OFF", klal_num, klal_count
 
-
+        else:
+            klal_count += 1
 
     elif tag is 'seif_num':
 
@@ -186,25 +191,18 @@ def checkAndEditTag(tag, line, file):
             comment_count = comment_num
 
         else:  # TODO: weird case of ראוי here
-            print "seif num off", line
+            print "seif num off", line.strip()
             line = numToHeb(comment_count + 1)
             comment_count += 1
 
-    elif tag is 'comment':
+    elif 'comment' in tag:
 
-        line = checkForFootnotes(line)
-        # print footnotes[ca_footnote_count]
+        line = checkForNaFootnotes(line)
+
+    # can also be footer or klal_title but those don't need to be edited
 
     return tag, line
 
-
-# sometimes links to multiple simanim, so get all of them
-def multipleSimanim(words, offset, klal_link_num):
-    while len(words) > offset + 2:
-        if getGematria(getRidOfSofit(words[offset])) + 1 \
-                == getGematria(getRidOfSofit(words[offset+1])):
-            self_links.append(selfLink(klal_num, index+1, klal_link_num, words[offset+1]))
-            offset += 1
 
         else:
             if u'וסי' in words[offset+1]:
