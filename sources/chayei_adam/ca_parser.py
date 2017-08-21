@@ -3,6 +3,7 @@ import os, sys
 
 import urllib2, bleach
 from bs4 import BeautifulSoup
+import re
 
 from collections import namedtuple
 
@@ -13,20 +14,11 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "sefaria.settings"
 
 from data_utilities.util import ja_to_xml, traverse_ja, getGematria, numToHeb
 from sefaria.datatype import jagged_array
-from sources.functions import post_index, post_text, post_link, add_term
+from sources.functions import post_index, post_text, post_link, add_term, removeExtraSpaces
 from sefaria.model import *
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
-
-sections = []
-Section = namedtuple('Section', ['title', 'start', 'end'])
-
-klal_titles = []
-KlalTitle = namedtuple('KlalTitle', ['num', 'title'])
-
-footnotes = {}  # needs to be a dict bc of double klalim
-Footnote = namedtuple('Footnote', ['klal_num', 'comment_num', 'letter'])
 
 klal_count = 0
 comment_count = 0
@@ -37,7 +29,6 @@ CHELEK_BET_ADDITION = 69
 
 na_links = []
 self_links = []
-
 
 tags = {}
 tags['00'] = 'klal_num'
@@ -52,15 +43,17 @@ mapping = dict.fromkeys(map(ord, u":.\n)"))  #chars to eliminate when parsing ch
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
 
-
-def getRidOfSofit(txt):
-    if txt.find("ך")>=0:
+def getRidOfSofitAndDash(txt):
+    if txt == None:
+        print "pause"
+    txt = re.sub('[\', ":.\n)]', '', txt)
+    if txt.find("ך") >= 0:
         txt = txt.replace("ך", "כ")
-    if txt.find("ם")>=0:
+    if txt.find("ם") >= 0:
         txt = txt.replace("ם", "מ")
-    if txt.find("ף")>=0:
+    if txt.find("ף") >= 0:
         txt = txt.replace("ף", "פ")
-    if txt.find("ץ")>=0:
+    if txt.find("ץ") >= 0:
         txt = txt.replace("ץ", "צ")
     return txt
 
