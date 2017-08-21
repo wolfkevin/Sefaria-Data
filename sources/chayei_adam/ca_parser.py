@@ -218,38 +218,25 @@ def addMultipleSimanim(self_links_t, words, offset, klal_index, klal_link_num):
     # sometimes links to multiple simanim, so get all of them
 
     continuation_link = None
-    separate_link = None
-
     siman_link = words[offset]
 
     while len(words) > offset + 1:
 
         if isContinuationLink(words[offset], words[offset+1]):
-            if separate_link:
-                separate_link = None
             offset += 1
             continuation_link = words[offset]
 
         elif u'וסי' in words[offset + 1]:
             if isContinuationLink(words[offset], words[offset+2]):
-                if separate_link:
-                    self_links_t.append(createLinkInsert(klal_index+offset, klal_link_num, siman_link, continuation_link))
-                    siman_link = separate_link
-                    separate_link = None
                 continuation_link = words[offset + 2]
 
             else:
                 self_links_t.append(createLinkInsert(klal_index+offset, klal_link_num, siman_link, continuation_link))
-                separate_link = words[offset + 2]
-                siman_link = separate_link
+                siman_link = words[offset + 2]
 
             offset += 2
 
         elif words[offset + 1][0] == u'ו' and isContinuationLink(words[offset], words[offset+1][1:]):
-            if separate_link:
-                self_links_t.append(createLinkInsert(klal_index+offset, klal_link_num, siman_link, continuation_link))
-                siman_link = separate_link
-                separate_link = None
             offset += 1
             continuation_link = words[offset][1:]
 
