@@ -38,7 +38,8 @@ tags['33'] = 'comment'
 tags['44'] = 'list_comment'
 tags['99'] = 'footer'
 
-mapping = dict.fromkeys(map(ord, u":.\n)"))  #chars to eliminate when parsing chayei adam numbers
+mapping = dict.fromkeys(map(ord, u":.\n)"))  # chars to eliminate when parsing chayei adam numbers
+
 def isGematria(txt):
     txt = re.sub('[\', ":.\n)]', '', txt)
     if txt.find("טו")>=0:
