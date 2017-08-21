@@ -204,113 +204,106 @@ def checkAndEditTag(tag, line, file):
     return tag, line
 
 
-        else:
-            if u'וסי' in words[offset+1]:
-                self_links.append(selfLink(klal_num, index+1, klal_link_num, words[offset+2]))
-            break
+def createLinkInsert(insert_offset, klal_link_num, siman_link, continuation_link=None):
+    insert_text = u"(חיי אדם {}, {}".format(numToHeb(klal_link_num), getRidOfSofitAndDash(siman_link))
+    if continuation_link:
+        insert_text += u'-' + getRidOfSofitAndDash(continuation_link)
+    return SelfLink(insert_text + u")", insert_offset)
 
 
-def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
-    comment_words = comment.text.split()
+def isContinuationLink(siman_1, siman_2):
+    siman_2 = getRidOfSofitAndDash(siman_2)
+    return (getGematria(getRidOfSofitAndDash(siman_1)) + 1 ==
+            getGematria(siman_2)) and isGematria(siman_2)
 
-    for klal_index, word in enumerate(comment_words):
 
-        # self links formatted as:  ___ 'כלל ___ סי
+def addMultipleSimanim(self_links_t, words, offset, klal_index, klal_link_num):
+    # sometimes links to multiple simanim, so get all of them
 
-        if u'כלל' in word \
-                and len(comment_words[klal_index:]) > 3 \
-                and any(sim in comment_words[klal_index+2] for sim in [u'דין', u"סי'", u'סימן']) \
-                and getGematria(comment_words[klal_index+1]) < 224 \
-                and getGematria(comment_words[klal_index+3]) < 58:
+    continuation_link = None
+    separate_link = None
 
-            # if reference to other of his works before reference
-            if any(word in comment_words[klal_index-1] for word in [u'אדם', u'ח"א', u'ש"א', u'נ"א']):
-                #     for t_word in comment_words[klal_index-3:klal_index+4]:
-                #         print t_word
-                #     print "\n"
-                continue
+    siman_link = words[offset]
 
-            # if reference to other work after reference
-            if len(comment_words[klal_index:]) > 4 \
-                    and any(word in comment_words[klal_index+4] for word in [u'נ"א']):
-                #     for t_word in comment_words[klal_index-2:klal_index+5]:
-                #         print t_word
-                #     print "\n"
-                continue
+    while len(words) > offset + 1:
 
-            klal_link_num = getGematria(comment_words[klal_index+1])
+        if isContinuationLink(words[offset], words[offset+1]):
+            if separate_link:
+                separate_link = None
+            offset += 1
+            continuation_link = words[offset]
 
-            if u'קודם' in comment_words[klal_index+1]:
-                klal_link_num = cur_klal_num - 1
-
-            elif any(word in comment_words[klal_index-1] for word in [u"ברכות", u"תפלה"]):
-                if klal_link_num > CHELEK_BET_ADDITION:
-                    print "I thought you were a tefillah or brachot", comment_words[klal_index+1], "in", klal_num, "seif", index+1
-
-            elif any(word in comment_words[klal_index-1] for word in [u"שבת", u"לולב", u"תענית", u"פסח"]):
-                klal_link_num += CHELEK_BET_ADDITION
+        elif u'וסי' in words[offset + 1]:
+            if isContinuationLink(words[offset], words[offset+2]):
+                if separate_link:
+                    self_links_t.append(createLinkInsert(klal_index+offset, klal_link_num, siman_link, continuation_link))
+                    siman_link = separate_link
+                    separate_link = None
+                continuation_link = words[offset + 2]
 
             else:
-                if addition is not 0 and cur_klal_num is not 207:
-                    klal_link_num += CHELEK_BET_ADDITION
+                self_links_t.append(createLinkInsert(klal_index+offset, klal_link_num, siman_link, continuation_link))
+                separate_link = words[offset + 2]
+                siman_link = separate_link
 
-                if u'קמן' in comment_words[klal_index-1] or u'קמן' in comment_words[klal_index-2]:
-                    if cur_klal_num > klal_link_num or \
-                            (klal_link_num == cur_klal_num and cur_siman >= getGematria(comment_words[klal_index+3])):
-                        print "you should be more", comment_words[klal_index+1], "in", klal_num, "siman", siman
-                        print comment_words[1], comment_words[2], comment_words[3]
-                        continue
+            offset += 2
 
-                elif u'עיל' in comment_words[klal_index-1] or u'עיל' in comment_words[klal_index-2]:
-                    if klal_link_num > cur_klal_num or \
-                            (klal_link_num == cur_klal_num and getGematria(comment_words[klal_index+3])) >= cur_siman:
-                        print "you should be less happenend", comment_words[klal_index+1], "in", cur_klal_num, "siman", cur_siman
-                        print comment_words[1], comment_words[2], comment_words[3]
-                        continue
+        elif words[offset + 1][0] == u'ו' and isContinuationLink(words[offset], words[offset+1][1:]):
+            if separate_link:
+                self_links_t.append(createLinkInsert(klal_index+offset, klal_link_num, siman_link, continuation_link))
+                siman_link = separate_link
+                separate_link = None
+            offset += 1
+            continuation_link = words[offset][1:]
 
+        else:
+            break
 
-            self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+3]))
-            multipleSimanim(comment_words[klal_index:], 3, klal_link_num)
-
+    self_links_t.append(createLinkInsert(klal_index+offset, klal_link_num, siman_link, continuation_link))
+    return
 
 
-        elif (u'קמן' in word or u'עיל' in word) \
-                and len(comment_words[klal_index:]) > 2 \
-                and (not (u'כלל' in comment_words[klal_index+1])) \
-                and any(sim in comment_words[klal_index+1] for sim in [u'דין', u"סי'", u'סימן']) \
-                and getGematria(comment_words[klal_index+2]) < 58:
-
-            siman_link_num = getGematria(getRidOfSofit(comment_words[klal_index+2]))
-
-            if u'קמן' in word:
-                if cur_siman >= siman_link_num:
-                   print "you should be more", comment_words[klal_index+2], "in", cur_klal_num+CHELEK_BET_ADDITION, "siman", cur_siman
-                   print comment_words[1], comment_words[2], comment_words[3]
-
-                   continue
-
-            elif u'עיל' in word:
-                if siman_link_num >= cur_siman:
-                    print "you should be less happenend", comment_words[klal_index+2], "in", cur_klal_num+CHELEK_BET_ADDITION, "siman", cur_siman
-                    print comment_words[1], comment_words[2], comment_words[3]
-                    print u'כלל' in comment_words[klal_index+1]
-                    continue
-
-            self_links.append(selfLink(cur_klal_num, cur_siman, cur_klal_num, comment_words[klal_index+2]))
-            multipleSimanim(comment_words[klal_index:], 2, cur_klal_num)
-
-        elif (u'קמן' in word or u'עיל' in word) \
-            and len(comment_words[klal_index:]) > 2 \
-            and (not (u'כלל' in comment_words[klal_index+1])) \
-            and any(sim in comment_words[klal_index+1] for sim in [u'דין', u"סי'", u'סימן']) \
-            and u'קודם' in comment_words[klal_index+2]:
-
-            self_links.append(selfLink(cur_klal_num, cur_siman, cur_klal_num, numToHeb(cur_siman - 1)))
-
-            print comment_words[1], comment_words[2], comment_words[3]
+def isSiman(siman_word, siman_num):
+    return any(sim in siman_word for sim in [u'דין', u"סי'", u'סימן'])\
+            and isGematria(siman_num) \
+            and getGematria(siman_num) < 58
 
 
+def isRegularReference(word, comment_words, klal_index):
+    return u'כלל' in word \
+           and len(comment_words[klal_index:]) > 3 \
+           and isSiman(comment_words[klal_index+2], comment_words[klal_index + 3])
 
+
+def isReferenceToPreviousOrUpcoming(word, comment_words, klal_index):
+    return (u'קמן' in word or u'עיל' in word) \
+           and len(comment_words[klal_index:]) > 2 \
+           and (not (u'כלל' in comment_words[klal_index + 1])) \
+           and isSiman(comment_words[klal_index+1], comment_words[klal_index + 2])
+
+
+def isReferenceToAnotherWork(comment_words, klal_index):
+    return any(word in comment_words[klal_index - 1] for word in [u'אדם', u'נ"א', u'ח"א', u'ש"א', u'ת"ח']) \
+           or ((len(comment_words[klal_index:]) > 4) and (u'נ"א' in comment_words[klal_index + 4]))
+
+
+def referencesChelekBet(comment_words, klal_index):
+    return any(word in comment_words[klal_index - 1] for word in [u"שבת", u"לולב", u"תענית", u"פסח"])
+
+
+def isUpcoming(cur_siman, siman_link_num, cur_klal_num=0, klal_link_num=0):
+    return klal_link_num > cur_klal_num or \
+           (klal_link_num == cur_klal_num and siman_link_num > cur_siman)
+
+
+def getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addition):
+    klal_link_num = getGematria(comment_words[klal_index + 1])
+
+    if u'קודם' in comment_words[klal_index + 1]:
+        klal_link_num = cur_klal_num - 1
+
+    elif any(word in comment_words[klal_index - 1] for word in [u"ברכות", u"תפלה"]):
+        pass
 
 opener = urllib2.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
