@@ -38,6 +38,8 @@ tags['33'] = 'comment'
 tags['44'] = 'list_comment'
 tags['99'] = 'footer'
 
+SelfLink = namedtuple('SelfLink', ['insert', 'offset'])
+
 mapping = dict.fromkeys(map(ord, u":.\n)"))  # chars to eliminate when parsing chayei adam numbers
 
 def isGematria(txt):
