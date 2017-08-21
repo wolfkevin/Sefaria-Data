@@ -39,6 +39,31 @@ tags['44'] = 'list_comment'
 tags['99'] = 'footer'
 
 mapping = dict.fromkeys(map(ord, u":.\n)"))  #chars to eliminate when parsing chayei adam numbers
+def isGematria(txt):
+    txt = re.sub('[\', ":.\n)]', '', txt)
+    if txt.find("טו")>=0:
+        txt = txt.replace("טו", "יה")
+    elif txt.find("טז")>=0:
+        txt = txt.replace("טז", "יו")
+
+    while txt[0] == u'ת':
+        txt = txt[1:]
+
+    if len(txt) == 1:
+        if txt[0] < u'א' or txt[0] > u'ת':
+            return False
+    elif len(txt) == 2:
+        if txt[0] < u'י' or (txt[0] < u'ק' and txt[1] > u'ט'):
+            return False
+    elif len(txt) == 3:
+        if txt[0] < u'ק' or txt[1] < u'י' or txt[2] > u'ט':
+            return False
+    else:
+        return False
+
+    return True
+
+
 
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
