@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import os, sys
 
-import urllib2, bleach
+import urllib2, bleach, codecs
 from bs4 import BeautifulSoup
 import re
 
@@ -448,17 +448,18 @@ def getKlalim(soup, klalim_ja):
 
 
 def createEasierToParseCA():
-    with open("chayei_adam.txt") as file_read, open("ca_parsed.xml", "w") as file_write:
+    with codecs.open("chayei_adam.txt", "r", "utf-8") as file_read, open("ca_parsed.xml", "w") as file_write:
 
         file_write.write("<root><klal>")
 
         for line in file_read:
+            line = sub4BetterLinks(line)
 
-            if line[:1] is '$':
+            if line[:1] == u'$':
                 tag = 'section'
                 line = line[1:]
 
-            elif line[:1] is '@':
+            elif line[:1] == u'@':
                 tag = tags[line[1:3]]
                 line = line[3:]
                 tag, line = checkAndEditTag(tag, line, file_write)
