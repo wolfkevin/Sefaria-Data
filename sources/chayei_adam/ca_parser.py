@@ -14,7 +14,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "sefaria.settings"
 
 from data_utilities.util import ja_to_xml, traverse_ja, getGematria, numToHeb
 from sefaria.datatype import jagged_array
-from sources.functions import post_index, post_text, post_link, add_term, removeExtraSpaces
+from sources.functions import post_index, post_text, post_link, http_request, removeExtraSpaces, add_term
 from sefaria.model import *
 
 reload(sys)
@@ -480,6 +480,7 @@ Footnote = namedtuple('Footnote', ['klal_num', 'comment_num', 'letter'])
 
 getSederHayomSectionTitlesFromWikitext(sections)
 
+
 createEasierToParseCA()
 
 nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
@@ -584,14 +585,22 @@ na_text_version = {
     'text': nishmat_ja.array()
 }
 
-# post_index(ca_index)
-# post_index(na_index)
-#
-# post_text("Chayei Adam", ca_text_version)
-# # post_link(self_links)
-#
-# post_text("Nishmat Adam", na_text_version, index_count='on')
-# post_link(na_links)
+
+add_term("Chayei Adam", u'חיי אדם')
+
+resp = http_request(SEFARIA_SERVER + "/api/category", body={'apikey': API_KEY}, json_payload={"path": ["Halakhah", "Commentary", "Chayei Adam"], "sharedTitle": "Chayei Adam"}, method="POST")
+print resp
+
+post_index(ca_index)
+
+
+post_index(na_index)
+
+post_text("Chayei Adam", ca_text_version, index_count="on")
+# post_link(self_links)
+
+post_text("Nishmat Adam", na_text_version, index_count='on')
+post_link(na_links)
 
 
 
