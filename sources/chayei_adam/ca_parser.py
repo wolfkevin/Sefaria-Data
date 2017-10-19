@@ -447,6 +447,13 @@ def getKlalim(soup, klalim_ja):
             klal_num += addition
 
 
+def sub4BetterLinks(line):
+    if re.search(ur'(?:(?:\u05D9\u05DF|\u05E2\') |[(\u05D5\u05D1\u05D4])\u05DE"\u05D0(?: [\u05E1\u05E9\u05D1]|[)])', line):
+    # if re.search(ur'(?:^(?!.*\u05E1\u05D9\u05DE\u05DF) |[(\u05D5\u05D1\u05D4])\u05DE"\u05D0(?: [\u05E1\u05E9\u05D1]|[)])', line):
+        line = line.replace(u'מ"א', u'מגן אברהם')
+    return line
+
+
 def createEasierToParseCA():
     with codecs.open("chayei_adam.txt", "r", "utf-8") as file_read, open("ca_parsed.xml", "w") as file_write:
 
