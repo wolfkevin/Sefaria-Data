@@ -596,7 +596,6 @@ na_text_version = {
 add_term("Chayei Adam", u'חיי אדם')
 
 resp = http_request(SEFARIA_SERVER + "/api/category", body={'apikey': API_KEY}, json_payload={"path": ["Halakhah", "Commentary", "Chayei Adam"], "sharedTitle": "Chayei Adam"}, method="POST")
-print resp
 
 post_index(ca_index)
 
