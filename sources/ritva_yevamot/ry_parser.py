@@ -54,11 +54,11 @@ def checkAndEditTag(tag, line, file):
             if potential_index is not -1 and potential_index < word_index:   # want to find earliest delimiter
                 if line[potential_index-1:line.find(' ', potential_index)] != u"אפי'":  # prevent 'אפי from being a delimiter
                         word_index = line.rfind(' ', 0, potential_index)
-        if word_index > 400 and word_index is not 1000:
+        if word_index > 200 and word_index is not 1000:
             long_count += 1
             # print line
 
-        if word_index < 999:  # something was found
+        if word_index < 200:  # something was found
             line = line[:word_index] + u' </b> ' + line[word_index:]
             line = line.replace(u" </b> ", u" ", 1)
             # print line
