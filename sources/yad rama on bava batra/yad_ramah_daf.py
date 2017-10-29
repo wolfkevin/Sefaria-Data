@@ -10,6 +10,7 @@ class Yad_Ramah:
         self.server = server
         self.daf_re = re.compile(u"^.*?(\[[\u05D0-\u05EA]{1,3},[\u05D0-\u05EA]{1}\])")
         self.siman_re = re.compile(u"^([\u05D0-\u05EA]+)\. ")
+        self.alt_struct = [] #list of tuples of name of each section and ref str for where it begins
 
 
     def getText(self, file):
@@ -75,7 +76,6 @@ class Yad_Ramah:
                 dh_by_daf[page] = []
 
 
-
             text_for_dh = " ".join(para.split(" ")[0:6])
             dh_by_daf[page].append(text_for_dh)
 
@@ -125,7 +125,8 @@ class Yad_Ramah:
 
 
     def siman_filter(self, text_segment):
-        return self.siman_re.match(text_segment)
+        matched = re.compile(u"^<b>([\u05D0-\u05EA]+)\. </b>").match(text_segment)
+        return matched
 
 
     def dh_func(self, string):
@@ -136,12 +137,330 @@ class Yad_Ramah:
 
 
 if __name__ == "__main__":
+    indx = """{
+schema: {
+nodes: [
+{
+nodes: [
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer"
+],
+depth: 1,
+titles: [
+{
+lang: "en",
+text: "Introduction",
+primary: true
+},
+{
+lang: "he",
+text: "הקדמה",
+primary: true
+}
+],
+key: "intro0",
+sectionNames: [
+"Paragraph"
+]
+},
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer"
+],
+depth: 1,
+titles: [
+{
+lang: "en",
+text: "Remazim",
+primary: true
+},
+{
+lang: "he",
+text: "רמזים",
+primary: true
+}
+],
+key: "remazim0",
+sectionNames: [
+"Paragraph"
+]
+},
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer",
+"Integer"
+],
+default: true,
+depth: 2,
+key: "default",
+sectionNames: [
+"Negative Mitzvah",
+"Paragraph"
+]
+}
+],
+titles: [
+{
+lang: "en",
+text: "Negative Commandments",
+primary: true
+},
+{
+lang: "he",
+text: "לאוין",
+primary: true
+}
+],
+key: "vol1"
+},
+{
+nodes: [
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer"
+],
+depth: 1,
+titles: [
+{
+lang: "en",
+text: "Introduction",
+primary: true
+},
+{
+lang: "he",
+text: "הקדמה",
+primary: true
+}
+],
+key: "intro1",
+sectionNames: [
+"Paragraph"
+]
+},
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer"
+],
+depth: 1,
+titles: [
+{
+lang: "en",
+text: "Remazim",
+primary: true
+},
+{
+lang: "he",
+text: "רמזים",
+primary: true
+}
+],
+key: "remazim1",
+sectionNames: [
+"Paragraph"
+]
+},
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer",
+"Integer"
+],
+default: true,
+depth: 2,
+key: "default",
+sectionNames: [
+"Positive Mitzvah",
+"Paragraph"
+]
+}
+],
+titles: [
+{
+lang: "en",
+text: "Positive Commandments",
+primary: true
+},
+{
+lang: "he",
+text: "עשין",
+primary: true
+}
+],
+key: "vol2"
+},
+{
+nodes: [
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer"
+],
+depth: 1,
+titles: [
+{
+lang: "en",
+text: "Laws of Eruvin",
+primary: true
+},
+{
+lang: "he",
+text: "הלכות עירובין",
+primary: true
+}
+],
+key: "Laws of Eruvin",
+sectionNames: [
+"Paragraph"
+]
+},
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer"
+],
+depth: 1,
+titles: [
+{
+lang: "en",
+text: "Laws of Mourning",
+primary: true
+},
+{
+lang: "he",
+text: "הלכות אבילות",
+primary: true
+}
+],
+key: "Laws of Mourning",
+sectionNames: [
+"Paragraph"
+]
+},
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer"
+],
+depth: 1,
+titles: [
+{
+lang: "en",
+text: "Laws of Tisha B'Av",
+primary: true
+},
+{
+lang: "he",
+text: "הלכות תשעה באב",
+primary: true
+}
+],
+key: "Laws of Tisha B'Av",
+sectionNames: [
+"Paragraph"
+]
+},
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer"
+],
+depth: 1,
+titles: [
+{
+lang: "en",
+text: "Laws of Megillah",
+primary: true
+},
+{
+lang: "he",
+text: "הלכות מגילה",
+primary: true
+}
+],
+key: "Laws of Megillah",
+sectionNames: [
+"Paragraph"
+]
+},
+{
+nodeType: "JaggedArrayNode",
+addressTypes: [
+"Integer"
+],
+depth: 1,
+titles: [
+{
+lang: "en",
+text: "Laws of Chanukah",
+primary: true
+},
+{
+lang: "he",
+text: "הלכות חנוכה",
+primary: true
+}
+],
+key: "Laws of Chanukah",
+sectionNames: [
+"Paragraph"
+]
+}
+],
+titles: [
+{
+lang: "en",
+text: "Rabbinic Commandments",
+primary: true
+},
+{
+lang: "he",
+text: "עשין דרבנן",
+primary: true
+}
+],
+key: "Rabbinic Commandments"
+}
+],
+titles: [
+{
+lang: "en",
+text: "SeMaG"
+},
+{
+lang: "he",
+text: "ספר מצוות גדול",
+primary: true
+},
+{
+lang: "he",
+text: "סמ"ג"
+},
+{
+lang: "en",
+text: "Sefer Mitzvot Gadol",
+primary: true
+}
+],
+key: "Sefer Mitzvot Gadol"
+},
+categories: [
+"Halakhah"
+],
+title: "Sefer Mitzvot Gadol"
+}"""
+
     yad_ramah = Yad_Ramah("http://localhost:8000")
     text = yad_ramah.getText(open("YR.txt"))
     text, dh_dict = yad_ramah.structureText(text)
     links = []
     text = convertDictToArray(text)
-    results = get_matches_for_dict_and_link(dh_dict, "Bava Batra", "Yad Ramah", server="http://ste.sefaria.org", rashi_filter=yad_ramah.siman_filter, dh_extract_method=yad_ramah.dh_func)
+    results = get_matches_for_dict_and_link(dh_dict, "Bava Batra", "Yad Ramah", server="http://proto.sefaria.org", rashi_filter=yad_ramah.siman_filter, dh_extract_method=yad_ramah.dh_func)
 
 
     #yad_ramah.create_schema()
