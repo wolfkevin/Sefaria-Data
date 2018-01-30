@@ -1,6 +1,7 @@
 # encoding=utf-8
 
 from sources.Shulchan_Arukh.ShulchanArukh import *
+from OC_base1 import markup
 
 root = Root('../../Orach_Chaim.xml')
 base = root.get_base_text()
@@ -41,4 +42,7 @@ errors = volume.format_text('@33', '@88', 'ramah')
 for i in errors:
     print i
 
+markup(volume, root, 3)
+
 root.export()
+

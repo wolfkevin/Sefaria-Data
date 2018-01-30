@@ -84,6 +84,9 @@ class Element(object):
             child_cls = module_locals[self.child]
             return child_cls(self.Tag.find(child_cls.name, recursive=False))
 
+    def __iter__(self):
+        return (el for el in self.get_child())
+
     def _add_child(self, child, raw_text, num, enforce_order=False):
         """
         Add a new ordered child to the parent. Takes raw text and wraps in a child tag.
@@ -139,7 +142,7 @@ class Element(object):
         such as siman categories. Keys should be regex patterns, with value a dict with keys {'name', 'end'}. Name
         should be the name of the xml element this data should be wrapped with. The 'end' key is the regex that will
         mark a return to standard parsing. If not set, the only a single line will be marked.
-        :param function add_child_callback: Function to add child
+        :param func add_child_callback: Function to add child
         :param derive_order_callback: Method to derive the order of the child. Will accept the first capture group of
         pattern.
         :param special_callback: An optional callback function that will operate on a regex match object and will
@@ -171,7 +174,7 @@ class Element(object):
         special_mode = False  # Special parsing mode captures data that exists outside ordered structure
         found_after, special_pattern, end_pattern = 0, None, None
 
-        for line in raw_text.splitlines(True):  # keeps the endlines for later
+        for line_n, line in enumerate(raw_text.splitlines(True)):  # keeps the endlines for later
             if started:
                 if special_mode:
                     if end_pattern is None:
@@ -209,8 +212,10 @@ class Element(object):
                         end_pattern = specials[special_pattern].get('end')
 
                     else:
-                        assert child_num > 0  # Do not add text before the first siman marker has been found
+                        if child_num <= 0:  # Do not add text before the first siman marker has been found
+                            raise MissingChildError("{} {} is missing children.".format(self.name.title(), self.num))
                         current_child.append(line)
+
             else:
                 if re.search(start_mark, line):
                     started = True
@@ -226,15 +231,19 @@ class Element(object):
                     add_child_callback(u''.join(current_child), child_num, enforce_order=enforce_order, **kwargs)
 
     def load_xrefs_to_commentstore(self, *args, **kwargs):
+        errors = []
         for child in self.get_child():
             try:
                 child.load_xrefs_to_commentstore(*args, **kwargs)
             except DuplicateCommentError as e:
-                print e.message
+                errors.append(e)
+        return errors
 
     def load_comments_to_commentstore(self, *args, **kwargs):
+        volume_errors = []
         for child in self.get_child():
-            child.load_comments_to_commentstore(*args, **kwargs)
+            volume_errors += child.load_comments_to_commentstore(*args, **kwargs)
+        return volume_errors
 
     def convert_pattern_to_itag(self, commentator, pattern, group=1, order_callback=getGematria):
         """
@@ -269,9 +278,12 @@ class Root(Element):
     child = None  # No default child is defined, call to BaseText or Commentaries explicitly
 
     def __init__(self, filename):
-        self.filename = filename
-        self.soup = self._load()
-        super(Root, self).__init__(self.soup.root)
+        if isinstance(filename, basestring):
+            self.filename = filename
+            self.soup = self._load()
+            super(Root, self).__init__(self.soup.root)
+        else:
+            super(Root, self).__init__(filename)
 
     def _load(self):
         with open(self.filename) as infile:
@@ -324,14 +336,15 @@ class Root(Element):
         else:
             raise AssertionError("Unknown language passed. Recognized values are 'en' or 'he'")
 
-    def populate_comment_store(self):
+    def populate_comment_store(self, *args, **kwargs):
         comment_store = CommentStore()
         comment_store.clear()
-
-        self.get_base_text().load_xrefs_to_commentstore()
+        errors = []
+        errors += self.get_base_text().load_xrefs_to_commentstore(*args, **kwargs)
         commentaries = self.get_commentaries()
-        commentaries.load_xrefs_to_commentstore()
-        commentaries.load_comments_to_commentstore()
+        errors += commentaries.load_xrefs_to_commentstore(*args, **kwargs)
+        errors += commentaries.load_comments_to_commentstore(*args, **kwargs)
+        return errors
 
 
 class Record(Element):
@@ -405,8 +418,15 @@ class Record(Element):
             return None
 
     def load_xrefs_to_commentstore(self, *args, **kwargs):
+        errors = []
+        title = getattr(self, 'titles', None)
+        if title:
+            title = title['en']
+        else:
+            title = 'Base'
         for child in self.get_child():
-            child.load_xrefs_to_commentstore(self.titles['en'])
+            errors += child.load_xrefs_to_commentstore(title)
+        return errors
 
     def render(self):
         rendered_simanim = []
@@ -422,7 +442,7 @@ class Record(Element):
 
 class BaseText(Record):
     name = 'base_text'
-    parent = Root
+    parent = 'Root'
 
     def load_comments_to_commentstore(self, *args, **kwargs):
         raise NotImplementedError("Comments in base text not included in commentstore")
@@ -436,9 +456,11 @@ class Commentary(Record):
         self.id = soup_tag['id']
         super(Commentary, self).__init__(soup_tag)
 
-    def load_comments_to_commentstore(self):
+    def load_comments_to_commentstore(self, *args, **kwargs):
+        errors = []
         for child in self.get_child():
-            child.load_comments_to_commentstore(self.titles['en'])
+            errors += child.load_comments_to_commentstore(self.titles['en'], *args, **kwargs)
+        return errors
 
 
 class Commentaries(Element):
@@ -599,6 +621,7 @@ class Volume(OrderedElement):
         self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_siman, enforce_order=enforce_order)
 
     def mark_seifim(self, pattern, start_mark=None, specials=None, enforce_order=False, cyclical=False):
+        # type: (object, object, object, object, object) -> object
         errors = []
         for siman in self.get_child():
             assert isinstance(siman, Siman)
@@ -609,6 +632,9 @@ class Volume(OrderedElement):
                     siman.mark_seifim(pattern, start_mark, specials, enforce_order)
                 except DuplicateChildError as e:
                     errors.append(e.message)
+                except MissingChildError as e:
+                    errors.append(e.message)
+
         return errors
 
     def format_text(self, start_special, end_special, name):
@@ -677,7 +703,7 @@ class Volume(OrderedElement):
             seif['rid'] = 'no-link'
 
 
-    def validate_all_xrefs_matched(self, xref_finding_callback=lambda tag: tag.name=='xref'):
+    def validate_all_xrefs_matched(self, xref_finding_callback=lambda tag: tag.name =='xref', base="", commentary="", simanim_only=False):
         """
         Find a group of xrefs, look up each id in CommentStore and make sure they have all field filled out.
         :param xref_finding_callback: Callback function that takes a BeautifulSoup Tag object and returns True or
@@ -690,16 +716,29 @@ class Volume(OrderedElement):
         validation_set = self.Tag.find_all(xref_finding_callback)
         assert len(validation_set) > 0
         required_fields = ['base_title', 'siman', 'seif', 'commentator_title', 'commentator_siman', 'commentator_seif']
-        errors = []
+        xref_errors = []
+        simanim_errors = {}
 
         for item in validation_set:
+            siman = item['id'].split("-")[2].replace("si", "")
             if comment_store.get(item['id']) is None:
-                errors.append(u"xref with id {} not found in comment store".format(item['id']))
+                xref_errors.append(u"xref with id {} not found in comment store".format(item['id']))
             elif any([i not in comment_store[item['id']] for i in required_fields]):
-                errors.append(u"xref with id {} missing required field".format(item['id']))
-        if len(errors) == 0:
+                if siman not in simanim_errors:
+                    simanim_errors[siman] = 0
+                simanim_errors[siman] += 1
+                xref_errors.append(u"xref with id {} missing required fields".format(item['id']))
+
+        if len(xref_errors) == 0 and len(simanim_errors) == 0:
             print "No errors found"
-        return errors
+            return []
+        elif simanim_only:
+            assert commentary and base, "When simanim_only is True, you must also pass the name of the commentary and base text."
+            commentary = commentary.strip()
+            msg = u"""{}, Siman {}: {} extra markers not found in {}."""
+            return [msg.format(base, siman, num_errors, commentary, commentary) for siman, num_errors in sorted(simanim_errors.iteritems(), key=lambda x:int(x[0]))]
+        else:
+            return xref_errors
 
     def locate_references(self, pattern, verbose=True):
         """
@@ -739,7 +778,7 @@ class Siman(OrderedElement):
         try:
             self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_seif, enforce_order=enforce_order)
         except DuplicateChildError as e:
-            raise DuplicateChildError('Siman {}, Seif {}'.format(self.num, e.message))
+            raise DuplicateChildError(u'Siman {}, Seif {}'.format(self.num, e.message))
 
     def mark_cyclical_seifim(self, pattern, start_mark=None, specials=None, enforce_order=False):
         def get_label(match_object):
@@ -749,6 +788,51 @@ class Siman(OrderedElement):
         self._mark_children(pattern, start_mark, specials, add_child_callback=self._add_cyclical_seif,
                             enforce_order=enforce_order, derive_order_callback=lambda x: len(self.get_child())+1,
                             special_callback=get_label)
+
+    def mark_mixed_seifim(self, pattern, is_numbered_callback, start_mark=None, specials=None, enforce_order=False):
+        """
+        Used to markup Seifim where some have an important numerical order but are interspersed with seifim which do
+        not. The 'unmarked' seifim will be added to the first open position (i.e., if an unmarked comment appears after
+        seif 5, the unmarked seif will be seif 6). This can only be done with a relatively sparse commentary, as a dense
+        commentary will cause clashes between the unmarked seifim and the marked seifim.
+
+        Important: This method requires a callback method to determine
+
+        Justification: This became an issue with Shaa'rei Teshuva, who follows the numerical order of the Be'er Hetev.
+        Some comments were `unique` to the Shaa'rei Teshuva, and did not have a number.
+
+        :param pattern:
+        :param func is_numbered_callback: Callback, takes string as input returns bool
+        :param start_mark:
+        :param specials:
+        :param enforce_order:
+        :return:
+        """
+        def set_parsing_method(match_object):
+            if is_numbered_callback(match_object.group(1)):
+                return {'method': 'regular'}
+            else:
+                label = match_object.group(1)
+                return {'method': 'cyclical', 'label': label}
+
+        def add_seif(raw_text, seif_number, method, enforce_order=False, label=None):
+            if method=='regular':
+                self._add_seif(raw_text, seif_number, enforce_order)
+            else:
+                self._add_cyclical_seif(raw_text, seif_number, label, enforce_order)
+
+        def derive_order(label):
+            if is_numbered_callback(label):
+                return getGematria(label)
+            else:
+                children = self.get_child()
+                if len(children) == 0:
+                    return 1
+                else:
+                    return children[-1].num + 1
+
+        self._mark_children(pattern, start_mark, specials, add_child_callback=add_seif, enforce_order=enforce_order,
+                            derive_order_callback=derive_order, special_callback=set_parsing_method)
 
     def format_text(self, start_special, end_special, name):
         for seif in self.get_child():
@@ -801,16 +885,29 @@ class Siman(OrderedElement):
                     print '\t{} followed by {} (found in seif {})'.format(*error)
         return passed
 
-    def load_xrefs_to_commentstore(self, title):
+    def load_xrefs_to_commentstore(self, title, *args, **kwargs):
+        errors = []
         for child in self.get_child():
-            child.load_xrefs_to_commentstore(title, self.num)
+            errors += child.load_xrefs_to_commentstore(title, self.num)
+        return errors
 
-    def load_comments_to_commentstore(self, title):
+    def load_comments_to_commentstore(self, title, verbose=False):
+        siman_errors = {}
+        errors_report = []
         for child in self.get_child():
             try:
                 child.load_comments_to_commentstore(title, self.num)
             except MissingCommentError as e:
-                print e.message
+                if self.num not in siman_errors.keys():
+                    siman_errors[self.num] = 0
+                siman_errors[self.num] += 1
+                if verbose:
+                    print unicode(e.message)
+
+        msg = u"{}, Siman {}: found {} comment(s) not found in base text."
+        errors_report = [msg.format(title, siman, num_probs) for siman, num_probs in siman_errors.iteritems()]
+
+        return errors_report
 
     def set_rid_on_seifim(self, base_id, book_id, cyclical=False):
         for seif in self.get_child():
@@ -833,6 +930,14 @@ class Siman(OrderedElement):
     def collect_links(self):
         return [link for seif in self.get_child() for link in seif.collect_links()]
 
+    def render(self):
+        rendered_seifim = []
+        for seif in self.get_child():
+            while seif.num - len(rendered_seifim) > 1:
+                rendered_seifim.append(u'')
+            rendered_seifim.append(seif.render())
+        return rendered_seifim
+
 
 
 class Seif(OrderedElement):
@@ -848,15 +953,19 @@ class Seif(OrderedElement):
     def get_child(self):
         return [TextElement(c) for c in self.Tag.children]
 
+
     def format_text(self, start_special, end_special, name):
         """
         Mark up the text into regular and "special" formatting. Can only handle one type of special formatting. Useful
-        for marking dh in bold, or רמ"א in the base text.
+        for marking dh in bold, or רמ"א in the base text.  If there is no special formatting,
+        pass name = "reg-text" or pass regular expressions for start_special and end_special that match nothing.
         :param start_special: regex pattern to match beginning of formatted text. Warning: Two consecutive start_special
         patterns will cause this method to fail.
         :param end_special: regex pattern to match end of formatted text. This pattern will be ignored if not preceded
         by a start_special pattern.
         :param name: Name of tag to wrap formatted text in.
+
+
         :return:
         """
         def add_formatted_text(words, element_name):
@@ -868,14 +977,17 @@ class Seif(OrderedElement):
         assert self.Tag.string is not None  # This can happen if xml elements are already present or if Tag is self-closing.
         text_array = self.Tag.string.extract().split()
 
+        if name == u"reg-text":
+            assert start_special == end_special == ""
+            self.add_special(u" ".join(text_array), u"reg-text")
+            return
+
         is_special = False
         element_words = []
         for word in text_array:
-
             if re.search(start_special, word):
                 if is_special:  # Two consecutive special patterns have been found
                     raise AssertionError('Seif {}: Two consecutive formatting patterns ({}) found'.format(self.num, start_special))
-
                 else:
                     split_by_pattern = re.split(start_special, word)
                     assert len(split_by_pattern) == 2
@@ -968,18 +1080,20 @@ class Seif(OrderedElement):
         pattern = re.compile(pattern)
         return list(pattern.finditer(self.Tag.text))
 
-    def load_xrefs_to_commentstore(self, title, siman):
+    def load_xrefs_to_commentstore(self, title, siman, *args, **kwargs):
+        errors = []
         for child in self.get_child():
-            child.load_xrefs_to_commentstore(title, siman, self.num)
+            errors += child.load_xrefs_to_commentstore(title, siman, self.num)
+        return errors
 
-    def load_comments_to_commentstore(self, title, siman):
+    def load_comments_to_commentstore(self, title, siman, *args, **kwargs):
         comment_store = CommentStore()
 
         if self.rid == 'no-link':
             return
 
         if comment_store.get(self.rid) is None:
-            raise MissingCommentError(u"No Xref with id {} exists".format(self.rid))
+            raise MissingCommentError(u"Missing comment in {}, {} (rid: {})".format(title, siman, self.rid))
 
         this_ref = comment_store[self.rid]
         if this_ref.get('commentator_title') is not None:
@@ -990,9 +1104,9 @@ class Seif(OrderedElement):
         if self.Tag.has_attr('label'):
             this_ref['data-label'] = self.Tag['label']
 
-    def render(self):
+    def render(self, suppress_warning=False):
         seif_text = u' '.join(child.render() for child in self.get_child())
-        if re.search(u'@', seif_text):
+        if not suppress_warning and re.search(u'@', seif_text):
             # raise AssertionError("found @ marker in xml at {}:{}".format(self.Tag.parent['num'], self.num))
             print "found @ marker in xml at {}:{}".format(self.Tag.parent['num'], self.num)
         seif_text = re.sub(u'(<i data-commentator.*?></i>) +', ur'\1', seif_text)  # Remove space between text and itag
@@ -1003,6 +1117,9 @@ class Seif(OrderedElement):
         seif_text = re.sub(u' +(</[^\u05d0-\u05ea ]*>:?)$', ur'\g<1>', seif_text)  # clean up spaces before the final html closing tag
         seif_text = re.sub(u' {2,}', u' ', seif_text)
         seif_text = re.sub(u'~br~', u'<br>', seif_text)
+        seif_text = re.sub(u'~b~', u'<b>', seif_text)
+        seif_text = re.sub(ur"~(/|\\)b~", u"</b>", seif_text)
+        seif_text = re.sub(u'!br!', u'<br>', seif_text)
         return unescape(seif_text)
 
     def collect_links(self):
@@ -1128,23 +1245,23 @@ class Xref(Element):
     def __hash__(self):
         return hash(self.id)
 
-    def load_xrefs_to_commentstore(self, title, siman, seif):
+    def load_xrefs_to_commentstore(self, title, siman, seif, *args, **kwargs):
         comment_store = CommentStore()
         if comment_store.get(self.id) is not None:
             if seif in comment_store[self.id]['seif']:
-                message = "Xref with id '{}' appears twice. Same Seif as previous appearance.".format(self.id)
-                print message
+                print "Warning: {} {} {} has duplicate reference (id: {}). " \
+                      "Appeared twice in same Seif".format(title, siman, seif, self.id)
             else:
-                message = "Xref with id '{}' appears twice. Different Seif as previous appearance.".format(self.id)
-                print message
                 comment_store[self.id]['seif'].append(seif)
-
+                print "Warning: {} {} {} has duplicate reference (id: {}). " \
+                      "Appeared different Seif.".format(title, siman, seif, self.id)
         else:
             comment_store[self.id] = {
                 'base_title': title,
                 'siman': siman,
                 'seif': [seif]
             }
+
 
     def load_comments_to_commentstore(self, *args, **kwargs):
         raise NotImplementedError("Can't load comments at Xref depth")
@@ -1166,6 +1283,9 @@ class DuplicateCommentError(Exception):
     pass
 
 class MissingCommentError(Exception):
+    pass
+
+class MissingChildError(Exception):
     pass
 
 
