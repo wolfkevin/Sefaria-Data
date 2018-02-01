@@ -530,28 +530,67 @@ with open("ca_parsed.xml") as file_read:
     getKlalim(soup, klalim_ja)
 
 ja_to_xml(nishmat_ja.array(), ["klal", "siman"], "nishmat_output.xml")
-ja_to_xml(klalim_ja.array(), ["klal", "siman"], "chayei_output.xml")
+ja_to_xml(ca_chelek_1_ja.array(), ["klal", "siman"], "chayei_1_output.xml")
+ja_to_xml(ca_chelek_2_ja.array(), ["klal", "siman"], "chayei_2_output.xml")
 
-index_schema = JaggedArrayNode()
-index_schema.add_primary_titles("Chayei Adam", u"חיי אדם")
-index_schema.add_structure(["Klal", "Siman"])
-index_schema.validate()
+
+eng_section_titles = [
+    'Laws of Prayer and Blessings',
+    'Laws of Washing Hands and Laws of the Meal',
+    'Laws of Birkhot HaNehenin',
+    'Laws of Shabbat',
+    'Laws of the Festivals',
+    'Laws of Rosh Chodesh',
+    'Laws of Passover',
+    'Laws of Fast Days',
+    'Laws of the Ninth of Av',
+    'Laws of Yom Kippur',
+    'Laws of Sukkot',
+    'Laws of Chanukah',
+    'Laws of Purim'
+]
+eng_section_num = 0
 
 na_index_schema = JaggedArrayNode()
 na_index_schema.add_primary_titles("Nishmat Adam", u"נשמת אדם")
 na_index_schema.add_structure(["Klal", "Siman"])
 na_index_schema.validate()
 
+ca_index_schema = SchemaNode()
+ca_index_schema.add_primary_titles("Chayei Adam", u"חיי אדם")
+
+intro_node = JaggedArrayNode()
+intro_node.add_primary_titles(u"Author's Introduction", u"הקדמת המחבר")
+intro_node.add_structure(['Comment'])
+
+intro_node.validate()
+ca_index_schema.append(intro_node)
+
+ca_default_node = JaggedArrayNode()
+ca_default_node.add_structure(["Klal", "Siman"])
+ca_default_node.default = True
+ca_default_node.key = "default"
+
+ca_default_node.validate()
+ca_index_schema.append(ca_default_node)
+
+ca_index_schema.validate()
+
 ca_alt_schema = SchemaNode()
+alt_intro_node = ArrayMapNode()
+alt_intro_node.add_primary_titles(u"Author's Introduction", u"הקדמת המחבר")
+alt_intro_node.wholeRef = "Chayei Adam, Author's Introduction"
+alt_intro_node.depth = 0
+ca_alt_schema.append(alt_intro_node)
 na_alt_schema = SchemaNode()
 
-for section in sections:
+for section, eng_title in zip(sections, eng_section_titles):
     map_node = ArrayMapNode()
-    map_node.add_title(section.title, "he", True)
-    map_node.add_title("temp", "en", True)
+    map_node.add_primary_titles(eng_title, section.title)
     map_node.wholeRef = "Chayei Adam.{}-{}".format(section.start, section.end)
     map_node.includeSections = True
     map_node.depth = 0
+    map_node.key = eng_title
 
     map_node.validate()
     ca_alt_schema.append(map_node)
@@ -564,7 +603,7 @@ for section in sections:
 ca_index = {
     "title": "Chayei Adam",
     "categories": ["Halakhah"],
-    "schema": index_schema.serialize(),
+    "schema": ca_index_schema.serialize(),
     "alt_structs": {"Topic": ca_alt_schema.serialize()},
     "default_struct": "Topic"
 }
@@ -595,13 +634,13 @@ na_text_version = {
     'text': nishmat_ja.array()
 }
 
-
 add_term("Chayei Adam", u'חיי אדם')
 
-resp = http_request(SEFARIA_SERVER + "/api/category", body={'apikey': API_KEY}, json_payload={"path": ["Halakhah", "Commentary", "Chayei Adam"], "sharedTitle": "Chayei Adam"}, method="POST")
+resp = http_request(SEFARIA_SERVER + "/api/category", body={'apikey': API_KEY},
+                    json_payload={"path": ["Halakhah", "Commentary", "Chayei Adam"], "sharedTitle": "Chayei Adam"},
+                    method="POST")
 
 post_index(ca_index)
-
 
 post_index(na_index)
 
@@ -610,8 +649,6 @@ post_text("Chayei Adam", ca_text_version, index_count="on")
 
 post_text("Nishmat Adam", na_text_version, index_count='on')
 post_link(na_links)
-
-
 
 # TODO: address questions:
 '''
