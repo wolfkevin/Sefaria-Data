@@ -227,7 +227,6 @@ def addMultipleSimanim(self_links_t, words, offset, klal_index, klal_link_num):
             continuation_link = words[offset]
 
         elif u'וסי' in words[offset + 1]:
-            if isContinuationLink(words[offset], words[offset+2]):
             if isContinuationLink(words[offset], words[offset + 2]):
                 continuation_link = words[offset + 2]
 
@@ -412,6 +411,7 @@ def getKlalim(soup, klalim_ja):
 
         klal_num = getKlalNum(klal) + addition  # need to add addition bc could be a part of chelek א or ב
 
+
         comments = []
 
         klal_title_added = False
@@ -495,26 +495,32 @@ createEasierToParseCA()
 
 nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 
-with open("nishmat_adam.txt") as file_read:
+with codecs.open("nishmat_adam.txt", "r", "utf-8") as file_read:
     na_footnote_count = -1
+
+    klal_text = u''
 
     for line in file_read:
 
-        if line[1:3] == '11':
+        if line[:3] == u'@11':
 
-            line = '<b>' + line[3:].strip().replace('@33', "</b>", 1)
-
-            # TODO: D3 or leave as is
-            nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], line, "")
+            klal_text += u'<b> ' + line[3:].strip().replace(u'@33', u" </b> ", 1).replace(u'@44', u' <b> ').replace(
+                u'@55', u' </b> ') + u'<br>'
 
             if letter != footnote.letter:
                 print "letters off "
 
-        elif line[1:3] == '22':
+        elif line[:3] == u'@22':
+
+            if klal_text != '':
+                klal_text = removeExtraSpaces(klal_text[:-4])  # remove extra break at the end
+                nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], klal_text, u"")
+
+            klal_text = u''
 
             na_footnote_count += 1
 
-            letter = unicode(line[line.index('(') + 1:line.index(')')])
+            letter = unicode(line[line.index(u'(') + 1:line.index(u')')])
             footnote = footnotes[na_footnote_count]
 
         else:
