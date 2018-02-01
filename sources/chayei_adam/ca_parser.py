@@ -45,9 +45,9 @@ mapping = dict.fromkeys(map(ord, u":.\n)"))  # chars to eliminate when parsing c
 
 def isGematria(txt):
     txt = re.sub('[\', ":.\n)]', '', txt)
-    if txt.find("טו")>=0:
+    if txt.find("טו") >= 0:
         txt = txt.replace("טו", "יה")
-    elif txt.find("טז")>=0:
+    elif txt.find("טז") >= 0:
         txt = txt.replace("טז", "יו")
 
     while txt[0] == u'ת':
@@ -222,48 +222,49 @@ def addMultipleSimanim(self_links_t, words, offset, klal_index, klal_link_num):
 
     while len(words) > offset + 1:
 
-        if isContinuationLink(words[offset], words[offset+1]):
+        if isContinuationLink(words[offset], words[offset + 1]):
             offset += 1
             continuation_link = words[offset]
 
         elif u'וסי' in words[offset + 1]:
             if isContinuationLink(words[offset], words[offset+2]):
+            if isContinuationLink(words[offset], words[offset + 2]):
                 continuation_link = words[offset + 2]
 
             else:
-                self_links_t.append(createLinkInsert(klal_index+offset, klal_link_num, siman_link, continuation_link))
+                self_links_t.append(createLinkInsert(klal_index + offset, klal_link_num, siman_link, continuation_link))
                 siman_link = words[offset + 2]
 
             offset += 2
 
-        elif words[offset + 1][0] == u'ו' and isContinuationLink(words[offset], words[offset+1][1:]):
+        elif words[offset + 1][0] == u'ו' and isContinuationLink(words[offset], words[offset + 1][1:]):
             offset += 1
             continuation_link = words[offset][1:]
 
         else:
             break
 
-    self_links_t.append(createLinkInsert(klal_index+offset, klal_link_num, siman_link, continuation_link))
+    self_links_t.append(createLinkInsert(klal_index + offset, klal_link_num, siman_link, continuation_link))
     return
 
 
 def isSiman(siman_word, siman_num):
-    return any(sim in siman_word for sim in [u'דין', u"סי'", u'סימן'])\
-            and isGematria(siman_num) \
-            and getGematria(siman_num) < 58
+    return any(sim in siman_word for sim in [u'דין', u"סי'", u'סימן']) \
+           and isGematria(siman_num) \
+           and getGematria(siman_num) < 58
 
 
 def isRegularReference(word, comment_words, klal_index):
     return u'כלל' in word \
            and len(comment_words[klal_index:]) > 3 \
-           and isSiman(comment_words[klal_index+2], comment_words[klal_index + 3])
+           and isSiman(comment_words[klal_index + 2], comment_words[klal_index + 3])
 
 
 def isReferenceToPreviousOrUpcoming(word, comment_words, klal_index):
     return (u'קמן' in word or u'עיל' in word) \
            and len(comment_words[klal_index:]) > 2 \
            and (not (u'כלל' in comment_words[klal_index + 1])) \
-           and isSiman(comment_words[klal_index+1], comment_words[klal_index + 2])
+           and isSiman(comment_words[klal_index + 1], comment_words[klal_index + 2])
 
 
 def isReferenceToAnotherWork(comment_words, klal_index):
@@ -297,7 +298,7 @@ def getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addi
             klal_link_num += CHELEK_BET_ADDITION
 
         if (u'קמן' in comment_words[klal_index - 1] or u'קמן' in comment_words[klal_index - 2]) and \
-                not isUpcoming(cur_siman, getGematria(comment_words[klal_index + 3]), cur_klal_num, klal_link_num,):
+                not isUpcoming(cur_siman, getGematria(comment_words[klal_index + 3]), cur_klal_num, klal_link_num, ):
             print "you should be more", comment_words[klal_index + 1], "in", cur_klal_num, "siman", cur_siman
             return -1
 
@@ -417,14 +418,15 @@ def getKlalim(soup, klalim_ja):
 
         for siman, comment in enumerate(klal.find_all("comment")):
 
-            comment_text = bleach.clean(comment, tags=['i', 'strong', 'big', 'small', 'br'], attributes=['data-commentator', 'data-order'], strip=True)
+            comment_text = bleach.clean(comment, tags=['i', 'strong', 'big', 'small', 'br'],
+                                        attributes=['data-commentator', 'data-order'], strip=True)
 
             klal_index = comment_text.find(u'כלל')
 
             if klal_index is not -1:  # check for self links in the text
-                word_before_klal_idx=comment_text[:comment_text[:klal_index].rfind(' ')].rfind(' ')
+                word_before_klal_idx = comment_text[:comment_text[:klal_index].rfind(' ')].rfind(' ')
                 comment_w_links = getSelfLinks(siman + 1, comment_text[word_before_klal_idx:], klal_num, addition)
-                comment_text = comment_text[:word_before_klal_idx+1] + comment_w_links
+                comment_text = comment_text[:word_before_klal_idx + 1] + comment_w_links
 
             while comment.next_sibling and comment.next_sibling.name == 'list_comment':
                 comment_text += u"<br><b>" + comment.next_sibling.text.replace("@55", u"</b> ", 1)
@@ -435,7 +437,8 @@ def getKlalim(soup, klalim_ja):
 
             else:  # add klal title to beginning of comment
                 comments.append(
-                    u"<big><strong>{}</strong></big><br>{}".format(klal.find("klal_title").text, removeExtraSpaces(comment_text)))
+                    u"<big><strong>{}</strong></big><br>{}".format(klal.find("klal_title").text,
+                                                                   removeExtraSpaces(comment_text)))
                 klal_title_added = True
                 # if comment.i:
                 #     footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
@@ -448,8 +451,9 @@ def getKlalim(soup, klalim_ja):
 
 
 def sub4BetterLinks(line):
-    if re.search(ur'(?:(?:\u05D9\u05DF|\u05E2\') |[(\u05D5\u05D1\u05D4])\u05DE"\u05D0(?: [\u05E1\u05E9\u05D1]|[)])', line):
-    # if re.search(ur'(?:^(?!.*\u05E1\u05D9\u05DE\u05DF) |[(\u05D5\u05D1\u05D4])\u05DE"\u05D0(?: [\u05E1\u05E9\u05D1]|[)])', line):
+    if re.search(ur'(?:(?:\u05D9\u05DF|\u05E2\') |[(\u05D5\u05D1\u05D4])\u05DE"\u05D0(?: [\u05E1\u05E9\u05D1]|[)])',
+                 line):
+        # if re.search(ur'(?:^(?!.*\u05E1\u05D9\u05DE\u05DF) |[(\u05D5\u05D1\u05D4])\u05DE"\u05D0(?: [\u05E1\u05E9\u05D1]|[)])', line):
         line = line.replace(u'מ"א', u'מגן אברהם')
     return line
 
@@ -486,7 +490,6 @@ footnotes = {}  # needs to be a dict bc of double klalim
 Footnote = namedtuple('Footnote', ['klal_num', 'comment_num', 'letter'])
 
 getSederHayomSectionTitlesFromWikitext(sections)
-
 
 createEasierToParseCA()
 
