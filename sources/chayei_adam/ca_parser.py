@@ -25,8 +25,6 @@ comment_count = 0
 ca_footnote_count = 0
 local_foot_count = 0
 
-CHELEK_BET_ADDITION = 69
-
 na_links = []
 self_links = []
 
@@ -145,11 +143,11 @@ def isADoubleKlal(klal_num, line):
     return klal_num + 1 is getGematria(line.split()[2])
 
 
-def klalNumIsOff(klal_num, klal_count):
-    # type: (int, int) -> bool
-    return (klal_num is not klal_count + 1) \
-           and (klal_num + CHELEK_BET_ADDITION is not klal_count + 1) \
-           and (klal_num is not 1)
+# def klalNumIsOff(klal_num, klal_count):
+#     # type: (int, int) -> bool
+#     return (klal_num is not klal_count + 1) \
+#            and (klal_num + CHELEK_BET_ADDITION is not klal_count + 1) \
+#            and (klal_num is not 1)
 
 
 def checkAndEditTag(tag, line, file):
@@ -175,8 +173,8 @@ def checkAndEditTag(tag, line, file):
                 line = ' '.join(line.split()[2:])  # create klal title from rest of words that aren't klal num
                 klal_count += 1
 
-        elif klalNumIsOff(klal_num, klal_count):
-            print "KLAL NUMBER OFF", klal_num, klal_count
+        # elif klalNumIsOff(klal_num, klal_count):
+        #     print "KLAL NUMBER OFF", klal_num, klal_count
 
         else:
             klal_count += 1
@@ -201,8 +199,11 @@ def checkAndEditTag(tag, line, file):
     return tag, line
 
 
-def createLinkInsert(insert_offset, klal_link_num, siman_link, continuation_link=None):
-    insert_text = u"(חיי אדם {}, {}".format(numToHeb(klal_link_num), getRidOfSofitAndDash(siman_link))
+def createLinkInsert(insert_offset, klal_link_num, siman_link, isChelekBet, continuation_link=None):
+    if isChelekBet:
+        insert_text = u"(חיי אדם, שבת ומועדים {}, {}".format(numToHeb(klal_link_num), getRidOfSofitAndDash(siman_link))
+    else:
+        insert_text = u"(חיי אדם {}, {}".format(numToHeb(klal_link_num), getRidOfSofitAndDash(siman_link))
     if continuation_link:
         insert_text += u'-' + getRidOfSofitAndDash(continuation_link)
     return SelfLink(insert_text + u")", insert_offset)
@@ -280,7 +281,7 @@ def isUpcoming(cur_siman, siman_link_num, cur_klal_num=0, klal_link_num=0):
            (klal_link_num == cur_klal_num and siman_link_num > cur_siman)
 
 
-def getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addition):
+def getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, isChelekBet):
     klal_link_num = getGematria(comment_words[klal_index + 1])
 
     if u'קודם' in comment_words[klal_index + 1]:
@@ -290,11 +291,11 @@ def getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addi
         pass
 
     elif referencesChelekBet(comment_words, klal_index):
-        klal_link_num += CHELEK_BET_ADDITION
+        isChelekBet = True
 
     else:
-        if addition is not 0 and cur_klal_num is not 207:
-            klal_link_num += CHELEK_BET_ADDITION
+        if isChelekBet and cur_klal_num is not 207:
+            isChelekBet = True
 
         if (u'קמן' in comment_words[klal_index - 1] or u'קמן' in comment_words[klal_index - 2]) and \
                 not isUpcoming(cur_siman, getGematria(comment_words[klal_index + 3]), cur_klal_num, klal_link_num, ):
@@ -307,10 +308,10 @@ def getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addi
                 klal_index + 1], "in", cur_klal_num, "siman", cur_siman
             return -1
 
-    return klal_link_num
+    return klal_link_num, isChelekBet
 
 
-def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
+def getSelfLinks(cur_siman, comment, cur_klal_num, isChelekBet):
     comment_words = comment.split()
 
     self_links_t = []
@@ -324,7 +325,7 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
             if isReferenceToAnotherWork(comment_words, klal_index):
                 continue
 
-            klal_link_num = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addition)
+            klal_link_num, isChelekBet = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, isChelekBet)
 
             if klal_link_num is -1:
                 continue
@@ -339,15 +340,16 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, addition):
             siman_link_num = getGematria(getRidOfSofitAndDash(comment_words[klal_index + 2]))
 
             klal_link_num = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addition)
+            klal_link_num, isChelekBet = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, isChelekBet)
 
             if u'קמן' in word and not isUpcoming(cur_siman, siman_link_num):
                 print "you should be more", comment_words[
-                    klal_index + 2], "in", cur_klal_num + CHELEK_BET_ADDITION, "siman", cur_siman
+                    klal_index + 2], "in", cur_klal_num, "siman", cur_siman
                 continue
 
             elif u'עיל' in word and isUpcoming(cur_siman, siman_link_num):
                 print "you should be less happened", comment_words[
-                    klal_index + 2], "in", cur_klal_num + CHELEK_BET_ADDITION, "siman", cur_siman
+                    klal_index + 2], "in", cur_klal_num, "siman", cur_siman
                 continue
 
             # self_links.append(selfLink(cur_klal_num, cur_siman, cur_klal_num, comment_words[klal_index + 2]))
@@ -387,7 +389,7 @@ def getSederHayomSectionTitlesFromWikitext(sections):
 def getChelekBetSectionTitles(soup, sections):
     found_sections = soup.find_all("section")
 
-    start = 1 + CHELEK_BET_ADDITION  # all sections from the text are from chelek bet
+    start = 1
 
     for index, section in enumerate(found_sections):
         # end is 154 if this is last section
@@ -395,13 +397,12 @@ def getChelekBetSectionTitles(soup, sections):
         end = 154 if index + 1 >= len(found_sections) \
             else getKlalNum(found_sections[index + 1].parent)
 
-        end += CHELEK_BET_ADDITION
         sections.append(Section(section.text, start, end))
         start = end + 1
 
 
-def isStartOfChelekBet(klal_num, addition):
-    return klal_num == 69 and addition is 0
+def isStartOfChelekBet(klal_num, isChelekBet):
+    return klal_num == 69 and isChelekBet is False
 
 
 def getKlalim(soup, klalim_ja):
@@ -409,8 +410,7 @@ def getKlalim(soup, klalim_ja):
 
     for klal in soup.find_all("klal")[1:]:  # [1:] because first klal is empty
 
-        klal_num = getKlalNum(klal) + addition  # need to add addition bc could be a part of chelek א or ב
-
+        klal_num = getKlalNum(klal)
 
         comments = []
 
@@ -421,12 +421,12 @@ def getKlalim(soup, klalim_ja):
             comment_text = bleach.clean(comment, tags=['i', 'strong', 'big', 'small', 'br'],
                                         attributes=['data-commentator', 'data-order'], strip=True)
 
-            klal_index = comment_text.find(u'כלל')
-
-            if klal_index is not -1:  # check for self links in the text
-                word_before_klal_idx = comment_text[:comment_text[:klal_index].rfind(' ')].rfind(' ')
-                comment_w_links = getSelfLinks(siman + 1, comment_text[word_before_klal_idx:], klal_num, addition)
-                comment_text = comment_text[:word_before_klal_idx + 1] + comment_w_links
+            # klal_index = comment_text.find(u'כלל')
+            #
+            # if klal_index is not -1:  # check for self links in the text
+            #     word_before_klal_idx = comment_text[:comment_text[:klal_index].rfind(' ')].rfind(' ')
+            #     comment_w_links = getSelfLinks(siman + 1, comment_text[word_before_klal_idx:], klal_num, isChelekBet)
+            #     comment_text = comment_text[:word_before_klal_idx + 1] + comment_w_links
 
             while comment.next_sibling and comment.next_sibling.name == 'list_comment':
                 comment_text += u"<br><b>" + comment.next_sibling.text.replace("@55", u"</b> ", 1)
@@ -443,11 +443,13 @@ def getKlalim(soup, klalim_ja):
                 # if comment.i:
                 #     footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
 
-        klalim_ja.set_element([klal_num - 1], comments, [])
+        if isChelekBet:
+            ca_2_ja.set_element([klal_num - 1], comments, [])
+        else:
+            ca_1_ja.set_element([klal_num - 1], comments, [])
 
-        if isStartOfChelekBet(klal_num, addition):
-            addition = CHELEK_BET_ADDITION
-            klal_num += addition
+        if isStartOfChelekBet(klal_num, isChelekBet):
+            isChelekBet = True
 
 
 def sub4BetterLinks(line):
@@ -493,7 +495,9 @@ getSederHayomSectionTitlesFromWikitext(sections)
 
 createEasierToParseCA()
 
-nishmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
+nishmat_1_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
+nishmat_2_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
+
 
 with codecs.open("nishmat_adam.txt", "r", "utf-8") as file_read:
     na_footnote_count = -1
@@ -514,7 +518,10 @@ with codecs.open("nishmat_adam.txt", "r", "utf-8") as file_read:
 
             if klal_text != '':
                 klal_text = removeExtraSpaces(klal_text[:-4])  # remove extra break at the end
-                nishmat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], klal_text, u"")
+                if footnote.klal_num > 69:
+                    nishmat_2_ja.set_element([footnote.klal_num - 70, getGematria(letter) - 1], klal_text, u"")
+                else:
+                    nishmat_1_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], klal_text, u"")
 
             klal_text = u''
 
@@ -526,19 +533,20 @@ with codecs.open("nishmat_adam.txt", "r", "utf-8") as file_read:
         else:
             print "ERROR what is this", line
 
-klalim_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comment, comment]]]
+ca_chelek_1_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comment, comment]]]
+ca_chelek_2_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comment, comment]]]
 
 with open("ca_parsed.xml") as file_read:
     soup = BeautifulSoup(file_read, 'lxml')
 
     getChelekBetSectionTitles(soup, sections)
 
-    getKlalim(soup, klalim_ja)
+    getKlalim(soup, ca_chelek_1_ja, ca_chelek_2_ja)
 
-ja_to_xml(nishmat_ja.array(), ["klal", "siman"], "nishmat_output.xml")
+ja_to_xml(nishmat_1_ja.array(), ["klal", "siman"], "nishmat_1_output.xml")
+ja_to_xml(nishmat_2_ja.array(), ["klal", "siman"], "nishmat_2_output.xml")
 ja_to_xml(ca_chelek_1_ja.array(), ["klal", "siman"], "chayei_1_output.xml")
 ja_to_xml(ca_chelek_2_ja.array(), ["klal", "siman"], "chayei_2_output.xml")
-
 
 eng_section_titles = [
     'Laws of Prayer and Blessings',
@@ -557,9 +565,22 @@ eng_section_titles = [
 ]
 eng_section_num = 0
 
-na_index_schema = JaggedArrayNode()
+na_index_schema = SchemaNode()
 na_index_schema.add_primary_titles("Nishmat Adam", u"נשמת אדם")
-na_index_schema.add_structure(["Klal", "Siman"])
+
+na_default_node = JaggedArrayNode()
+na_default_node.add_structure(["Klal", "Siman"])
+na_default_node.default = True
+na_default_node.key = "default"
+na_default_node.validate()
+na_index_schema.append(na_default_node)
+
+na_shabbat_node = JaggedArrayNode()
+na_shabbat_node.add_primary_titles("Shabbat and Festivals", u"שבת ומועדים")
+na_shabbat_node.add_structure(["Klal", "Siman"])
+na_shabbat_node.validate()
+na_index_schema.append(na_shabbat_node)
+
 na_index_schema.validate()
 
 ca_index_schema = SchemaNode()
@@ -568,7 +589,6 @@ ca_index_schema.add_primary_titles("Chayei Adam", u"חיי אדם")
 intro_node = JaggedArrayNode()
 intro_node.add_primary_titles(u"Author's Introduction", u"הקדמת המחבר")
 intro_node.add_structure(['Comment'])
-
 intro_node.validate()
 ca_index_schema.append(intro_node)
 
@@ -576,9 +596,14 @@ ca_default_node = JaggedArrayNode()
 ca_default_node.add_structure(["Klal", "Siman"])
 ca_default_node.default = True
 ca_default_node.key = "default"
-
 ca_default_node.validate()
 ca_index_schema.append(ca_default_node)
+
+ca_shabbat_node = JaggedArrayNode()
+ca_shabbat_node.add_primary_titles("Shabbat and Festivals", u"שבת ומועדים")
+ca_shabbat_node.add_structure(["Klal", "Siman"])
+ca_shabbat_node.validate()
+ca_index_schema.append(ca_shabbat_node)
 
 ca_index_schema.validate()
 
@@ -590,10 +615,19 @@ alt_intro_node.depth = 0
 ca_alt_schema.append(alt_intro_node)
 na_alt_schema = SchemaNode()
 
+isChelekBet = False
+
 for section, eng_title in zip(sections, eng_section_titles):
     map_node = ArrayMapNode()
     map_node.add_primary_titles(eng_title, section.title)
-    map_node.wholeRef = "Chayei Adam.{}-{}".format(section.start, section.end)
+    if eng_title == 'Laws of Shabbat':
+        isChelekBet = True
+
+    if isChelekBet:
+        map_node.wholeRef = "Chayei Adam, Shabbat and Festivals.{}-{}".format(section.start, section.end)
+    else:
+        map_node.wholeRef = "Chayei Adam.{}-{}".format(section.start, section.end)
+
     map_node.includeSections = True
     map_node.depth = 0
     map_node.key = eng_title
@@ -603,7 +637,11 @@ for section, eng_title in zip(sections, eng_section_titles):
 
     na_map_node = map_node.copy()
 
-    na_map_node.wholeRef = "Nishmat Adam.{}-{}".format(section.start, section.end)
+    if isChelekBet:
+        map_node.wholeRef = "Nishmat Adam, Shabbat and Festivals.{}-{}".format(section.start, section.end)
+    else:
+        map_node.wholeRef = "Nishmat Adam.{}-{}".format(section.start, section.end)
+
     na_alt_schema.append(na_map_node)
 
 ca_index = {
@@ -626,35 +664,56 @@ na_index = {
 
 add_term("Klal", u"כלל", scheme="section_names")
 
-ca_text_version = {
+ca_1_text_version = {
     'versionTitle': "Chayei Adam, Vilna, 1843",
     'versionSource': "http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId=NNL_ALEPH001873955",
     'language': 'he',
-    'text': klalim_ja.array()
+    'text': ca_chelek_1_ja.array()
 }
 
-na_text_version = {
+ca_2_text_version = {
+    'versionTitle': "Chayei Adam, Vilna, 1843",
+    'versionSource': "http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId=NNL_ALEPH001873955",
+    'language': 'he',
+    'text': ca_chelek_2_ja.array()
+}
+
+na_1_text_version = {
     'versionTitle': "Chayei Adam, Warsaw, 1888",
     'versionSource': "http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId=NNL_ALEPH001873393",
     'language': 'he',
-    'text': nishmat_ja.array()
+    'text': nishmat_1_ja.array()
 }
 
+na_2_text_version = {
+    'versionTitle': "Chayei Adam, Warsaw, 1888",
+    'versionSource': "http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId=NNL_ALEPH001873393",
+    'language': 'he',
+    'text': nishmat_2_ja.array()
+}
+
+# add_term("Klal", u"כלל", scheme="section_names")
+#
 add_term("Chayei Adam", u'חיי אדם')
 
-resp = http_request(SEFARIA_SERVER + "/api/category", body={'apikey': API_KEY},
-                    json_payload={"path": ["Halakhah", "Commentary", "Chayei Adam"], "sharedTitle": "Chayei Adam"},
-                    method="POST")
+# resp = http_request(SEFARIA_SERVER + "/api/category", body={'apikey': API_KEY},
+#                     json_payload={"path": ["Halakhah", "Commentary", "Chayei Adam"], "sharedTitle": "Chayei Adam"},
+#                     method="POST")
+add_category("Chayei Adam", ["Halakhah", "Commentary", "Chayei Adam"])
 
-post_index(ca_index)
-
-post_index(na_index)
-
-post_text("Chayei Adam", ca_text_version, index_count="on")
-# post_link(self_links)
-
-post_text("Nishmat Adam", na_text_version, index_count='on')
-post_link(na_links)
+# post_index(ca_index)
+#
+# post_index(na_index)
+#
+# post_text("Chayei Adam", ca_1_text_version)
+# post_text("Chayei Adam, Shabbat and Festivals", ca_2_text_version, index_count='on')
+#
+# # post_link(self_links)
+#
+post_text("Nishmat Adam", na_1_text_version)
+post_text("Nishmat Adam, Shabbat and Festivals", na_2_text_version, index_count='on')
+#
+# post_link(na_links)
 
 # TODO: address questions:
 '''
