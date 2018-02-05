@@ -14,7 +14,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "sefaria.settings"
 
 from data_utilities.util import ja_to_xml, traverse_ja, getGematria, numToHeb
 from sefaria.datatype import jagged_array
-from sources.functions import post_index, post_text, post_link, http_request, removeExtraSpaces, add_term
+from sources.functions import post_index, post_text, post_link, http_request, removeExtraSpaces, add_term, add_category
 from sefaria.model import *
 
 reload(sys)
@@ -339,7 +339,6 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, isChelekBet):
 
             siman_link_num = getGematria(getRidOfSofitAndDash(comment_words[klal_index + 2]))
 
-            klal_link_num = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, addition)
             klal_link_num, isChelekBet = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, isChelekBet)
 
             if u'קמן' in word and not isUpcoming(cur_siman, siman_link_num):
@@ -405,8 +404,8 @@ def isStartOfChelekBet(klal_num, isChelekBet):
     return klal_num == 69 and isChelekBet is False
 
 
-def getKlalim(soup, klalim_ja):
-    addition = 0
+def getKlalim(soup, ca_1_ja, ca_2_ja):
+    isChelekBet = False
 
     for klal in soup.find_all("klal")[1:]:  # [1:] because first klal is empty
 
@@ -662,7 +661,6 @@ na_index = {
     "default_struct": "Topic"
 }
 
-add_term("Klal", u"כלל", scheme="section_names")
 
 ca_1_text_version = {
     'versionTitle': "Chayei Adam, Vilna, 1843",
