@@ -12,7 +12,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "sefaria.settings"
 
 from data_utilities.util import ja_to_xml, traverse_ja, getGematria, numToHeb
 from sefaria.datatype import jagged_array
-from sources.functions import post_index, post_text, post_link
+from sources.functions import post_index, post_text, post_link, removeExtraSpaces
 from sefaria.model import *
 
 reload(sys)
@@ -29,10 +29,13 @@ KlalTitle = namedtuple('KlalTitle', ['num', 'title'])
 footnotes = {}  # needs to be a dict bc of double klalim
 Footnote = namedtuple('Footnote', ['klal_num', 'comment_num', 'letter'])
 
-klal_count = 0
+klal_count = 1
 comment_count = 0
 ca_footnote_count = 0
 local_foot_count = 0
+cur_comment = ''
+cur_klal_tile = u'דין מי הוא ראוי לשחוט'
+prev_tag = ''
 
 binat_links = []
 self_links = []
@@ -49,7 +52,6 @@ tags['88'] = 'binat_comment'
 tags['99'] = 'footer'
 
 mapping = dict.fromkeys(map(ord, u":.\n)"))  # chars to eliminate when parsing Chochmat Adam numbers
-
 
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
@@ -94,15 +96,15 @@ def Ca2NaLink(ca_klal_num, ca_seif_number, ba_seif_number):
 def checkForFootnotes(line):
     global klal_count, comment_count, ca_footnote_count, local_foot_count
 
-    while '#' in line:
+    while '@88' in line:
 
-        footnote_index = line.index('#')
+        footnote_index = line.index('@88')
         end_footnote = footnote_index + line[footnote_index:].find(' ')
 
         if end_footnote < footnote_index:  # when footnote appears at end of comment cant find ' '
             end_footnote = len(line)  # so use len of line as end_footnote index
 
-        letter = unicode(line[footnote_index + 1:end_footnote]).translate(mapping)
+        letter = unicode(line[footnote_index + 3:end_footnote]).translate(mapping)
 
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
         binat_links.append(Ca2NaLink(klal_count, comment_count, getGematria(letter)))
@@ -111,6 +113,8 @@ def checkForFootnotes(line):
                                                                                                 ca_footnote_count))
 
         ca_footnote_count += 1
+
+    return line
 
 
 
@@ -124,20 +128,24 @@ def checkForFootnotes(line):
 # tags['88'] = 'binat_comment'
 # tags['99'] = 'footer'
 
-def checkAndEditTag(tag, line, file):
-    global klal_count, comment_count, ca_footnote_count, local_foot_count
+def checkAndEditTag(tag, line):
+    global klal_count, comment_count, ca_footnote_count, local_foot_count, cur_comment
 
-    if tag is 'list_comment':
-        line = '<b>' + line.replace("@55", " </b> ", 1)
+    if tag is 'klal_num':
+        chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+        cur_comment = ''
 
-        checkForFootnotes(line)
-
-    elif tag is 'klal_num':
-        file.write("</klal><klal>")  # adding this makes it much easier to parse klalim
+        # file.write("</klal><klal>")  # adding this makes it much easier to parse klalim
 
         local_foot_count = 0
 
         klal_num = getGematria(line.split()[1])
+
+        if klal_num == 75:
+            klal_count += 14
+
+        if klal_num > 74: #14 cencored klalim
+            klal_num += 14
 
         if len(line.split()) > 2:  # abnormally long line
 
@@ -158,25 +166,44 @@ def checkAndEditTag(tag, line, file):
         else:
             print "KLAL NUMBER OFF", klal_num, klal_count
 
+    elif tag is 'paragraph':
+
+        line = checkForFootnotes(line)
+
+        line = line.replace("@55", u' <b> ')
+        line = line.replace("@55", u' </b> ')
+
+        cur_comment += line
+
+    elif tag is 'klal_title':
+        if cur_comment != '':
+            cur_comment += u'<br>'
+
+        cur_comment += u'<big><strong>' + line + u'</strong></big><br>'
+
+    elif tag is 'reference_line':
+        cur_comment += u'<br>' + line
 
     elif tag is 'seif_num':
 
         comment_num = getGematria(line)
 
+        if comment_num != 1:
+            chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+            cur_comment = ''
+
         if comment_num is comment_count + 1 or comment_num is 1:
             comment_count = comment_num
 
         else:
-            print "seif num off", line
+            print "klal " + str(klal_count - 14) + " seif num off ", line
             line = numToHeb(comment_count + 1)
             comment_count += 1
 
-    elif tag is 'paragraph':
+    elif tag is 'footer':
+        cur_comment += u'<br>' + line
 
-        checkForFootnotes(line)
-        # print footnotes[ca_footnote_count]
-
-    return tag, line
+    # return tag, line
 
 
 # def getSelfLinks(index, comment, klal_num, addition):
@@ -257,7 +284,7 @@ chevre_kadisha_intro_ja = jagged_array.JaggedArray([])
 chevre_kadisha_ja = jagged_array.JaggedArray([])
 
 with codecs.open("chachmat_adam.txt") as file_read, open("chachmat_parsed.xml", "w") as file_write:
-    file_write.write("<root><klal>")
+    # file_write.write("<root><klal>")
 
     for line in file_read:
 
@@ -265,21 +292,22 @@ with codecs.open("chachmat_adam.txt") as file_read, open("chachmat_parsed.xml", 
             tag = 'section'
             line = line[1:]
             sections.append(Section(prev_title, prev_klal_num, klal_count))
-            if line == u'קונטרס מצבת משה':
+            if u'קונטרס מצבת משה' in line:
                 break
 
         elif line[:1] is '@':
             tag = tags[line[1:3]]
             line = line[3:]
+            checkAndEditTag(tag, line)
 
-            tag, line = checkAndEditTag(tag, line, file_write)
+            # tag, line = checkAndEditTag(tag, line, file_write)
 
         else:
             print "what is this " + line
 
-        file_write.write(u"<{}>{}</{}>".format(tag, line.strip(), tag))
+    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
 
-    file_write.write("</klal></root>")
+    # file_write.write("</klal></root>")
 
 binat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 
