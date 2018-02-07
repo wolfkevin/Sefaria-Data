@@ -173,16 +173,19 @@ def checkAndEditTag(tag, line):
         line = line.replace("@55", u' <b> ')
         line = line.replace("@55", u' </b> ')
 
+        if cur_comment != '':
+            cur_comment += u'<br>'
         cur_comment += line
 
     elif tag is 'klal_title':
         if cur_comment != '':
             cur_comment += u'<br>'
-
-        cur_comment += u'<big><strong>' + line + u'</strong></big><br>'
+        cur_comment += u'<big><strong>' + line + u'</strong></big>'
 
     elif tag is 'reference_line':
-        cur_comment += u'<br>' + line
+        if cur_comment != '':
+            cur_comment += u'<br>'
+        cur_comment += line
 
     elif tag is 'seif_num':
 
@@ -283,17 +286,45 @@ mitzvat_moshe_ja = jagged_array.JaggedArray([])
 chevre_kadisha_intro_ja = jagged_array.JaggedArray([])
 chevre_kadisha_ja = jagged_array.JaggedArray([])
 
+later_jas = [jagged_array.JaggedArray([]), jagged_array.JaggedArray([]), jagged_array.JaggedArray([]), jagged_array.JaggedArray([])]
+
+startedKuntrus = False
+ja_idx = 0
+
 with codecs.open("chachmat_adam.txt") as file_read, open("chachmat_parsed.xml", "w") as file_write:
     # file_write.write("<root><klal>")
 
     for line in file_read:
 
-        if line[:1] is '$':
+        if startedKuntrus:
+            if '$' in line[:2]:
+                later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                cur_comment = ''
+                ja_idx += 1
+            elif '@77' in line[:3]:
+                later_jas[ja_idx].set_element([0], removeExtraSpaces(line[3:]), u"")
+                ja_idx += 1
+            elif '@11' in line[:3]:
+                if cur_comment != '':
+                    cur_comment += u'<br>'
+                cur_comment += line[3:]
+            elif '@44' in line[:3]:
+                comment_num = getGematria(line[3:])
+
+                if comment_num != 1:
+                    later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                    cur_comment = ''
+                if comment_num is comment_count + 1 or comment_num is 1:
+                    comment_count = comment_num
+
+        elif line[:1] is '$':
             tag = 'section'
             line = line[1:]
             sections.append(Section(prev_title, prev_klal_num, klal_count))
             if u'קונטרס מצבת משה' in line:
-                break
+                startedKuntrus = True
+                chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                cur_comment = ''
 
         elif line[:1] is '@':
             tag = tags[line[1:3]]
@@ -305,7 +336,8 @@ with codecs.open("chachmat_adam.txt") as file_read, open("chachmat_parsed.xml", 
         else:
             print "what is this " + line
 
-    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+
+
 
     # file_write.write("</klal></root>")
 
@@ -387,6 +419,12 @@ binat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 #             klal_num += addition
 
 ja_to_xml(chochmat_ja.array(), ["klal", "siman"], "chochmat_output.xml")
+ja_to_xml(later_jas[0].array(), ["siman"], "mmi_output.xml")
+ja_to_xml(later_jas[1].array(), ["siman"], "mm_output.xml")
+ja_to_xml(later_jas[2].array(), ["siman"], "cki_output.xml")
+ja_to_xml(later_jas[3].array(), ["siman"], "ck_output.xml")
+
+
 ja_to_xml(binat_ja.array(), ["klal", "siman"], "binat_output.xml")
 
 index_schema = SchemaNode()
