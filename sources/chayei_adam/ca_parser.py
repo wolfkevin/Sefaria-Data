@@ -586,7 +586,7 @@ ca_index_schema = SchemaNode()
 ca_index_schema.add_primary_titles("Chayei Adam", u"חיי אדם")
 
 intro_node = JaggedArrayNode()
-intro_node.add_primary_titles(u"Author's Introduction", u"הקדמת המחבר")
+intro_node.add_primary_titles("Author's Introduction", u"הקדמת המחבר")
 intro_node.add_structure(['Comment'])
 intro_node.validate()
 ca_index_schema.append(intro_node)
@@ -608,7 +608,7 @@ ca_index_schema.validate()
 
 ca_alt_schema = SchemaNode()
 alt_intro_node = ArrayMapNode()
-alt_intro_node.add_primary_titles(u"Author's Introduction", u"הקדמת המחבר")
+alt_intro_node.add_primary_titles("Author's Introduction", u"הקדמת המחבר")
 alt_intro_node.wholeRef = "Chayei Adam, Author's Introduction"
 alt_intro_node.depth = 0
 ca_alt_schema.append(alt_intro_node)
@@ -637,9 +637,9 @@ for section, eng_title in zip(sections, eng_section_titles):
     na_map_node = map_node.copy()
 
     if isChelekBet:
-        map_node.wholeRef = "Nishmat Adam, Shabbat and Festivals.{}-{}".format(section.start, section.end)
+        na_map_node.wholeRef = "Nishmat Adam, Shabbat and Festivals.{}-{}".format(section.start, section.end)
     else:
-        map_node.wholeRef = "Nishmat Adam.{}-{}".format(section.start, section.end)
+        na_map_node.wholeRef = "Nishmat Adam.{}-{}".format(section.start, section.end)
 
     na_alt_schema.append(na_map_node)
 
@@ -699,19 +699,19 @@ add_term("Chayei Adam", u'חיי אדם')
 #                     method="POST")
 add_category("Chayei Adam", ["Halakhah", "Commentary", "Chayei Adam"])
 
-# post_index(ca_index)
+post_index(ca_index)
+
+post_index(na_index)
+
+#post_text("Chayei Adam", ca_1_text_version)
+#post_text("Chayei Adam, Shabbat and Festivals", ca_2_text_version, index_count='on')
+
+# post_link(self_links)
+
+#post_text("Nishmat Adam", na_1_text_version)
+#post_text("Nishmat Adam, Shabbat and Festivals", na_2_text_version, index_count='on')
 #
-# post_index(na_index)
-#
-# post_text("Chayei Adam", ca_1_text_version)
-# post_text("Chayei Adam, Shabbat and Festivals", ca_2_text_version, index_count='on')
-#
-# # post_link(self_links)
-#
-post_text("Nishmat Adam", na_1_text_version)
-post_text("Nishmat Adam, Shabbat and Festivals", na_2_text_version, index_count='on')
-#
-# post_link(na_links)
+#post_link(na_links)
 
 # TODO: address questions:
 '''
