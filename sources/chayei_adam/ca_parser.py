@@ -432,6 +432,9 @@ def getKlalim(soup, ca_1_ja, ca_2_ja):
 
         klal_num = getKlalNum(klal)
 
+        if klal_num > 97:
+            klal_num += 1
+
         comments = []
 
         klal_title_added = False
@@ -518,7 +521,6 @@ createEasierToParseCA()
 nishmat_1_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 nishmat_2_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 
-
 with codecs.open("nishmat_adam.txt", "r", "utf-8") as file_read:
     na_footnote_count = -1
 
@@ -527,9 +529,11 @@ with codecs.open("nishmat_adam.txt", "r", "utf-8") as file_read:
     for line in file_read:
 
         if line[:3] == u'@11':
+            if klal_text != '':
+                klal_text += u'<br>'
 
-            klal_text += u'<b> ' + line[3:].strip().replace(u'@33', u" </b> ", 1).replace(u'@44', u' <b> ').replace(
-                u'@55', u' </b> ') + u'<br>'
+            klal_text += u'<b>' + line[3:].strip().replace(u'@33', u"</b> ", 1).replace(u'@44', u' <b>').replace(
+                u'@55', u'</b> ')
 
             if letter != footnote.letter:
                 print "letters off "
@@ -537,9 +541,13 @@ with codecs.open("nishmat_adam.txt", "r", "utf-8") as file_read:
         elif line[:3] == u'@22':
 
             if klal_text != '':
-                klal_text = removeExtraSpaces(klal_text[:-4])  # remove extra break at the end
                 if footnote.klal_num > 69:
-                    nishmat_2_ja.set_element([footnote.klal_num - 70, getGematria(letter) - 1], klal_text, u"")
+                    if footnote.klal_num > 168:
+                        nishmat_2_ja.set_element([footnote.klal_num - 69, getGematria(letter) - 1],
+                                                 removeExtraSpaces(klal_text), u"")
+                    else:
+                        nishmat_2_ja.set_element([footnote.klal_num - 70, getGematria(letter) - 1],
+                                                 removeExtraSpaces(klal_text), u"")
                 else:
                     nishmat_1_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], klal_text, u"")
 
@@ -552,6 +560,8 @@ with codecs.open("nishmat_adam.txt", "r", "utf-8") as file_read:
 
         else:
             print "ERROR what is this", line
+
+    nishmat_2_ja.set_element([footnote.klal_num - 69, getGematria(letter) - 1], removeExtraSpaces(klal_text), u"")
 
 ca_chelek_1_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comment, comment]]]
 ca_chelek_2_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comment, comment]]]
@@ -673,7 +683,8 @@ ca_index = {
 }
 
 na_index = {
-    "title": "Nishmat Adam",
+    "title"
+    : "Nishmat Adam",
     "dependence": "Commentary",
     "categories": ["Halakhah", "Commentary", "Chayei Adam"],
     "schema": na_index_schema.serialize(),
@@ -681,7 +692,6 @@ na_index = {
     "base_text_titles": ["Chayei Adam"],
     "default_struct": "Topic"
 }
-
 
 ca_1_text_version = {
     'versionTitle': "Chayei Adam, Vilna, 1843",
