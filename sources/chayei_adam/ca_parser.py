@@ -85,6 +85,10 @@ def getRidOfSofitAndDash(txt):
     return txt
 
 
+def isStartOfChelekBet(klal_num, isChelekBet):
+    return klal_num == 69 and isChelekBet is False
+
+
 def selfLink(klal_num, siman_num, klal_link_num, siman_link_num):
     return {
         'refs': [
