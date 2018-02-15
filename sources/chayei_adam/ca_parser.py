@@ -98,19 +98,37 @@ def selfLink(klal_num, siman_num, klal_link_num, siman_link_num):
 
 
 def Ca2NaLink(ca_klal_num, ca_siman_number, na_siman_number):
-    return {
-        'refs': [
-            "Chayei Adam.{}.{}".format(ca_klal_num, ca_siman_number),
-            "Nishmat Adam.{}.{}".format(ca_klal_num, na_siman_number)
-        ],
-        'type': 'commentary',
-        'auto': True,
-        'generated_by': 'Chayei Adam to Nishmat Adam linker',
-        'inline_reference': {
-            'data-commentator': "Nishmat Adam",
-            "data-order": na_siman_number
+    if ca_klal_num > 69:
+        ca_klal_num -= 69
+        if ca_klal_num > 97:
+            ca_klal_num += 1
+        return {
+            'refs': [
+                "Chayei Adam, Shabbat_and_Festivals.{}.{}".format(ca_klal_num, ca_siman_number),
+                "Nishmat Adam, Shabbat_and_Festivals.{}.{}".format(ca_klal_num, na_siman_number)
+            ],
+            'type': 'commentary',
+            'auto': True,
+            'generated_by': 'Chayei Adam to Nishmat Adam linker',
+            'inline_reference': {
+                'data-commentator': "Nishmat Adam",
+                "data-order": na_siman_number
+            }
         }
-    }
+    else:
+        return {
+            'refs': [
+                "Chayei Adam.{}.{}".format(ca_klal_num, ca_siman_number),
+                "Nishmat Adam.{}.{}".format(ca_klal_num, na_siman_number)
+            ],
+            'type': 'commentary',
+            'auto': True,
+            'generated_by': 'Chayei Adam to Nishmat Adam linker',
+            'inline_reference': {
+                'data-commentator': "Nishmat Adam",
+                "data-order": na_siman_number
+            }
+        }
 
 
 def checkForNaFootnotes(line):
@@ -128,6 +146,7 @@ def checkForNaFootnotes(line):
 
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
         letter_num = getGematria(letter)
+
         na_links.append(Ca2NaLink(klal_count, comment_count, letter_num))
 
         ca_footnote_count += 1
@@ -325,7 +344,8 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, isChelekBet):
             if isReferenceToAnotherWork(comment_words, klal_index):
                 continue
 
-            klal_link_num, isChelekBet = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, isChelekBet)
+            klal_link_num, isChelekBet = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman,
+                                                             isChelekBet)
 
             if klal_link_num is -1:
                 continue
@@ -339,7 +359,8 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, isChelekBet):
 
             siman_link_num = getGematria(getRidOfSofitAndDash(comment_words[klal_index + 2]))
 
-            klal_link_num, isChelekBet = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman, isChelekBet)
+            klal_link_num, isChelekBet = getKlalReferenceNum(comment_words, klal_index, cur_klal_num, cur_siman,
+                                                             isChelekBet)
 
             if u'קמן' in word and not isUpcoming(cur_siman, siman_link_num):
                 print "you should be more", comment_words[
