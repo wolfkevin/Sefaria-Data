@@ -732,21 +732,21 @@ na_2_text_version = {
 # resp = http_request(SEFARIA_SERVER + "/api/category", body={'apikey': API_KEY},
 #                     json_payload={"path": ["Halakhah", "Commentary", "Chayei Adam"], "sharedTitle": "Chayei Adam"},
 #                     method="POST")
-add_category("Chayei Adam", ["Halakhah", "Commentary", "Chayei Adam"])
-
-post_index(ca_index)
-
-post_index(na_index)
-
-#post_text("Chayei Adam", ca_1_text_version)
-#post_text("Chayei Adam, Shabbat and Festivals", ca_2_text_version, index_count='on')
+# add_category("Chayei Adam", ["Halakhah", "Commentary", "Chayei Adam"])
+#
+# post_index(ca_index)
+#
+# post_index(na_index)
+#
+# post_text("Chayei Adam", ca_1_text_version)
+# post_text("Chayei Adam, Shabbat and Festivals", ca_2_text_version, index_count='on')
 
 # post_link(self_links)
 
-#post_text("Nishmat Adam", na_1_text_version)
-#post_text("Nishmat Adam, Shabbat and Festivals", na_2_text_version, index_count='on')
+# post_text("Nishmat Adam", na_1_text_version)
+# post_text("Nishmat Adam, Shabbat and Festivals", na_2_text_version, index_count='on')
 #
-#post_link(na_links)
+# post_link(na_links)
 
 # TODO: address questions:
 '''
