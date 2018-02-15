@@ -417,12 +417,11 @@ def getChelekBetSectionTitles(soup, sections):
         end = 154 if index + 1 >= len(found_sections) \
             else getKlalNum(found_sections[index + 1].parent)
 
+        if end > 97:
+            end += 1
+
         sections.append(Section(section.text, start, end))
         start = end + 1
-
-
-def isStartOfChelekBet(klal_num, isChelekBet):
-    return klal_num == 69 and isChelekBet is False
 
 
 def getKlalim(soup, ca_1_ja, ca_2_ja):
@@ -723,7 +722,8 @@ na_2_text_version = {
 
 # add_term("Klal", u"כלל", scheme="section_names")
 #
-add_term("Chayei Adam", u'חיי אדם')
+# add_term("Chayei Adam", u'חיי אדם')
+
 
 # resp = http_request(SEFARIA_SERVER + "/api/category", body={'apikey': API_KEY},
 #                     json_payload={"path": ["Halakhah", "Commentary", "Chayei Adam"], "sharedTitle": "Chayei Adam"},
