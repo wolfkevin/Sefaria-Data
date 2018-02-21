@@ -291,8 +291,7 @@ later_jas = [jagged_array.JaggedArray([]), jagged_array.JaggedArray([]), jagged_
 startedKuntrus = False
 ja_idx = 0
 
-with codecs.open("chachmat_adam.txt") as file_read, open("chachmat_parsed.xml", "w") as file_write:
-    # file_write.write("<root><klal>")
+with codecs.open("chachmat_adam.txt") as file_read:
 
     for line in file_read:
 
