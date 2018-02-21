@@ -93,12 +93,12 @@ def Ca2NaLink(ca_klal_num, ca_seif_number, ba_seif_number):
     }
 
 
-def checkForFootnotes(line):
+def checkForFootnotes(line, symbol):
     global klal_count, comment_count, ca_footnote_count, local_foot_count
 
-    while '@88' in line:
+    while symbol in line:
 
-        footnote_index = line.index('@88')
+        footnote_index = line.index(symbol)
         end_footnote = footnote_index + line[footnote_index:].find(' ')
 
         if end_footnote < footnote_index:  # when footnote appears at end of comment cant find ' '
