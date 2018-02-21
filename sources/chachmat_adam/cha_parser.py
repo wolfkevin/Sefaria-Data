@@ -19,6 +19,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 sections = []
+binat_sections = []
 Section = namedtuple('Section', ['title', 'start', 'end'])
 prev_title = u'הלכות שחיטה'
 prev_klal_num = 1
@@ -105,6 +106,11 @@ def checkForFootnotes(line, symbol):
             end_footnote = len(line)  # so use len of line as end_footnote index
 
         letter = unicode(line[footnote_index + 3:end_footnote]).translate(mapping)
+        # if local_foot_count + 1 != getGematria(letter):
+        #     print(line)
+        # else:
+        #     local_foot_count += 1
+
 
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
         binat_links.append(Ca2NaLink(klal_count, comment_count, getGematria(letter)))
@@ -136,8 +142,6 @@ def checkAndEditTag(tag, line):
         cur_comment = ''
 
         # file.write("</klal><klal>")  # adding this makes it much easier to parse klalim
-
-        local_foot_count = 0
 
         klal_num = getGematria(line.split()[1])
 
@@ -320,6 +324,7 @@ with codecs.open("chachmat_adam.txt") as file_read:
             tag = 'section'
             line = line[1:]
             sections.append(Section(prev_title, prev_klal_num, klal_count))
+            local_foot_count = 0
             if u'קונטרס מצבת משה' in line:
                 startedKuntrus = True
                 chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
