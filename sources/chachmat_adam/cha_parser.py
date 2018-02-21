@@ -170,8 +170,8 @@ def checkAndEditTag(tag, line):
 
         line = checkForFootnotes(line, '@88')
 
-        line = line.replace("@55", u' <b> ')
-        line = line.replace("@55", u' </b> ')
+        line = line.replace("@55", u' <b>')
+        line = line.replace("@55", u'</b> ')
 
         if cur_comment != '':
             cur_comment += u'<br>'
