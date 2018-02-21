@@ -335,10 +335,44 @@ with codecs.open("chachmat_adam.txt") as file_read:
         else:
             print "what is this " + line
 
+    later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
 
 
 
-    # file_write.write("</klal></root>")
+klal_count = 74
+comment_count = 0
+local_foot_count = 66
+cur_comment = ''
+
+with codecs.open("ca_missing.txt") as file_read:
+    for line in file_read:
+        if len(line) > 2:
+            # print line[0]
+            # line=line.decode('utf-8','ignore').encode("utf-8")
+
+            if '$' in line or '@' in line:
+                if cur_comment != '' and comment_count != 0:
+                    chochmat_ja.set_element([klal_count-1, comment_count-1], removeExtraSpaces(cur_comment))
+                    cur_comment = ''
+                if '$' in line:
+                    klal_count += 1
+                    comment_count = 0
+                elif '@' in line:
+                    comment_count += 1
+                else:
+                    print "weird addition " + line
+
+            else:
+                if cur_comment != '':
+                    cur_comment += u'<br>'
+
+                if '#' in line:
+                    cur_comment += u'<big><strong>' + line[1:] + u'</strong></big>'
+                else:
+                    cur_comment += line
+                    checkForFootnotes(line, '%')
+
+    chochmat_ja.set_element([klal_count-1, comment_count-1], removeExtraSpaces(cur_comment))
 
 binat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 
