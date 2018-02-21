@@ -168,7 +168,7 @@ def checkAndEditTag(tag, line):
 
     elif tag is 'paragraph':
 
-        line = checkForFootnotes(line)
+        line = checkForFootnotes(line, '@88')
 
         line = line.replace("@55", u' <b> ')
         line = line.replace("@55", u' </b> ')
