@@ -375,32 +375,44 @@ with codecs.open("ca_missing.txt") as file_read:
     chochmat_ja.set_element([klal_count-1, comment_count-1], removeExtraSpaces(cur_comment))
 
 binat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
+section_title = u'שער רוב וחזקה'
+section_start = 0
+siman_count = 0
 
-# with open("binat_adam.txt") as file_read:
-#
-#     na_footnote_count = -1
-#
-#     for line in file_read:
-#
-#         if line[1:3] == '11':
-#
-#             line = '<b>' + line[3:].strip().replace('@33', "</b>", 1)
-#
-#             #TODO: D3 or leave as is
-#             binat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], line, "")
-#
-#             if letter != footnote.letter:
-#                 print "letters off "
-#
-#         elif line[1:3] == '22':
-#
-#             na_footnote_count += 1
-#
-#             letter = unicode(line[line.index('(')+1:line.index(')')])
-#             footnote = footnotes[na_footnote_count]
-#
-#         else:
-#             print "ERROR what is this", line
+with open("binat_adam.txt") as file_read:
+
+    na_footnote_count = -1
+
+    for line in file_read:
+
+        if line[1:3] == '00':
+            binat_sections.append(Section(section_title, section_start, siman_count))
+            section_title = removeExtraSpaces(line[3:])
+            jagged_array
+
+
+
+        if line[1:3] == '11' or line[1:3] == '55':
+
+            if cur_comment != '':
+                cur_comment += u'<br>'
+            cur_comment = u'<b>' + line[3:].replace(u'@12', u"</b> ", 1)
+            cur_comment = cur_comment.replace(u'@56', u'</b> ', 1)
+
+            binat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], line, "")
+
+            if letter != footnote.letter:
+                print "letters off "
+
+        elif line[1:3] == '22':
+
+            na_footnote_count += 1
+
+            letter = unicode(line[line.index('(')+1:line.index(')')])
+            footnote = footnotes[na_footnote_count]
+
+        else:
+            print "ERROR what is this", line
 #
 # with open("ca_parsed.xml") as file_read:
 #
