@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import os, sys
 
-import urllib2, bleach, codecs
+import urllib2, bleach, codecs, string
 from bs4 import BeautifulSoup
 import re
 
@@ -141,20 +141,18 @@ def checkForNaFootnotes(line):
     while '#' in line:
 
         footnote_index = line.index('#')
-        end_footnote = footnote_index + line[footnote_index:].find(' ')
+        end_footnote = footnote_index + 2
 
-        if end_footnote < footnote_index:  # when footnote appears at end of comment cant find ' '
-            end_footnote = len(line)  # so use len of line as end_footnote index
+        while not any(x == line[end_footnote] for x in (string.whitespace + string.punctuation)):
+            end_footnote += 1
 
-        letter = unicode(line[footnote_index + 1:end_footnote]).translate(mapping)
+        letter = line[footnote_index + 1:end_footnote]
 
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
-        letter_num = getGematria(letter)
-
-        na_links.append(Ca2NaLink(klal_count, comment_count, letter_num))
-
         ca_footnote_count += 1
 
+        letter_num = getGematria(letter)
+        na_links.append(Ca2NaLink(klal_count, comment_count, letter_num))
         line = line.replace(line[footnote_index:end_footnote],
                             u'<i data-commentator="{}" data-order="{}"></i>'
                             .format("Nishmat Adam", letter_num))
