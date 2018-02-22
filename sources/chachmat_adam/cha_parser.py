@@ -136,7 +136,7 @@ def checkAndEditTag(tag, line):
     global klal_count, comment_count, ca_footnote_count, local_foot_count, cur_comment
 
     if tag is 'klal_num':
-        chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+        chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
         cur_comment = ''
 
         # file.write("</klal><klal>")  # adding this makes it much easier to parse klalim
@@ -146,7 +146,7 @@ def checkAndEditTag(tag, line):
         if klal_num == 75:
             klal_count += 14
 
-        if klal_num > 74: #14 cencored klalim
+        if klal_num > 74:  # 14 cencored klalim
             klal_num += 14
 
         if len(line.split()) > 2:  # abnormally long line
@@ -194,7 +194,7 @@ def checkAndEditTag(tag, line):
         comment_num = getGematria(line)
 
         if comment_num != 1:
-            chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+            chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
             cur_comment = ''
 
         if comment_num is comment_count + 1 or comment_num is 1:
@@ -288,22 +288,22 @@ mitzvat_moshe_ja = jagged_array.JaggedArray([])
 chevre_kadisha_intro_ja = jagged_array.JaggedArray([])
 chevre_kadisha_ja = jagged_array.JaggedArray([])
 
-later_jas = [jagged_array.JaggedArray([]), jagged_array.JaggedArray([]), jagged_array.JaggedArray([]), jagged_array.JaggedArray([])]
+later_jas = [jagged_array.JaggedArray([]), jagged_array.JaggedArray([]), jagged_array.JaggedArray([]),
+             jagged_array.JaggedArray([])]
 
 startedKuntrus = False
 ja_idx = 0
 
 with codecs.open("chachmat_adam.txt") as file_read:
-
     for line in file_read:
 
         if startedKuntrus:
             if '$' in line[:2]:
-                later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
                 cur_comment = ''
                 ja_idx += 1
             elif '@77' in line[:3]:
-                later_jas[ja_idx].set_element([0], removeExtraSpaces(line[3:]), u"")
+                later_jas[ja_idx].set_element([0], removeExtraSpaces(line[3:].strip()), u"")
                 ja_idx += 1
             elif '@11' in line[:3]:
                 if cur_comment != '':
@@ -313,7 +313,7 @@ with codecs.open("chachmat_adam.txt") as file_read:
                 comment_num = getGematria(line[3:])
 
                 if comment_num != 1:
-                    later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                    later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
                     cur_comment = ''
                 if comment_num is comment_count + 1 or comment_num is 1:
                     comment_count = comment_num
@@ -325,7 +325,7 @@ with codecs.open("chachmat_adam.txt") as file_read:
             local_foot_count = 0
             if u'קונטרס מצבת משה' in line:
                 startedKuntrus = True
-                chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
                 cur_comment = ''
 
         elif line[:1] is '@':
@@ -338,9 +338,7 @@ with codecs.open("chachmat_adam.txt") as file_read:
         else:
             print "what is this " + line
 
-    later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
-
-
+    later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
 
 klal_count = 74
 comment_count = 0
@@ -355,7 +353,7 @@ with codecs.open("ca_missing.txt") as file_read:
 
             if '$' in line or '@' in line:
                 if cur_comment != '' and comment_count != 0:
-                    chochmat_ja.set_element([klal_count-1, comment_count-1], removeExtraSpaces(cur_comment))
+                    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment.strip()))
                     cur_comment = ''
                 if '$' in line:
                     klal_count += 1
@@ -375,47 +373,73 @@ with codecs.open("ca_missing.txt") as file_read:
                     cur_comment += line
                     checkForFootnotes(line, '%')
 
-    chochmat_ja.set_element([klal_count-1, comment_count-1], removeExtraSpaces(cur_comment))
+    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment.strip()))
 
 binat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 section_title = u'שער רוב וחזקה'
 section_start = 0
 siman_count = 0
+ba_footnote_count = 0
+comment_count = 0
 
-with open("binat_adam.txt") as file_read:
+binat_shaarim_text = {}
+binat_shaarim_text[section_title] = jagged_array.JaggedArray([])
 
-    na_footnote_count = -1
+with codecs.open("binat_adam.txt") as file_read:
 
     for line in file_read:
+        print line
 
         if line[1:3] == '00':
-            binat_sections.append(Section(section_title, section_start, siman_count))
-            section_title = removeExtraSpaces(line[3:])
-            jagged_array
+            if cur_comment != '':
+                binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()))
+                cur_comment = ''
+            # binat_sections.append(Section(section_title, section_start, comment_count))
+            section_title = line[3:].strip()
+            # section_start = comment_count
+            comment_count = 0
+            binat_shaarim_text[section_title] = jagged_array.JaggedArray([])
 
-
-
-        if line[1:3] == '11' or line[1:3] == '55':
-
+        elif line[1:3] == '11' or line[1:3] == '55' or line[1:3] == '88':
             if cur_comment != '':
                 cur_comment += u'<br>'
             cur_comment = u'<b>' + line[3:].replace(u'@12', u"</b> ", 1)
             cur_comment = cur_comment.replace(u'@56', u'</b> ', 1)
 
-            binat_ja.set_element([footnote.klal_num - 1, getGematria(letter) - 1], line, "")
-
-            if letter != footnote.letter:
-                print "letters off "
-
         elif line[1:3] == '22':
+            if cur_comment != '' and comment_count > 0:
+                binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()))
+                cur_comment = ''
 
-            na_footnote_count += 1
+            letter = line[3:line.index(' ', 3)]
+            if getGematria(letter) == comment_count + 1:
+                comment_count += 1
+                if line.find('44', 5) > 0:
+                    if cur_comment != '':
+                        cur_comment += u'<br>'
+                    cur_comment += u'<big><strong>' + line[line.index('44', 5)+2:] + u'</strong></big>'
+            else:
+                print "comment count off " + line
 
-            letter = unicode(line[line.index('(')+1:line.index(')')])
-            footnote = footnotes[na_footnote_count]
+            if len(binat_shaarim_text) > 3:
+                if footnotes[ba_footnote_count].letter != letter:
+                    print "ca letter " + footnotes[ba_footnote_count].letter + " " + str(footnotes[ba_footnote_count].klal_num) + " " + str(footnotes[ba_footnote_count].comment_num) + " vs footnote we think we are up to " + line
+                else:
+                    ba_footnote_count += 1
 
-        else:
-            print "ERROR what is this", line
+        # elif line[1:3] == '22':
+        #
+        #     na_footnote_count += 1
+        #
+        #     letter = unicode(line[line.index('(') + 1:line.index(')')])
+        #     footnote = footnotes[na_footnote_count]
+
+        # else:
+        #     print "ERROR what is this", line
+
+    # binat_sections.append(Section(section_title, section_start, siman_count))
+    binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()))
+
 #
 # with open("ca_parsed.xml") as file_read:
 #
@@ -471,7 +495,6 @@ ja_to_xml(later_jas[0].array(), ["siman"], "mmi_output.xml")
 ja_to_xml(later_jas[1].array(), ["siman"], "mm_output.xml")
 ja_to_xml(later_jas[2].array(), ["siman"], "cki_output.xml")
 ja_to_xml(later_jas[3].array(), ["siman"], "ck_output.xml")
-
 
 ja_to_xml(binat_ja.array(), ["klal", "siman"], "binat_output.xml")
 
