@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import os, sys
 
-import urllib2, codecs
+import codecs, string
 
 from collections import namedtuple
 
@@ -19,7 +19,6 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 sections = []
-binat_sections = []
 Section = namedtuple('Section', ['title', 'start', 'end'])
 prev_title = u'הלכות שחיטה'
 prev_klal_num = 1
@@ -53,6 +52,7 @@ tags['88'] = 'binat_comment'
 tags['99'] = 'footer'
 
 mapping = dict.fromkeys(map(ord, u":.\n)"))  # chars to eliminate when parsing Chochmat Adam numbers
+
 
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
@@ -100,28 +100,26 @@ def checkForFootnotes(line, symbol):
     while symbol in line:
 
         footnote_index = line.index(symbol)
-        end_footnote = footnote_index + line[footnote_index:].find(' ')
+        end_footnote = footnote_index + len(symbol) + 1
 
-        if end_footnote < footnote_index:  # when footnote appears at end of comment cant find ' '
-            end_footnote = len(line)  # so use len of line as end_footnote index
+        while not any(x == line[end_footnote] for x in (string.whitespace + string.punctuation)):
+            end_footnote += 1
 
-        letter = unicode(line[footnote_index + 3:end_footnote]).translate(mapping)
+        letter = line[footnote_index + len(symbol):end_footnote]
         # if local_foot_count + 1 != getGematria(letter):
         #     print(line)
         # else:
         #     local_foot_count += 1
 
-
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
         binat_links.append(Ca2NaLink(klal_count, comment_count, getGematria(letter)))
         line = line.replace(line[footnote_index:end_footnote],
                             u'<i data-commentator="{}" letter="{}" data-order="{}"></i>'.format("Binat Adam", letter,
-                                                                                                ca_footnote_count))
+                                                                                                ca_footnote_count), 1)
 
         ca_footnote_count += 1
 
     return line
-
 
 
 # tags['00'] = 'klal_num'
