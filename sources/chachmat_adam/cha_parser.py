@@ -306,9 +306,8 @@ with codecs.open("chachmat_adam.txt") as file_read:
                 cur_comment += line[3:].strip()
             elif '@44' in line[:3]:
                 comment_num = getGematria(line[3:])
-
-                if comment_num != 1:
-                    later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
+                if cur_comment != '':
+                    kuntrus_dict[prev_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
                     cur_comment = ''
                 if comment_num is comment_count + 1 or comment_num is 1:
                     comment_count = comment_num
@@ -383,6 +382,17 @@ section_start = 0
 siman_count = 0
 ba_footnote_count = 0
 comment_count = 0
+small_title = ''
+
+eng_titles_dict = {
+    u'שער רוב וחזקה': 'Shaar Rov Vechazaka',
+    u'שער הקבוע': 'Shaar Kavua',
+    u'שער איסור והיתר': 'Shaar Isur Veheter',
+    u'שער בית הנשים': 'Shaar Beit haNashim',
+    u'שער משפטי צדק': 'Shaar Mishpetei Tzedek',
+    u'שער רנה וישועה': 'Shaar Rinah Vishuah',
+    u'שער השמחה': 'Shaar haSimcha',
+}
 
 binat_shaarim_text = {}
 binat_shaarim_text[section_title] = jagged_array.JaggedArray([])
