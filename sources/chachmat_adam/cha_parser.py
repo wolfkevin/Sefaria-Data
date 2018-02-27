@@ -593,19 +593,17 @@ for section in sections:
         map_node.validate()
         ca_halacha_schema.append(map_node)
 
+
+ca_shaar_schema = SchemaNode()
+
+for shaar in shaarim:
     map_node = ArrayMapNode()
-    map_node.add_title(section.title, "he", True)
-    map_node.add_title("temp", "en", True)
-    map_node.wholeRef = "Chochmat Adam.{}-{}".format(section.start, section.end)
+    map_node.add_primary_titles(eng_titles_dict[unicode(shaar.title)], shaar.title)
+    map_node.wholeRef = "Chochmat Adam.{}-{}".format(shaar.start, shaar.end)
     map_node.includeSections = True
     map_node.depth = 0
-
     map_node.validate()
-    ca_alt_schema.append(map_node)
-
-    ba_map_node = map_node.copy()
-    ba_map_node.wholeRef = "Binat Adam.{}-{}".format(section.start, section.end)
-    ba_alt_schema.append(ba_map_node)
+    ca_shaar_schema.append(map_node)
 
 ca_index = {
     "title": "Chochmat Adam",
