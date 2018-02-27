@@ -126,7 +126,6 @@ def checkForFootnotes(line, symbol):
         #     local_foot_count += 1
 
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
-        binat_links.append(Ca2NaLink(klal_count, comment_count, getGematria(letter)))
         line = line.replace(line[footnote_index:end_footnote],
                             u'<i data-commentator="{}" letter="{}" data-order="{}"></i>'.format("Binat Adam", letter,
                                                                                                 ca_footnote_count), 1)
