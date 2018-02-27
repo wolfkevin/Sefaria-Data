@@ -127,8 +127,7 @@ def checkForFootnotes(line, symbol):
 
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
         line = line.replace(line[footnote_index:end_footnote],
-                            u'<i data-commentator="{}" letter="{}" data-order="{}"></i>'.format("Binat Adam", letter,
-                                                                                                ca_footnote_count), 1)
+                            u'<i data-commentator="{}" data-order="{}"></i>'.format("Binat Adam", getGematria(letter)), 1)
 
         ca_footnote_count += 1
 
