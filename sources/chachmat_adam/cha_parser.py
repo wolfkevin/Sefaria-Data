@@ -609,7 +609,10 @@ ca_index = {
     "title": "Chochmat Adam",
     "categories": ["Halakhah"],
     "schema": index_schema.serialize(),
-    "alt_structs": {"Topic": ca_alt_schema.serialize()},
+    "alt_structs": {
+        "Topic": ca_halacha_schema.serialize(),
+        "Shaar": ca_shaar_schema.serialize(),
+    },
     "default_struct": "Topic"
 }
 
