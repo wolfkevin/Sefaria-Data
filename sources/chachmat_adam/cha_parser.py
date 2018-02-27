@@ -507,10 +507,10 @@ with codecs.open("binat_adam.txt") as file_read:
 #             klal_num += addition
 
 ja_to_xml(chochmat_ja.array(), ["klal", "siman"], "chochmat_output.xml")
-ja_to_xml(later_jas[0].array(), ["siman"], "mmi_output.xml")
-ja_to_xml(later_jas[1].array(), ["siman"], "mm_output.xml")
-ja_to_xml(later_jas[2].array(), ["siman"], "cki_output.xml")
-ja_to_xml(later_jas[3].array(), ["siman"], "ck_output.xml")
+# ja_to_xml(later_jas[0].array(), ["siman"], "mmi_output.xml")
+# ja_to_xml(later_jas[1].array(), ["siman"], "mm_output.xml")
+# ja_to_xml(later_jas[2].array(), ["siman"], "cki_output.xml")
+# ja_to_xml(later_jas[3].array(), ["siman"], "ck_output.xml")
 
 ja_to_xml(binat_ja.array(), ["klal", "siman"], "binat_output.xml")
 
@@ -524,28 +524,18 @@ ca_default.default = True
 ca_default.validate()
 index_schema.append(ca_default)
 
-mitzvat_moshe_schema = SchemaNode()
-mitzvat_moshe_schema.add_primary_titles("Mitzvat Moshe", u"קונטרס מצבת משה")
+matzevet_moshe_schema = SchemaNode()
+matzevet_moshe_schema.add_primary_titles("Kuntres Matzevet Moshe", u"קונטרס מצבת משה")
 
-mitzvat_moshe_intro_node = JaggedArrayNode()
-mitzvat_moshe_intro_node.add_primary_titles("Introduction", u"הקדמה")
-mitzvat_moshe_intro_node.add_structure(["Siman"])
-mitzvat_moshe_schema.append(mitzvat_moshe_intro_node)
-
-mitzvat_moshe_node = JaggedArrayNode()
-mitzvat_moshe_node.add_structure(["Siman"])
-mitzvat_moshe_node.key = "default"
-mitzvat_moshe_node.default = True
-mitzvat_moshe_schema.append(mitzvat_moshe_node)
-index_schema.append(mitzvat_moshe_schema)
+matzevet_moshe_node = JaggedArrayNode()
+matzevet_moshe_node.add_structure(["Siman"])
+matzevet_moshe_node.key = "default"
+matzevet_moshe_node.default = True
+matzevet_moshe_schema.append(matzevet_moshe_node)
+index_schema.append(matzevet_moshe_schema)
 
 chevre_schema = SchemaNode()
-chevre_schema.add_primary_titles("Mitzvat Moshe", u"קונטרס מצבת משה")
-
-chevre_intro_node = JaggedArrayNode()
-chevre_intro_node.add_primary_titles("Introduction", u"הקדמה")
-chevre_intro_node.add_structure(["Siman"])
-chevre_schema.append(chevre_intro_node)
+chevre_schema.add_primary_titles("temp", u"הנהגת חברה קדישא")
 
 chevre_node = JaggedArrayNode()
 chevre_node.add_structure(["Siman"])
