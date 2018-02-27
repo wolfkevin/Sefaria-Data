@@ -300,15 +300,17 @@ with codecs.open("chachmat_adam.txt") as file_read:
 
         if startedKuntrus:
             if '$' in line[:2]:
-                kuntrus_dict[prev_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                kuntrus_dict[unicode(prev_title)].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                prev_title = line[1:].strip()
                 cur_comment = ''
+                kuntrus_dict[unicode(prev_title)] = jagged_array.JaggedArray([])
             elif '@11' in line[:3] or '@77' in line[:3]:
                 cur_comment = checkIfWeShouldAddBr(cur_comment)
                 cur_comment += line[3:].strip()
             elif '@44' in line[:3]:
                 comment_num = getGematria(line[3:])
                 if cur_comment != '':
-                    kuntrus_dict[prev_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                    kuntrus_dict[unicode(prev_title)].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
                     cur_comment = ''
                 if comment_num is comment_count + 1 or comment_num is 1:
                     comment_count = comment_num
@@ -323,6 +325,7 @@ with codecs.open("chachmat_adam.txt") as file_read:
                 startedKuntrus = True
                 chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
                 cur_comment = ''
+                kuntrus_dict[unicode(prev_title)] = jagged_array.JaggedArray([])
                 
         elif line[0] is '!':
             shaarim.append(Section(prev_shaar_title, start_shaar_num, klal_count))
@@ -340,7 +343,7 @@ with codecs.open("chachmat_adam.txt") as file_read:
             print "what is this " + line
 
     shaarim.append(Section(prev_shaar_title, start_shaar_num, klal_count))
-    kuntrus_dict[prev_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
+    kuntrus_dict[unicode(prev_title)].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
 
 klal_count = 74
 comment_count = 0
