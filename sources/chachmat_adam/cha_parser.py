@@ -180,26 +180,23 @@ def checkAndEditTag(tag, line):
         else:
             print "KLAL NUMBER OFF", klal_num, klal_count
 
-    elif tag is 'paragraph':
+    elif tag is 'paragraph' or tag is 'footer':
 
         line = checkForFootnotes(line, '@88')
 
         line = line.replace("@55", u' <b>')
         line = line.replace("@55", u'</b> ')
 
-        if cur_comment != '':
-            cur_comment += u'<br>'
-        cur_comment += line
+        cur_comment = checkIfWeShouldAddBr(cur_comment)
+        cur_comment += line.strip()
 
     elif tag is 'klal_title':
-        if cur_comment != '':
-            cur_comment += u'<br>'
-        cur_comment += u'<big><strong>' + line + u'</strong></big>'
+        cur_comment = checkIfWeShouldAddBr(cur_comment)
+        cur_comment += u'<big><strong>' + line.strip() + u'</strong></big>'
 
     elif tag is 'reference_line':
-        if cur_comment != '':
-            cur_comment += u'<br>'
-        cur_comment += line
+        cur_comment = checkIfWeShouldAddBr(cur_comment)
+        cur_comment += line.strip()
 
     elif tag is 'seif_num':
 
@@ -216,9 +213,6 @@ def checkAndEditTag(tag, line):
             print "klal " + str(klal_count - 14) + " seif num off ", line
             line = numToHeb(comment_count + 1)
             comment_count += 1
-
-    elif tag is 'footer':
-        cur_comment += u'<br>' + line
 
     # return tag, line
 
@@ -313,14 +307,9 @@ with codecs.open("chachmat_adam.txt") as file_read:
             if '$' in line[:2]:
                 later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
                 cur_comment = ''
-                ja_idx += 1
-            elif '@77' in line[:3]:
-                later_jas[ja_idx].set_element([0], removeExtraSpaces(line[3:].strip()), u"")
-                ja_idx += 1
-            elif '@11' in line[:3]:
-                if cur_comment != '':
-                    cur_comment += u'<br>'
-                cur_comment += line[3:]
+            elif '@11' in line[:3] or '@77' in line[:3]:
+                cur_comment = checkIfWeShouldAddBr(cur_comment)
+                cur_comment += line[3:].strip()
             elif '@44' in line[:3]:
                 comment_num = getGematria(line[3:])
 
@@ -330,15 +319,21 @@ with codecs.open("chachmat_adam.txt") as file_read:
                 if comment_num is comment_count + 1 or comment_num is 1:
                     comment_count = comment_num
 
-        elif line[:1] is '$':
+        elif line[0] is '$':
             tag = 'section'
-            line = line[1:]
             sections.append(Section(prev_title, prev_klal_num, klal_count))
+            prev_title = line[1:].strip()
+            prev_klal_num = klal_count + 1
             local_foot_count = 0
             if u'קונטרס מצבת משה' in line:
                 startedKuntrus = True
-                chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
+                chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
                 cur_comment = ''
+                
+        elif line[0] is '!':
+            shaarim.append(Section(prev_shaar_title, start_shaar_num, klal_count))
+            prev_shaar_title = line[1:].strip()
+            start_shaar_num = klal_count + 1
 
         elif line[:1] is '@':
             tag = tags[line[1:3]]
