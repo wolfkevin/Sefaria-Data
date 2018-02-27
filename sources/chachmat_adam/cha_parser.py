@@ -40,6 +40,7 @@ prev_tag = ''
 
 binat_links = []
 self_links = []
+chochmat_ja = jagged_array.JaggedArray([[]])
 
 tags = {}
 tags['00'] = 'klal_num'
