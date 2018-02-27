@@ -99,6 +99,15 @@ def Ca2BaLink(ca_klal_num, ca_seif_number, ba_section_title, ba_seif_number):
     }
 
 
+def tryAndSetBinatElement(title, count, comment):
+    if comment != '' and count > 0:
+        if count - 1 > 0 and count - 1 <= binat_shaarim_text[title].last_index(1)[0]:
+            print "does this happen"
+            return comment
+        binat_shaarim_text[title].set_element([count - 1], removeExtraSpaces(comment.strip()))
+        comment = ''
+    return comment
+
 def checkForFootnotes(line, symbol):
     global klal_count, comment_count, ca_footnote_count, local_foot_count
 
