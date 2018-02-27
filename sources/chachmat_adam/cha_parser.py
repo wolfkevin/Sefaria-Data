@@ -87,6 +87,7 @@ def selfLink(klal_num, index, klal_link_num, par_index):
     }
 
 
+def Ca2BaLink(ca_klal_num, ca_seif_number, ba_section_title, ba_seif_number):
     return {
         'refs': [
             "Chochmat Adam.{}.{}".format(ca_klal_num, ca_seif_number),
