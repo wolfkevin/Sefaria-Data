@@ -561,10 +561,38 @@ ba_default.key = "default"
 ba_default.default = True
 ba_default.validate()
 
-ca_alt_schema = SchemaNode()
-ba_alt_schema = SchemaNode()
+ca_halacha_schema = SchemaNode()
 
 for section in sections:
+    if section.start == 51:  # censored section makes you have to do this manually
+        censored_map_node_1 = ArrayMapNode()
+        censored_map_node_1.add_primary_titles("temp", section.title)
+        censored_map_node_1.wholeRef = "Chochmat Adam.{}-{}".format(section.start, 64)
+        censored_map_node_1.includeSections = True
+        censored_map_node_1.depth = 0
+        ca_halacha_schema.append(censored_map_node_1)
+        censored_map_node_2 = ArrayMapNode()
+        censored_map_node_2.add_primary_titles("temp", u'הלכות הלכות')
+        censored_map_node_2.add_title("temp", "en", True)
+        censored_map_node_2.wholeRef = "Chochmat Adam.{}-{}".format(65, 83)
+        censored_map_node_2.includeSections = True
+        censored_map_node_2.depth = 0
+        ca_halacha_schema.append(censored_map_node_2)
+        censored_map_node_3 = ArrayMapNode()
+        censored_map_node_3.add_primary_titles("temp", u'הלכות עבודת כוכבים')
+        censored_map_node_3.wholeRef = "Chochmat Adam.{}-{}".format(84, section.end)
+        censored_map_node_3.includeSections = True
+        censored_map_node_3.depth = 0
+        ca_halacha_schema.append(censored_map_node_3)
+    else:
+        map_node = ArrayMapNode()
+        map_node.add_primary_titles("temp", section.title)
+        map_node.wholeRef = "Chochmat Adam.{}-{}".format(section.start, section.end)
+        map_node.includeSections = True
+        map_node.depth = 0
+        map_node.validate()
+        ca_halacha_schema.append(map_node)
+
     map_node = ArrayMapNode()
     map_node.add_title(section.title, "he", True)
     map_node.add_title("temp", "en", True)
