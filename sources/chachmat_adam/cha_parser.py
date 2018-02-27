@@ -18,6 +18,7 @@ from sefaria.model import *
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+shaarim = []
 sections = []
 Section = namedtuple('Section', ['title', 'start', 'end'])
 prev_title = u'הלכות שחיטה'
@@ -287,25 +288,18 @@ def checkAndEditTag(tag, line):
 #
 #             self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+3]))
 
-
-chochmat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[comment, comment]]]
-mitzvat_moshe_intro_ja = jagged_array.JaggedArray([])
-mitzvat_moshe_ja = jagged_array.JaggedArray([])
-chevre_kadisha_intro_ja = jagged_array.JaggedArray([])
-chevre_kadisha_ja = jagged_array.JaggedArray([])
-
-later_jas = [jagged_array.JaggedArray([]), jagged_array.JaggedArray([]), jagged_array.JaggedArray([]),
-             jagged_array.JaggedArray([])]
+kuntrus_dict = {}
 
 startedKuntrus = False
-ja_idx = 0
+prev_shaar_title = u'שער איסור והיתר'
+start_shaar_num = 1
 
 with codecs.open("chachmat_adam.txt") as file_read:
     for line in file_read:
 
         if startedKuntrus:
             if '$' in line[:2]:
-                later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
+                kuntrus_dict[prev_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
                 cur_comment = ''
             elif '@11' in line[:3] or '@77' in line[:3]:
                 cur_comment = checkIfWeShouldAddBr(cur_comment)
@@ -345,7 +339,8 @@ with codecs.open("chachmat_adam.txt") as file_read:
         else:
             print "what is this " + line
 
-    later_jas[ja_idx].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
+    shaarim.append(Section(prev_shaar_title, start_shaar_num, klal_count))
+    kuntrus_dict[prev_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()), u"")
 
 klal_count = 74
 comment_count = 0
