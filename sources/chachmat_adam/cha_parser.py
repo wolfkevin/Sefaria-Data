@@ -57,6 +57,11 @@ mapping = dict.fromkeys(map(ord, u":.\n)"))  # chars to eliminate when parsing C
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
 
+def checkIfWeShouldAddBr(comment):
+    if comment != '':
+        return comment + u'<br>'
+    else:
+        return ''
 
 def getRidOfSofit(txt):
     if txt.find("ך") >= 0:
