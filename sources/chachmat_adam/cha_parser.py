@@ -535,6 +535,21 @@ for section in sections:
         map_node.validate()
         ca_halacha_schema.append(map_node)
 
+map_node = ArrayMapNode()
+map_node.add_primary_titles("Kuntres Matzevet Moshe", u"קונטרס מצבת משה")
+map_node.wholeRef = "Chochmat Adam, Kuntres Matzevet Moshe.{}-{}".format(1, 1)
+map_node.includeSections = True
+map_node.depth = 0
+map_node.validate()
+ca_halacha_schema.append(map_node)
+
+map_node = ArrayMapNode()
+map_node.add_primary_titles("temp", u"הנהגת חברה קדישא")
+map_node.wholeRef = "Chochmat Adam, Kuntres Matzevet Moshe.{}-{}".format(2, 2)
+map_node.includeSections = True
+map_node.depth = 0
+map_node.validate()
+ca_halacha_schema.append(map_node)
 
 ca_shaar_schema = SchemaNode()
 
@@ -546,6 +561,14 @@ for shaar in shaarim:
     map_node.depth = 0
     map_node.validate()
     ca_shaar_schema.append(map_node)
+    
+map_node = ArrayMapNode()
+map_node.add_primary_titles(eng_titles_dict[unicode(shaar.title)], shaar.title)
+map_node.wholeRef = "Chochmat Adam.151-Chochmat Adam, Kuntres Matzevet Moshe.2"
+map_node.includeSections = True
+map_node.depth = 0
+map_node.validate()
+ca_shaar_schema.append(map_node)
 
 ca_index = {
     "title": "Chochmat Adam",
