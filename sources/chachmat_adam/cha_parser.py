@@ -463,16 +463,6 @@ with codecs.open("binat_adam.txt") as file_read:
 
 #
 #             else:
-#                 comments.append(u"<big><strong>{}</strong></big><br>{}".format(klal.find("klal_title").text, comment.text))
-#                 klal_title_added = True
-#             # if comment.i:
-#             #     footnotes.append(Footnote(str(klal_num) + '.' + str(index), comments[comment.index('#')+1:comment]))
-#
-#         klalim_ja.set_element([klal_num - 1], comments, [])
-#
-#         if klal_num == 69 and addition is 0:  # if the current klal > prev klal it means its the start of chelek bet
-#             addition = CHELEK_BET_ADDITION
-#             klal_num += addition
 
 ja_to_xml(chochmat_ja.array(), ["klal", "siman"], "chochmat_output.xml")
 # ja_to_xml(later_jas[0].array(), ["siman"], "mmi_output.xml")
