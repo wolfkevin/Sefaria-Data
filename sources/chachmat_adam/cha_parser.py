@@ -485,22 +485,12 @@ index_schema.append(ca_default)
 matzevet_moshe_schema = SchemaNode()
 matzevet_moshe_schema.add_primary_titles("Kuntres Matzevet Moshe", u"קונטרס מצבת משה")
 
-matzevet_moshe_node = JaggedArrayNode()
-matzevet_moshe_node.add_structure(["Siman"])
-matzevet_moshe_node.key = "default"
-matzevet_moshe_node.default = True
-matzevet_moshe_schema.append(matzevet_moshe_node)
+matzevet_moshe_default = JaggedArrayNode()
+matzevet_moshe_default.add_structure(["Klal", "Siman"])
+matzevet_moshe_default.key = "default"
+matzevet_moshe_default.default = True
+matzevet_moshe_schema.append(matzevet_moshe_default)
 index_schema.append(matzevet_moshe_schema)
-
-chevre_schema = SchemaNode()
-chevre_schema.add_primary_titles("temp", u"הנהגת חברה קדישא")
-
-chevre_node = JaggedArrayNode()
-chevre_node.add_structure(["Siman"])
-chevre_node.key = "default"
-chevre_node.default = True
-chevre_schema.append(chevre_node)
-index_schema.append(chevre_schema)
 
 index_schema.validate()
 
