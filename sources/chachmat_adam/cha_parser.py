@@ -462,43 +462,6 @@ with codecs.open("binat_adam.txt") as file_read:
     binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()))
 
 #
-# with open("ca_parsed.xml") as file_read:
-#
-#     soup = BeautifulSoup(file_read, 'lxml')
-#
-#     found_sections = soup.find_all("section")
-#
-#     start = 1 + CHELEK_BET_ADDITION  # all sections gotten from the text are from chelek bet
-#
-#     for index, section in enumerate(found_sections):
-#
-#         # end is 154 if this is last section
-#         # else find the heading of the last section klal before this next section and set that as klal end
-#
-#         end = 154 if index + 1 >= len(found_sections) \
-#             else getKlalNum(found_sections[index+1].parent)
-#
-#         end += CHELEK_BET_ADDITION
-#         sections.append(Section(section.text, start, end))
-#         start = end + 1
-#
-#     addition = 0
-#
-#     for klal in soup.find_all("klal")[1:]:  # [1:] because first klal is empty
-#
-#         klal_num = getKlalNum(klal) + addition
-#
-#         comments = []
-#
-#         klal_title_added = False
-#
-#         for index, comment in enumerate(klal.find_all("comment")):
-#
-#             if comment.text.find(u'כלל') != -1:  # check for self links in the text
-#                 getSelfLinks(index, comment, klal_num, addition)
-#
-#             if klal_title_added:
-#                 comments.append(comment.text)
 #             else:
 #                 comments.append(u"<big><strong>{}</strong></big><br>{}".format(klal.find("klal_title").text, comment.text))
 #                 klal_title_added = True
