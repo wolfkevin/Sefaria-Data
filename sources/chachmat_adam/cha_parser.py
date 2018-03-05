@@ -514,18 +514,24 @@ for section in sections:
         censored_map_node_1.depth = 0
         ca_halacha_schema.append(censored_map_node_1)
         censored_map_node_2 = ArrayMapNode()
-        censored_map_node_2.add_primary_titles("temp", u'הלכות הלכות')
+        censored_map_node_2.add_primary_titles("temp", u'הלכות מאכלי עכו"ם')
         censored_map_node_2.add_title("temp", "en", True)
-        censored_map_node_2.wholeRef = "Chochmat Adam.{}-{}".format(65, 83)
+        censored_map_node_2.wholeRef = "Chochmat Adam.{}-{}".format(65, 74)
         censored_map_node_2.includeSections = True
         censored_map_node_2.depth = 0
         ca_halacha_schema.append(censored_map_node_2)
         censored_map_node_3 = ArrayMapNode()
-        censored_map_node_3.add_primary_titles("temp", u'הלכות עבודת כוכבים')
-        censored_map_node_3.wholeRef = "Chochmat Adam.{}-{}".format(84, section.end)
+        censored_map_node_3.add_primary_titles("temp", u'הלכות יין נסך')
+        censored_map_node_3.wholeRef = "Chochmat Adam.{}-{}".format(75, 83)
         censored_map_node_3.includeSections = True
         censored_map_node_3.depth = 0
         ca_halacha_schema.append(censored_map_node_3)
+        censored_map_node_4 = ArrayMapNode()
+        censored_map_node_4.add_primary_titles("temp", u'הלכות עבודת כוכבים')
+        censored_map_node_4.wholeRef = "Chochmat Adam.{}-{}".format(84, section.end)
+        censored_map_node_4.includeSections = True
+        censored_map_node_4.depth = 0
+        ca_halacha_schema.append(censored_map_node_4)
     else:
         map_node = ArrayMapNode()
         map_node.add_primary_titles("temp", section.title)
