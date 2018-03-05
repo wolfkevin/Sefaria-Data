@@ -290,6 +290,8 @@ def checkAndEditTag(tag, line):
 #             self_links.append(selfLink(klal_num, index+1, klal_link_num, comment_words[klal_index+3]))
 
 kuntrus_dict = {}
+kuntrus_ja = jagged_array.JaggedArray([[]])
+section_num = 0
 
 startedKuntrus = False
 prev_shaar_title = u'שער איסור והיתר'
@@ -300,7 +302,9 @@ with codecs.open("chachmat_adam.txt") as file_read:
 
         if startedKuntrus:
             if '$' in line[:2]:
-                kuntrus_dict[unicode(prev_title)].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                kuntrus_ja.set_element([section_num, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                section_num += 1
+                # kuntrus_dict[unicode(prev_title)].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
                 prev_title = line[1:].strip()
                 cur_comment = ''
                 kuntrus_dict[unicode(prev_title)] = jagged_array.JaggedArray([])
@@ -310,7 +314,8 @@ with codecs.open("chachmat_adam.txt") as file_read:
             elif '@44' in line[:3]:
                 comment_num = getGematria(line[3:])
                 if cur_comment != '':
-                    kuntrus_dict[unicode(prev_title)].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                    kuntrus_ja.set_element([section_num, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+                    # kuntrus_dict[unicode(prev_title)].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
                     cur_comment = ''
                 if comment_num is comment_count + 1 or comment_num is 1:
                     comment_count = comment_num
@@ -342,8 +347,8 @@ with codecs.open("chachmat_adam.txt") as file_read:
         else:
             print "what is this " + line
 
-    shaarim.append(Section(prev_shaar_title, start_shaar_num, klal_count))
-    kuntrus_dict[unicode(prev_title)].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
+kuntrus_ja.set_element([section_num, comment_count - 1], removeExtraSpaces(cur_comment), u"")
+# kuntrus_dict[unicode(prev_title)].set_element([comment_count - 1], removeExtraSpaces(cur_comment), u"")
 
 klal_count = 74
 comment_count = 0
@@ -358,7 +363,7 @@ with codecs.open("ca_missing.txt") as file_read:
 
             if '$' in line or '@' in line:
                 if cur_comment != '' and comment_count != 0:
-                    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment.strip()))
+                    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment))
                     cur_comment = ''
                 if '$' in line:
                     klal_count += 1
@@ -373,12 +378,12 @@ with codecs.open("ca_missing.txt") as file_read:
                     cur_comment += u'<br>'
 
                 if '#' in line:
-                    cur_comment += u'<big><strong>' + line[1:] + u'</strong></big>'
+                    cur_comment += u'<big><strong>' + line[1:].strip() + u'</strong></big>'
                 else:
-                    cur_comment += line
+                    cur_comment += line.strip()
                     checkForFootnotes(line, '%')
 
-    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment.strip()))
+    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment))
 
 binat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 section_title = u'שער רוב וחזקה'
