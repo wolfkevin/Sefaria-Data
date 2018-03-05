@@ -587,38 +587,48 @@ ca_index = {
     "default_struct": "Topic"
 }
 
-ba_index = {
-    "title": "Binat Adam",
-    "dependence": "Commentary",
-    "categories": ["Halakhah", "Commentary"],
-    "schema": ba_index_schema.serialize(),
-    "alt_structs": {"Topic": ba_alt_schema.serialize()},
-    "base_text_titles": ["Chochmat Adam"],
-    "default_struct": "Topic"
-}
-
 ca_text_version = {
     'versionTitle': "Hokhmat Adam, Vilna, 1844",
     'versionSource': "http://dlib.rsl.ru/viewer/01006560322#?page=5",
     'language': 'he',
     'text': chochmat_ja.array()
 }
-
-na_text_version = {
+ca_kuntres_text_version = {
     'versionTitle': "Hokhmat Adam, Vilna, 1844",
     'versionSource': "http://dlib.rsl.ru/viewer/01006560322#?page=5",
     'language': 'he',
-    'text': binat_ja.array()
+    'text': kuntrus_ja.array()
 }
 
-# post_index(ca_index)
-# post_index(ba_index)
-#
-# post_text("Chochmat Adam", ca_text_version)
-# post_link(self_links)
-#
-# post_text("Binat Adam", ba_text_version)
-# post_link(ba_links)
+post_ca = True
+if post_ca:
+    
+    post_index(ca_index)
+    post_text("Chochmat Adam", ca_text_version)
+    post_text("Chochmat Adam, Kuntres Matzevet Moshe", ca_kuntres_text_version)
+    # post_link(self_links)
+    
+post_ba = False
+if post_ba:
+    ba_index = {
+        "title": "Binat Adam",
+        "dependence": "Commentary",
+        "categories": ["Halakhah", "Commentary"],
+        "schema": ba_index_schema.serialize(),
+        "alt_structs": {"Topic": ba_alt_schema.serialize()},
+        "base_text_titles": ["Chochmat Adam"],
+        "default_struct": "Topic"
+    }
+    
+    ba_text_version = {
+        'versionTitle': "Hokhmat Adam, Vilna, 1844",
+        'versionSource': "http://dlib.rsl.ru/viewer/01006560322#?page=5",
+        'language': 'he',
+        'text': binat_ja.array()
+    }
+    # post_index(ba_index)
+    post_text("Binat Adam", ba_text_version)
+    # post_link(ba_links)
 
 
 # TODO: address questions:
