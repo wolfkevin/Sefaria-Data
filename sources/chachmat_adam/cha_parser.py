@@ -472,15 +472,21 @@ ja_to_xml(chochmat_ja.array(), ["klal", "siman"], "chochmat_output.xml")
 
 ja_to_xml(binat_ja.array(), ["klal", "siman"], "binat_output.xml")
 
-index_schema = SchemaNode()
-index_schema.add_primary_titles("Chochmat Adam", u"חכמת אדם")
+ca_index_schema = SchemaNode()
+ca_index_schema.add_primary_titles("Chochmat Adam", u"חכמת אדם")
+
+intro_node = JaggedArrayNode()
+intro_node.add_primary_titles("Author's Introduction", u"הקדמת המחבר")
+intro_node.add_structure(['Comment'])
+intro_node.validate()
+ca_index_schema.append(intro_node)
 
 ca_default = JaggedArrayNode()
 ca_default.add_structure(["Klal", "Siman"])
 ca_default.key = "default"
 ca_default.default = True
 ca_default.validate()
-index_schema.append(ca_default)
+ca_index_schema.append(ca_default)
 
 matzevet_moshe_schema = SchemaNode()
 matzevet_moshe_schema.add_primary_titles("Kuntres Matzevet Moshe", u"קונטרס מצבת משה")
@@ -490,20 +496,17 @@ matzevet_moshe_default.add_structure(["Klal", "Siman"])
 matzevet_moshe_default.key = "default"
 matzevet_moshe_default.default = True
 matzevet_moshe_schema.append(matzevet_moshe_default)
-index_schema.append(matzevet_moshe_schema)
+ca_index_schema.append(matzevet_moshe_schema)
 
-index_schema.validate()
-
-ba_index_schema = SchemaNode()
-ba_index_schema.add_primary_titles("Binat Adam", u"בינת אדם")
-
-ba_default = JaggedArrayNode()
-ba_default.add_structure(["Klal", "Siman"])
-ba_default.key = "default"
-ba_default.default = True
-ba_default.validate()
+ca_index_schema.validate()
 
 ca_halacha_schema = SchemaNode()
+
+alt_intro_node = ArrayMapNode()
+alt_intro_node.add_primary_titles("Author's Introduction", u"הקדמת המחבר")
+alt_intro_node.wholeRef = "Chochmat Adam, Author's Introduction"
+alt_intro_node.depth = 0
+ca_halacha_schema.append(alt_intro_node)
 
 for section in sections:
     if section.start == 51:  # censored section makes you have to do this manually
@@ -559,6 +562,8 @@ ca_halacha_schema.append(map_node)
 
 ca_shaar_schema = SchemaNode()
 
+ca_shaar_schema.append(alt_intro_node)
+
 for shaar in shaarim:
     map_node = ArrayMapNode()
     map_node.add_primary_titles(eng_titles_dict[unicode(shaar.title)], shaar.title)
@@ -567,19 +572,11 @@ for shaar in shaarim:
     map_node.depth = 0
     map_node.validate()
     ca_shaar_schema.append(map_node)
-    
-map_node = ArrayMapNode()
-map_node.add_primary_titles(eng_titles_dict[unicode(shaar.title)], shaar.title)
-map_node.wholeRef = "Chochmat Adam.151-Chochmat Adam, Kuntres Matzevet Moshe.2"
-map_node.includeSections = True
-map_node.depth = 0
-map_node.validate()
-ca_shaar_schema.append(map_node)
 
 ca_index = {
     "title": "Chochmat Adam",
     "categories": ["Halakhah"],
-    "schema": index_schema.serialize(),
+    "schema": ca_index_schema.serialize(),
     "alt_structs": {
         "Topic": ca_halacha_schema.serialize(),
         "Shaar": ca_shaar_schema.serialize(),
