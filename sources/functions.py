@@ -20,6 +20,7 @@ from sefaria.model.schema import AddressTalmud
 from data_utilities.dibur_hamatchil_matcher import match_ref
 from sefaria.utils.util import replace_using_regex as reg_replace
 import base64
+import enchant
 import Levenshtein
 
 gematria = {}
@@ -66,6 +67,36 @@ eng_parshiot = ["Bereshit", "Noach", "Lech Lecha", "Vayera", "Chayei Sara", "Tol
 "Devarim", "Vaetchanan", "Eikev", "Re'eh", "Shoftim", "Ki Teitzei", "Ki Tavo", "Nitzavim", "Vayeilech", "Ha'Azinu",
 "V'Zot HaBerachah"]
 
+
+def any_hebrew_in_str(line):
+    '''
+    Returns true if there is one Hebrew character in line.
+    Useful for when a bad encoding yields nonsense amidst Hebrew text
+    or when a segment has both English and Hebrew words.
+    :param line:
+    :return:
+    '''
+    is_hebrew = False
+    for i in range(len(line)):
+        char = line[i: i + 2]
+        try:
+            char = char.decode('utf-8')
+            any_hebrew = re.findall(u"[\u0591-\u05EA]", char)
+            is_hebrew = any_hebrew != []
+            if is_hebrew:
+                return True
+        except UnicodeDecodeError:
+            pass
+    return False
+
+def any_english_in_str(line):
+    return re.findall("[a-zA-Z0-9]{1}", line) != []
+
+def is_english_word(line):
+    if any_english_in_str(line):
+        eng_dictionary = enchant.Dict("en_US")
+        return eng_dictionary.check(line)
+    return False
 
 def create_simple_index_commentary(en_title, he_title, base_title, categories, type="many_to_one", server=SEFARIA_SERVER):
     '''
@@ -149,12 +180,15 @@ def find_almost_identical(str1, array_of_strings, ratio=0.7):
     '''
     best_str = None
     best_match = 0
+    matches = []
     for str2 in array_of_strings:
         temp_ratio = Levenshtein.ratio(str1, str2)
-        if temp_ratio >= ratio and temp_ratio > best_match:
-            best_str = str2
-            best_match = temp_ratio
-    return best_str
+        if temp_ratio >= ratio:
+            matches.append(str2)
+    if len(matches) == 1:
+        return matches[0]
+    else:
+        return matches
 
 
 def perek_to_number(perek_num):
@@ -490,20 +524,22 @@ def checkLengthsDicts(x_dict, y_dict):
 
 def weak_connection(func):
     def post_weak_connection(*args, **kwargs):
+        result = None
         success = False
         weak_network = kwargs.pop('weak_network', False)
         num_tries = kwargs.pop('num_tries', 3)
         if weak_network:
             for i in range(num_tries-1):
                 try:
-                    func(*args, **kwargs)
+                    result = func(*args, **kwargs)
                 except (HTTPError, URLError) as e:
                     print 'handling weak network'
                 else:
                     success = True
                     break
         if not success:
-            func(*args, **kwargs)
+            result = func(*args, **kwargs)
+        return result
     return post_weak_connection
 
 
@@ -550,10 +586,7 @@ def make_title(text):
     :return:
     '''
     #first clean up text
-    if text[0] == " ":
-        text = text[:]
-    if text[-1] == " ":
-        text = text[:-1]
+    text = text.strip()
 
     #just make sure there aren't double spaces in the name or code below fails
     text = text.replace("  ", " ")
@@ -578,8 +611,7 @@ def make_title(text):
         else:
             new_text += word + " "
 
-    if new_text[-1] == " ":  #remove last space
-        new_text = new_text[0:-1]
+    new_text = new_text.strip()
 
     return new_text
 
@@ -671,25 +703,12 @@ def add_category(en_title, path, he_title=None, server=SEFARIA_SERVER):
 
 
 @weak_connection
-def post_link(info, server=SEFARIA_SERVER):
+def post_link(info, server=SEFARIA_SERVER, VERBOSE = False):
     url = server+'/api/links/'
-    return http_request(url, body={'apikey': API_KEY} ,json_payload=info, method="POST")
-    # infoJSON = json.dumps(info)
-    # values = {
-    #     'json': infoJSON,
-    #     'apikey': API_KEY
-    # }
-    # data = urllib.urlencode(values)
-    # req = urllib2.Request(url, data)
-    # try:
-    #     response = urllib2.urlopen(req)
-    #     x= response.read()
-    #     print x
-    #     if x.find("error")>=0 and x.find("Daf")>=0 and x.find("0")>=0:
-    #         return "error"
-    #
-    # except HTTPError, e:
-    #     print 'Error code: ', e.code
+    result = http_request(url, body={'apikey': API_KEY}, json_payload=info, method="POST")
+    if VERBOSE:
+        print result
+    return result
 
 
 def post_link_weak_connection(info, repeat=10):
@@ -930,16 +949,17 @@ def post_text_burp(ref, text, index_count="off"):
 
 
 @weak_connection
-def post_flags(version, flags):
+def post_flags(version, flags, server=SEFARIA_SERVER):
     """
     Update flags of a specific version.
 
     :param version: Dictionary with fields: ref, lang(en or he), vtitle(version title)
     :param flags: Dictionary with flags set as key: value pairs.
+    :param server: url of destination server
     """
     textJSON = json.dumps(flags)
     version['ref'] = version['ref'].replace(' ', '_')
-    url = SEFARIA_SERVER+'/api/version/flags/{}/{}/{}'.format(
+    url = server+'/api/version/flags/{}/{}/{}'.format(
         urllib.quote(version['ref']), urllib.quote(version['lang']), urllib.quote(version['vtitle'])
     )
     values = {'json': textJSON, 'apikey': API_KEY}
@@ -957,10 +977,12 @@ def post_flags(version, flags):
 
 
 @weak_connection
-def post_term(term_dict, server=SEFARIA_SERVER):
+def post_term(term_dict, server=SEFARIA_SERVER, update=False):
     name = term_dict['name']
     # term_JSON = json.dumps(term_dict)
     url = '{}/api/terms/{}'.format(server, urllib.quote(name))
+    if update:
+        url += "?update=1"
     return http_request(url, body={'apikey': API_KEY}, json_payload=term_dict, method="POST")
     # values = {'json': term_JSON, 'apikey': API_KEY}
     # data = urllib.urlencode(values)
@@ -982,6 +1004,22 @@ def add_term(en_title, he_title, scheme='toc_categories', server=SEFARIA_SERVER)
     post_term(term_dict, server)
 
 
+def add_title_existing_term(name, title, lang="en", server=SEFARIA_SERVER):
+    '''
+    Used to add titles to existing terms.  TODO: flag to set new titles as primary
+    :param name: Name of existing term
+    :param title: Title to add to term
+    :parem lang: Language of title
+    :param server:
+    :return:
+    '''
+    url = server+"/api/terms/"+name
+    term = http_request(url)
+    new_title = {'lang': lang, 'text': title}
+    term["titles"].append(new_title)
+    post_term(term, server=server, update=True)
+
+
 def get_index_api(ref, server='http://www.sefaria.org'):
     ref = ref.replace(" ", "_")
     url = server+'/api/v2/raw/index/'+ref
@@ -995,7 +1033,7 @@ def get_links(ref, server="http://www.sefaria.org"):
     url = server+'/api/links/'+ref
     return http_request(url)
 
-def get_text(ref, lang="", versionTitle="", server="http://www.sefaria.org"):
+def get_text(ref, lang="", versionTitle="", server="http://draft.sefaria.org"):
     ref = ref.replace(" ", "_")
     versionTitle = versionTitle.replace(" ", "_")
     url = '{}/api/texts/{}'.format(server, ref)
@@ -1005,25 +1043,6 @@ def get_text(ref, lang="", versionTitle="", server="http://www.sefaria.org"):
     try:
         response = urllib2.urlopen(req)
         data = json.load(response)
-        for i, temp_text in enumerate(data['he']):      
-            data['he'][i] = data['he'][i].replace(u"\u05B0", "")
-            data['he'][i] = data['he'][i].replace(u"\u05B1", "")
-            data['he'][i] = data['he'][i].replace(u"\u05B2", "")
-            data['he'][i] = data['he'][i].replace(u"\u05B3", "")
-            data['he'][i] = data['he'][i].replace(u"\u05B4", "")
-            data['he'][i] = data['he'][i].replace(u"\u05B5", "")
-            data['he'][i] = data['he'][i].replace(u"\u05B6", "")
-            data['he'][i] = data['he'][i].replace(u"\u05B7", "")
-            data['he'][i] = data['he'][i].replace(u"\u05B8", "")
-            data['he'][i] = data['he'][i].replace(u"\u05B9", "")
-            data['he'][i] = data['he'][i].replace(u"\u05BB", "")
-            data['he'][i] = data['he'][i].replace(u"\u05BC", "")
-            data['he'][i] = data['he'][i].replace(u"\u05BD", "")
-            data['he'][i] = data['he'][i].replace(u"\u05BF", "")
-            data['he'][i] = data['he'][i].replace(u"\u05C1", "")
-            data['he'][i] = data['he'][i].replace(u"\u05C2", "")
-            data['he'][i] = data['he'][i].replace(u"\u05C3", "")
-            data['he'][i] = data['he'][i].replace(u"\u05C4", "")
         return data
     except:
         print 'Error'

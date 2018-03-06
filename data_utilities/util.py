@@ -338,6 +338,62 @@ def isGematria(txt):
         return True
 
 
+class StructuredDocument:
+    """
+    class for extracting specific parts (i.e. chapters) of a text file. Pieces that exist outside the structure (an intro
+    for example) will be included, but they will not be as easily accessible as the chapters.
+    """
+
+    def __init__(self, filepath, regex):
+        with codecs.open(filepath, 'r', 'utf-8') as infile:
+            lines = infile.readlines()
+
+        sections, section_mapping = [], {}
+        current_section, section_num, section_index = [], None, 0
+
+        for line in lines:
+            match = re.search(regex, line)
+            if match:
+                if len(current_section) > 0:
+                    sections.append(u''.join(current_section))
+                    if section_num:
+                        section_mapping[section_num] = section_index
+                    section_index += 1
+                    current_section = []
+                section_num = getGematria(match.group(1))
+
+            current_section.append(line)
+        else:
+            sections.append(u''.join(current_section))
+            section_mapping[section_num] = section_index
+
+        self._sections = sections
+        self._section_mapping = section_mapping
+
+    def get_section(self, section_number):
+        section_index = self._section_mapping[section_number]
+        return self._sections[section_index]
+
+    def _set_section(self, section_number, new_section):
+        section_index = self._section_mapping[section_number]
+        self._sections[section_index] = new_section
+
+    def edit_section(self, section_number, callback, *args, **kwargs):
+        old_section = self.get_section(section_number)
+        new_section = callback(old_section, *args, **kwargs)
+        self._set_section(section_number, new_section)
+
+    def get_whole_text(self):
+        return u''.join(self._sections)
+
+    def write_to_file(self, filename):
+        with codecs.open(filename, 'w', 'utf-8') as outfile:
+            outfile.write(self.get_whole_text())
+
+    def get_chapter_values(self):
+        return sorted(self._section_mapping.keys())
+
+
 def getGematria(txt):
         if not isinstance(txt, unicode):
             txt = txt.decode('utf-8')
@@ -371,22 +427,22 @@ def he_num_to_char(num):
 
 
 
-def numToHeb(engnum=""):
+def numToHeb(engnum=u""):
         engnum = str(engnum)
         numdig = len(engnum)
-        hebnum = ""
-        letters = [["" for i in range(3)] for j in range(10)]
-        letters[0]=["", "א", "ב", "ג", "ד", "ה", "ו", "ז", "ח", "ט"]
-        letters[1]=["", "י", "כ", "ל", "מ", "נ", "ס", "ע", "פ", "צ"]
-        letters[2]=["", "ק", "ר", "ש", "ת", "תק", "תר", "תש", "תת", "תתק"]
+        hebnum = u""
+        letters = [[u"" for i in range(3)] for j in range(10)]
+        letters[0]=[u"", u"א", u"ב", u"ג", u"ד", u"ה", u"ו", u"ז", u"ח", u"ט"]
+        letters[1]=[u"", u"י", u"כ", u"ל", u"מ", u"נ", u"ס", u"ע", u"פ", u"צ"]
+        letters[2]=[u"", u"ק", u"ר", u"ש", u"ת", u"תק", u"תר", u"תש", u"תת", u"תתק"]
         if (numdig > 3):
             print "We currently can't handle numbers larger than 999"
             exit()
         for count in range(numdig):
             hebnum += letters[numdig-count-1][int(engnum[count])]
-        hebnum = re.sub('יה', 'טו', hebnum)
-        hebnum = re.sub('יו', 'טז', hebnum)
-        hebnum = hebnum.decode('utf-8')
+        hebnum = re.sub(u'יה', u'טו', hebnum)
+        hebnum = re.sub(u'יו', u'טז', hebnum)
+        # hebnum = hebnum.decode('utf-8')
         return hebnum
 
 

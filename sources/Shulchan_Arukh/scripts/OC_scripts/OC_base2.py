@@ -1,6 +1,7 @@
 # encoding=utf-8
 
 from sources.Shulchan_Arukh.ShulchanArukh import *
+from OC_base1 import markup
 
 root = Root('../../Orach_Chaim.xml')
 base = root.get_base_text()
@@ -15,10 +16,8 @@ volume.mark_simanim(u'@22([\u05d0-\u05ea]{1,3})', specials={u'@00': {'name': u't
 print "Validating Simanim"
 volume.validate_simanim()
 
-bad = volume.mark_seifim(u'@11([\u05d0-\u05ea]{1,3})', specials={u'@23': {'name': u'title'}})
+errors = volume.mark_seifim(u'@11([\u05d0-\u05ea]{1,3})', specials={u'@23': {'name': u'title'}})
 print 'Validating Seifim'
-for i in bad:
-    print i
 volume.validate_seifim()
 
 codes = [ur'@77', ur'@66', ur'@55']
@@ -38,8 +37,10 @@ volume.validate_references(ur'@44([\u05d0-\u05ea])', ur'@44', key_callback=he_or
 for pattern, code in zip(patterns, codes):
     volume.validate_references(pattern, code)
 
-errors = volume.format_text('@33', '@99', 'ramah')
+errors += volume.format_text('@33', '@99', 'ramah')
 for i in errors:
     print i
+
+markup(volume, root, 2)
 
 root.export()
