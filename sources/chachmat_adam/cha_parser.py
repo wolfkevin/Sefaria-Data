@@ -328,6 +328,7 @@ with codecs.open("chachmat_adam.txt") as file_read:
             local_foot_count = 0
             if u'קונטרס מצבת משה' in line:
                 startedKuntrus = True
+                shaarim.append(Section(prev_shaar_title, start_shaar_num, klal_count))
                 chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
                 cur_comment = ''
                 kuntrus_dict[unicode(prev_title)] = jagged_array.JaggedArray([])
