@@ -500,16 +500,10 @@ with codecs.open("binat_adam.txt") as file_read:
 for item in binat_shaarim_text:
     ja_to_xml(binat_shaarim_text[item].array(), ["siman"], item + "_output.xml")
 
-#
-#             else:
 
 ja_to_xml(chochmat_ja.array(), ["klal", "siman"], "chochmat_output.xml")
-# ja_to_xml(later_jas[0].array(), ["siman"], "mmi_output.xml")
-# ja_to_xml(later_jas[1].array(), ["siman"], "mm_output.xml")
-# ja_to_xml(later_jas[2].array(), ["siman"], "cki_output.xml")
-# ja_to_xml(later_jas[3].array(), ["siman"], "ck_output.xml")
+ja_to_xml(kuntrus_ja.array(), ["klal", "siman"], "kuntres_output.xml")
 
-ja_to_xml(binat_ja.array(), ["klal", "siman"], "binat_output.xml")
 
 ca_index_schema = SchemaNode()
 ca_index_schema.add_primary_titles("Chochmat Adam", u"חכמת אדם")
