@@ -15925,7 +15925,7 @@
 @le<IL0><IR144><ENG>Giver of the Torah.
 @lh<IL235.2><IR0><ZL><HEB>נוֹתֵן הַתּוֹרָה:
 <@02><ENG>Prayer on Behalf of the Oleh to Torah 
-<@02><HEB>מי שברך לעולה לתורה 
+<@02><HEB>מי שברך לעולה לתורה
 @sm<IL12><IR12>מִי שֶׁבֵּרַךְ אֲבוֹתֵֽינוּ אַבְרָהָם יִצְחָק וְיַֽrֲקב, הוּא יְבָרֵךְ אֶת (@vs<SZ10>פלוני בן פלוני@bs<SZ12>) בַּrֲבוּר שֶׁrָלָה לִכְבוֹד הַמָּקוֹם, לִכְבוֹד הַתּוֹרָה, (@vs<SZ10>בשבת@ss<SZ11> לִכְבוֹד הַשַּׁבָּת,@bs<SZ12>) (@vs<SZ10>ביום טוב@ss<SZ11> לִכְבוֹד הָרֶֽגֶל,@bs<SZ12>) בִּשְׂכַר זֶה, הַקָּדוֹשׁ בָּרוּךְ הוּא יִשְׁמְ֒רֵֽהוּ וְיַצִּילֵֽהוּ מִכָּל צָרָה וְצוּקָה, וּמִכָּל נֶֽגַע וּמַחֲלָה, וְיִשְׁלַח בְּרָכָה וְהַצְלָחָה בְּכָל מַrֲשֵׂה יָדָיו, (@vs<SZ10>ביום טוב@ss<SZ11> וְיִזְכֶּה לַrֲלוֹת לְרֶֽגֶל,@bs<SZ12>) rִם כָּל יִשְׂרָאֵל אֶחָיו, וְנאמַר אָמֵן:
 <@02><ENG>Prayer on Behalf of a Sick Person
 <@02><HEB>מי שברך לחולה
@@ -18668,8 +18668,8 @@
 @lh<IL235.2><IR0><ZL><HEB>יְהוָה לִי וְGא אִירָא:
 <ENG>@cw<HEB><CH1>Kiddush for the Sabbath day<@01>
 <@01>קידוש ליום השבת
-<@02>The Great Kiddush@n1<*1>1@n2
-<@02><HEB>קידושא רבא
+@t1The Great Kiddush@n1<*1>1@n2
+@bb<HEB>קידושא רבא
 @lg<IL12><IR12>@bg<BO><SZ16>אַתְקִינוּ סְעוּדָתָא @rg<BOC><SZ14>דִּמְהֵימְנוּתָא. שְׁלֵימָתָא חֶדְוָתָא דְמַלְכָּא קַדִּישָׁא: אַתְקִינוּ סְעוּדָתָא דְמַלְכָּא. דָּא הִיא סְעוּדָתָא דְrַתִּיקָא קַדִּישָׁא. וַחֲקַל תַּפּוּחִין קַדִּישִׁין וּזְrֵיר אַנְפִּין. אַתְיָן לְסַrֲדָא בַּהֲדֵיהּ:
 @lgאֲסַדֵּר לִסְעוּדָתָא. בְּצַפְרָא דְשַׁבַּתָּא. וְאַזְמִין בָּהּ הַשְׁתָּא. rַתִּיקָא קַדִּישָׁא:<QR>
 @azנְהוֹרֵיהּ יִשְׁרֵי בָהּ. בְּקִדּוּשָׁא רַבָּא. וּבְחַמְרָא טָבָא. דְבֵיהּ תֶּחְדֵּי נַפְשָׁא:<QR>
@@ -18697,7 +18697,7 @@
 @cy<EM><EN>וְrַל ראשִׁי יִהְיוּ תַמִים. נֵר מִצְוָה וְאוֹר תּוֹרָה:<QR>
 @azקוּמָה יְהוָה לִמְנוּחָתִי. אַתָּה וַאֲרוֹן rֻזֶּֽךָ.<QR>
 @cy<EM><EN>קַח נָא אֵל אֶת בִּרְכָתִי. וְהַחֲזֵק מָגֵן חוֹזֶֽךָ:<QR>
-@lgמִזְמוֹר לְדָוִד. יְהוָה רrִי Gא אֶחְסָר: בִּנְאוֹת דֶּֽשֶׁא יַרְבִּיצֵֽנִי. rַל_מֵי מְנֻחוֹת יְנַהֲלֵֽנִי: נַפְשִׁי יְשׁוֹבֵב. יַנְחֵֽנִי בְמַrְגְּ֒לֵי_צֶֽדֶק לְמַֽrַן שְׁמוֹ: גַּם כִּי_אֵלֵךְ בְּגֵיא צַלְמָֽוֶת Gא_אִירָא רָע. כִּי_אַתָּה rִמָּדִי. שִׁבְטְ֒ךָ וּמִשְׁrַנְתֶּֽךָ הֵֽמָּה יְנַחֲמֻֽנִי: תַּrֲרךְ לְפָנַי שֻׁלְחָן נֶֽגג*ב*וֶד צרְרָי. דִּשַּֽׁנְתָּ בַשֶּֽׁמֶן ראשִׁי. כּוֹסִי רְוָיָה: אַךְ טוֹב וָחֶֽסֶד יִרְדְּ֒פֽוּנִי כָּל_יְמֵי חַיָּי. וְשַֽׁבְתִּי בְּבֵית יְהוָה לְאֽרֶךְ יָמִים:<QC>
+@lgמִזְמוֹר לְדָוִד. יְהוָה רrִי Gא אֶחְסָר: בִּנְאוֹת דֶּֽשֶׁא יַרְבִּיצֵֽנִי. rַל_מֵי מְנֻחוֹת יְנַהֲלֵֽנִי: נַפְשִׁי יְשׁוֹבֵב. יַנְחֵֽנִי בְמַrְגְּ֒לֵי_צֶֽדֶק לְמַֽrַן שְׁמוֹ: גַּם כִּי_אֵלֵךְ בְּגֵיא צַלְמָֽוֶת Gא_אִירָא רָע. כִּי_אַתָּה rִמָּדִי. שִׁבְטְ֒ךָ וּמִשְׁrַנְתֶּֽךָ הֵֽמָּה יְנַחֲמֻֽנִי: תַּrֲרךְ לְפָנַי שֻׁלְחָן נֶֽגֶד צרְרָי. דִּשַּֽׁנְתָּ בַשֶּֽׁמֶן ראשִׁי. כּוֹסִי רְוָיָה: אַךְ טוֹב וָחֶֽסֶד יִרְדְּ֒פֽוּנִי כָּל_יְמֵי חַיָּי. וְשַֽׁבְתִּי בְּבֵית יְהוָה לְאֽרֶךְ יָמִים:<QC>
 @lgאִם_תָּשִׁיב מִשַּׁבָּת רַגְלֶֽךָ. rֲשׂוֹת חֲפָצֶֽיךָ בְּיוֹם קָדְשִׁי. וְקָרָֽאתָ לַשַּׁבָּת rֽנֶג לִקְדוֹשׁ יְהוָה מְכֻבָּד. וְכִבַּדְתּוֹ מֵrֲשׂוֹת דְּרָכֶֽיךָ מִמְּ֒צוֹא חֶפְצְךָ וְדַבֵּר דָבָר: אָז תִּתְrַנַּג rַל_יְהוָה וְהִרְכַּבְתִּֽיךָ rַל_בָּֽמֳתֵי אָֽרֶץ. וְהַאֲכַלְתִּֽיךָ נַחֲלַת יַrֲקב אָבִֽיךָ. כִּי פִּי יְהוָה דִּבֵּר:<QC>
 @t1<IL0><IR144><ENG>“And the Children of Israel shall preserve
 @lh<IL235.2><IR0><ZL><HEB>וְשָׁמְ֒רוּ בְנֵי_יִשְׂרָאֵל<QL>
@@ -18835,9 +18835,9 @@
 @lh<IL235.2><IR0><ZL><HEB>כִּי Gא יִטּשׁ יְהוָה אֶת rַמּוֹ.<QL>
 @le<IL0><IR144><ENG>for the sake of His great Name.”@n1<*11>11@n2
 @lh<IL235.2><IR0><ZL><HEB>בַּrֲבוּר הַגָּדוֹל שְׁמוֹ.<QL>
-@t1<IL0><IR144><ENG>In Elam He placed His throne
+@t1<IL0><IR144><ENG>In Elam@n1<*12>12@n2 He placed His throne
 @lh<IL235.2><IR0><ZL><HEB>rֵילָם שָׁת כִּסְאוֹ<QL>
-@le<IL0><IR144><ENG>to save His loved ones;@n1<*12>12@n2
+@le<IL0><IR144><ENG>to save His loved ones;@n1<*13>13@n2
 @lh<IL235.2><IR0><ZL><HEB>לְהַצִּיל יְדִידָיו.<QL>
 @le<IL0><IR144><ENG>to remove from there
 @lh<IL235.2><IR0><ZL><HEB>לְהַrֲבִיר מִשָּׁם<QL>
@@ -18845,11 +18845,11 @@
 @lh<IL235.2><IR0><ZL><HEB>מָrֻזְנֵי<QL>
 @le<IL0><IR144><ENG>who rebelled against Him.
 @lh<IL235.2><IR0><ZL><HEB>מוֹרְ֒דָיו.<QL>
-@le<IL0><IR144><ENG>From beneath the sword@n1<*13>13@n2
+@le<IL0><IR144><ENG>From beneath the sword@n1<*14>14@n2
 @lh<IL235.2><IR0><ZL><HEB>מֵrֲבוֹר בַּשֶּֽׁלַח<QL>
 @le<IL0><IR144><ENG>He redeemed His servants.
 @lh<IL235.2><IR0><ZL><HEB>פָּדָה אֶת rֲבָדָיו.<QL>
-@le<IL0><IR144><ENG>The power of His people, He will exalt,@n1<*14>14@n2
+@le<IL0><IR144><ENG>The power of His people, He will exalt,@n1<*15>15@n2
 @lh<IL235.2><IR0><ZL><HEB>קֶֽרֶן לְrַמּוֹ יָרִים<QL>
 @le<IL0><IR144><ENG>praise for all His pious ones.
 @lh<IL235.2><IR0><ZL><HEB>תְּהִלָּה לְכָל חֲסִידָיו.<QL>
@@ -18857,19 +18857,19 @@
 @lh<IL235.2><IR0><ZL><HEB>כִּי אִם הוֹגָה<QL>
 @le<IL0><IR144><ENG>He is compassionate, according to His mercy
 @lh<IL235.2><IR0><ZL><HEB>וְרִחַם כְּרַחֲמָיו<QL>
-@le<IL0><IR144><ENG>and His abundant kindliness.”@n1<*15>15@n2
+@le<IL0><IR144><ENG>and His abundant kindliness.”@n1<*16>16@n2
 @lh<IL235.2><IR0><ZL><HEB>וּכְרוֹב חֲסָדָיו:<QL>
-@t1<IL0><IR144><ENG>The he_goat, [so] great was its might,@n1<*16>16@n2
+@t1<IL0><IR144><ENG>The he_goat, [so] great was its might,@n1<*17>17@n2
 @lh<IL235.2><IR0><ZL><HEB>וּצְפִיר הָrִזִּים הִגְדִּיל rֲצוּמָיו.<QL>
-@le<IL0><IR144><ENG>that the (vision of the) four [horns]@n1<*17>17@n2
+@le<IL0><IR144><ENG>that the (vision of the) four [horns]@n1<*18>18@n2
 @lh<IL235.2><IR0><ZL><HEB>וְגַם חָזוּת אַרְבַּע<QL>
-@le<IL0><IR144><ENG>ascended to His ennobled ones?@n1<*18>18@n2
+@le<IL0><IR144><ENG>ascended to His ennobled ones?@n1<*19>19@n2
 @lh<IL235.2><IR0><ZL><HEB>rָלוּ לִמְרוֹמָיו.<QL>
 @le<IL0><IR144><ENG>In their hearts they intended
 @lh<IL235.2><IR0><ZL><HEB>וּבְלִבָּם דִּמּוּ<QL>
 @le<IL0><IR144><ENG>to destroy His cherished ones;
 @lh<IL235.2><IR0><ZL><HEB>לְהַשְׁחִית אֶת רְחוּמָיו.<QL>
-@le<IL0><IR144><ENG>[but] through His priests@n1<*19>19@n2
+@le<IL0><IR144><ENG>[but] through His priests@n1<*20>20@n2
 @lh<IL235.2><IR0><ZL><HEB>rַל יְדֵי כהֲנָיו<QL>
 @le<IL0><IR144><ENG>He destroyed those who rose against Him.
 @lh<IL235.2><IR0><ZL><HEB>מִגֵּר מִתְקוֹמְ֒מָיו.<QL>
@@ -18877,15 +18877,15 @@
 @lh<IL235.2><IR0><ZL><HEB>חַסְדֵי יְהוָה
 @le<IL0><IR144><ENG>have never ended,
 @lh<IL235.2><IR0><ZL><HEB>כִּי Gא תָמְנוּ<QL>
-@le<IL0><IR144><ENG>for His mercies are inexhaustible.”@n1<*20>20@n2
+@le<IL0><IR144><ENG>for His mercies are inexhaustible.”@n1<*21>21@n2
 @lh<IL235.2><IR0><ZL><HEB>כִּי Gא כָלוּ רַחֲמָיו.<QL>
-@t1<IL0><IR144><ENG>I was handed over to Edom׀@n1<*21>21@n2
+@t1<IL0><IR144><ENG>I was handed over to Edom׀@n1<*22>22@n2
 @lh<IL235.2><IR0><ZL><HEB>נִסְגַּרְתִּי לֶאֱדוֹם<QL>
-@le<IL0><IR144><ENG>into the hands of my quarrelsome brothers@n1<*22>22@n2
+@le<IL0><IR144><ENG>into the hands of my quarrelsome brothers@n1<*23>23@n2
 @lh<IL235.2><IR0><ZL><HEB>בְּיַד רֵrַי מְדָנַי.<QL>
 @le<IL0><IR144><ENG>who daily
 @lh<IL235.2><IR0><ZL><HEB>שֶׁבְּ֒כָל יוֹם וָיוֹם<QL>
-@le<IL0><IR144><ENG>filled their bellies from my wealth.@n1<*23>23@n2
+@le<IL0><IR144><ENG>filled their bellies from my wealth.@n1<*24>24@n2
 @lh<IL235.2><IR0><ZL><HEB>מְמַלְּ֒אִים כְּרֵסָם מֵrֲדָנַי.<QL>
 @le<IL0><IR144><ENG>His help is with me
 @lh<IL235.2><IR0><ZL><HEB>rֶזְרָתוֹ rִמִּי<QL>
@@ -18893,15 +18893,15 @@
 @lh<IL235.2><IR0><ZL><HEB>לִסְמוֹךְ אֶת אֲדָנַי.<QL>
 @le<IL0><IR144><ENG>and You have not abandoned me
 @lh<IL235.2><IR0><ZL><HEB>וְGא נְטַשְׁתַּֽנִי<QL>
-@le<IL0><IR144><ENG>all the days of my times.@n1<*24>24@n2
+@le<IL0><IR144><ENG>all the days of my times.@n1<*25>25@n2
 @lh<IL235.2><IR0><ZL><HEB>כָּל יְמֵי rִדָּנַי.<QL>
-@le<SP0.19><MIN0.75><MAX2><IL0><IR144><ENG>“For my Master will not cast [me] away forever.”@n1<*25>25@n2
+@le<SP0.19><MIN0.75><MAX2><IL0><IR144><ENG>“For my Master will not cast [me] away forever.”@n1<*26>26@n2
 @le@lh<IL235.2><IR0><ZL><HEB>כִּי Gא יִזְנַח לְעוֹלָם אֲדנָי.<QL>
 @t1<IL0><IR144><ENG>When He comes from Edom
 @lh<IL235.2><IR0><ZL><HEB>בְּבוֹאוֹ מֵאֱדוֹם<QL>
 @le<IL0><IR144><ENG>with bloodied clothes
 @lh<IL235.2><IR0><ZL><HEB>חֲמוּץ בְּגָדִים.<QL>
-@le<IL0><IR144><ENG>having slain in Botzrah@n1<*26>26@n2
+@le<IL0><IR144><ENG>having slain in Botzrah@n1<*27>27@n2
 @lh<IL235.2><IR0><ZL><HEB>זֶֽבַח לוֹ בְּבָצְרָה<QL>
 @le<IL0><IR144><ENG>and executed traitors׀
 @lh<IL235.2><IR0><ZL><HEB>וְטֶֽבַח לוֹ בְּבוֹגְדִים.<QL>
@@ -18917,7 +18917,7 @@
 @lh<IL235.2><IR0><ZL><HEB>רוּחַ נְגִידִים.<QL>
 @le<IL0><IR144><ENG>“Afflicting them with His harsh wind
 @lh<IL235.2><IR0><ZL><HEB>הָגָה בְּרוּחוֹ הַקָּשָׁה<QL>
-@le<IL0><IR144><ENG>on the day of the East Wind.”@n1<*27>27@n2
+@le<IL0><IR144><ENG>on the day of the East Wind.”@n1<*28>28@n2
 @lh<IL235.2><IR0><ZL><HEB>בְּיוֹם קָדִים.<QL>
 @t1<IL0><IR144><ENG>On seeing that it is so,
 @lh<IL235.2><IR0><ZL><HEB>רְאוֹתוֹ כִּי כֵן<QL>
@@ -18925,7 +18925,7 @@
 @lh<IL235.2><IR0><ZL><HEB>אֲדוֹמִי הָעוֹצֵר.<QL>
 @le<IL0><IR144><ENG>will think that Botzrah
 @lh<IL235.2><IR0><ZL><HEB>יַחֲשׁוֹב לוֹ בְבָצְרָה<QL>
-@le<IL0><IR144><ENG>is a refuge like Betzer.@n1<*28>28@n2
+@le<IL0><IR144><ENG>is a refuge like Betzer.@n1<*29>29@n2
 @lh<IL235.2><IR0><ZL><HEB>תִּקְלוֹט כְּבֶֽצֶר.<QL>
 @le<IL0><IR144><ENG>That an angel,
 @lh<IL235.2><IR0><ZL><HEB>וּמַלְאָךְ
@@ -18935,13 +18935,13 @@
 @lh<IL235.2><IR0><ZL><HEB>וּמֵזִיד<QL>
 @le<IL0><IR144><ENG>like the unpremeditated [killer]
 @lh<IL235.2><IR0><ZL><HEB>כַּשּׁוֹגֵג<QL>
-@le<IL0><IR144><ENG>is held in the refuge.@n1<*29>29@n2
+@le<IL0><IR144><ENG>is held in the refuge.@n1<*30>30@n2
 @lh<IL235.2><IR0><ZL><HEB>בְּמִקְלָט יֵrָצֵר.<QL>
 @le<IL0><IR144><ENG>“Love Adonoy, all His pious ones,
 @lh@n2<IL235.2><IR0><ZL><HEB>אֶהֱבוּ אֶת יְהוָה כָּל חֲסִידָיו<QL>
-@le<IL0><IR144><ENG>the faithful ones whom He preserves.”@n1<*30>30@n2
+@le<IL0><IR144><ENG>the faithful ones whom He preserves.”@n1<*31>31@n2
 @lh<IL235.2><IR0><ZL><HEB>אֱמוּנִים נוֹצֵר.<QL>
-@t1<IL0><IR144><ENG>May the Rock command His kindliness
+@t1<IL0><IR144><ENG>May the Rock@n1<*32>32@n2 command His kindliness
 @lh<IL235.2><IR0><ZL><HEB>יְצַוֶּה צוּר חַסְדּוֹ<QL>
 @le<IL0><IR144><ENG>His communities to gather;
 @lh<IL235.2><IR0><ZL><HEB>קְהִלּוֹתָיו לְקַבֵּץ.<QL>
@@ -18949,9 +18949,9 @@
 @lh<IL235.2><IR0><ZL><HEB>מֵאַרְבַּע רוּחוֹת<QL>
 @le<IL0><IR144><ENG>unto Him to be gathered.
 @lh<IL235.2><IR0><ZL><HEB>rָדָיו לְהִקָּבֵץ.<QL>
-@le<IL0><IR144><ENG>And upon the mountain
+@le<IL0><IR144><ENG>And upon the mountain@n1<*33>33@n2
 @lh<IL235.2><IR0><ZL><HEB>וּבְהַר<QL>
-@le<IL0><IR144><ENG>exalted above all mountains@n1<*31>31@n2
+@le<IL0><IR144><ENG>exalted above all mountains
 @lh<IL235.2><IR0><ZL><HEB>מְרוֹם הָרִים<QL>
 @le<IL0><IR144><ENG>to grant us rest;
 @lh<IL235.2><IR0><ZL><HEB>אוֹתָֽנוּ לְהַרְבֵּץ.<QL>
@@ -18959,9 +18959,9 @@
 @lh<IL235.2><IR0><ZL><HEB>וְאִתָּֽנוּ יָשׁוּב<QL>
 @le<IL0><IR144><ENG>the banished ones He will gather.
 @lh<IL235.2><IR0><ZL><HEB>נִדָּחִים קוֹבֵץ.<QL>
-@le<IL0><IR144><ENG>“He will bring back,” is not said@n1<*32>32@n2
+@le<IL0><IR144><ENG>“He will bring back,” is not said@n1<*34>34@n2
 @lh<IL235.2><IR0><ZL><HEB>יָשִׁיב Gא נֶאֱמַר<QL>
-@le<IL0><IR144><ENG>but “He will return and gather.”@n1<*33>33@n2
+@le<IL0><IR144><ENG>but “He will return and gather.”@n1<*35>35@n2
 @lh<IL235.2><IR0><ZL><HEB>כִּי אִם וְשָׁב וְקִבֵּץ.<QL>
 @t1<IL0><IR144><ENG>Blessed is our God
 @lh<IL235.2><IR0><ZL><HEB>בָּרוּךְ הוּא אֱGהֵֽינוּ<QL>
@@ -18985,7 +18985,7 @@
 @lh<IL235.2><IR0><ZL><HEB>שֶׁנִּקְרָא rָלֵֽינוּ.<QL>
 @t1<IL0><IR144><ENG>Blessed is He, our God
 @lh<IL235.2><IR0><ZL><HEB>בָּרוּךְ הוּא אֱGהֵֽינוּ<QL>
-@le<IL0><IR144><ENG>Who created us for His glory@n1<*34>34@n2
+@le<IL0><IR144><ENG>Who created us for His glory@n1<*36>36@n2
 @lh<IL235.2><IR0><ZL><HEB>שֶׁבְּ֒רָאָֽנוּ לִכְבוֹדוֹ.<QL>
 @le<IL0><IR144><ENG>to extol Him, to praise Him;
 @lh<IL235.2><IR0><ZL><HEB>לְהַלְּ֒לוֹ וּלְ֒שַׁבְּחוֹ<QL>
@@ -19027,7 +19027,7 @@
 @lh<IL235.2><IR0><ZL><HEB>rַל יִשְׂרָאֵל שָׁלוֹם.<QL>
 @le<IL0><IR144><ENG>Advisor, Almighty, Powerful One,
 @lh<IL235.2><IR0><ZL><HEB>יוֹrֵץ אֵל גִּבּוֹר<QL>
-@le<IL0><IR144><ENG>Eternal Father, Prince of peace.@n1<*35>35@n2
+@le<IL0><IR144><ENG>Eternal Father, Prince of peace.@n1<*37>37@n2
 @lh<IL235.2><IR0><ZL><HEB>אֲבִי rַד שַׂר שָׁלוֹם:<QL>
 <@02><ENG>Baruch El Elyon
 <@02><HEB>ברוך אל עליון
@@ -19060,7 +19060,7 @@
 @lh<IL235.2><IR0><ZL><HEB>מֶֽלֶךְ עוֹלָמִים.<QL>
 @le<IL0><IR144><ENG>that His people rest on the Sabbath
 @lh<IL235.2><IR0><ZL><HEB>אֶת rַמּוֹ לִשְׁבּוֹת.<QL>
-@le<IL0><IR144><ENG>He caused them to hear pleasantly;@n1<*36>36@n2
+@le<IL0><IR144><ENG>He caused them to hear pleasantly;@n1<*38>38@n2
 @lh<IL235.2><IR0><ZL><HEB>אִזֵּן בַּנְּ֒rִימִים.<QL>
 @le<IL0><IR144><ENG>[to enjoy the Sabbath] with tasty foods,
 @lh<IL235.2><IR0><ZL><HEB>בְּמַאֲכָלֵי rֲרֵבוֹת.<QL>
@@ -19081,7 +19081,7 @@
 @lh<IL235.2><IR0><ZL><HEB>כְּמִנְחָה rַל מַחֲבַת:<QL>
 @t1<IL0><IR144><ENG>Fortunate is everyone who anticipates
 @lh<IL235.2><IR0><ZL><HEB>וְאַשְׁרֵי כָּל חוֹכֶה.<QL>
-@le<IL0><IR144><ENG>the double reward@n1<*37>37@n2
+@le<IL0><IR144><ENG>the double reward@n1<*39>39@n2
 @lh<IL235.2><IR0><ZL><HEB>לְתַשְׁלוּמֵי כֵפֶל.<QL>
 @le<IL0><IR144><ENG>from the One Who sees all
 @lh<IL235.2><IR0><ZL><HEB>מֵאֵת כּל סוֹכֶה.<QL>
@@ -19093,7 +19093,7 @@
 @lh<IL235.2><IR0><ZL><HEB>בָּהָר וּבַשָּֽׁפֶל.<QL>
 @le<IL0><IR144><ENG>an inheritance and a resting_place
 @lh<IL235.2><IR0><ZL><HEB>נַחֲלָה וּמְנוּחָה.<QL>
-@le<IL0><IR144><ENG>like him for whom the sun shone.@n1<*38>38@n2
+@le<IL0><IR144><ENG>like him for whom the sun shone.@n1<*40>40@n2
 @lh<IL235.2><IR0><ZL><HEB>כַּשֶּֽׁמֶשׁ לוֹ זָרְ֒חָה.<QL>
 @y1<IL0><IR144><ENG>Refrain:<BOC><ITC><QL>
 @y2<ZL>_The preserver of the Sabbath׀
@@ -19154,11 +19154,11 @@
 @lh<IL235.2><IR0><ZL><HEB>לָאֵל יֵרָצוּ<QL>
 @le<IL0><IR144><ENG>as a meal_offering in a [sacred] pan.
 @lh<IL235.2><IR0><ZL><HEB>כְּמִנְחָה rַל מַחֲבַת:<QL>
-@t1<IL0><IR144><ENG>Mention the Sabbath to sanctify it;@n1<*39>39@n2
+@t1<IL0><IR144><ENG>Mention the Sabbath to sanctify it;@n1<*41>41@n2
 @lh<IL235.2><IR0><ZL><HEB>זָכוֹר אֶת יוֹם הַשַּׁבָּת לְקַדְּ֒שׁוֹ.<QL>
 @le<IL0><IR144><ENG>its glory when raised high
 @lh<IL235.2><IR0><ZL><HEB>קַרְנוֹ כִּי גָבְ֒הָה<QL>
-@le<IL0><IR144><ENG>is a crown on his head.@n1<*40>40@n2
+@le<IL0><IR144><ENG>is a crown on his head.@n1<*42>42@n2
 @lh<IL235.2><IR0><ZL><HEB>נֵֽזֶר rַל ראשׁוֹ.<QL>
 @le<IL0><IR144><ENG>Therefore, let each man provide himself
 @lh<IL235.2><IR0><ZL><HEB>rַל כֵּן יִתֵּן הָאָדָם לְנַפְשׁוֹ.<QL>
@@ -19200,7 +19200,7 @@
 <@02><HEB>יום זה מכובד
 @t1<IL0><IR144><ENG>This day is honored above all days,
 @bb<IL235.2><IR0><ZL><HEB>יוֹם זֶה מְכֻבָּד @rg<BOC><SZ14>מִכָּל יָמִים.<QL>
-@le<IL0><IR144><ENG>for on it rested the Rock of the Worlds.@n1<*41>41@n2
+@le<IL0><IR144><ENG>for on it rested the Rock of the Worlds.@n1<*43>43@n2
 @lh<IL235.2><IR0><ZL><HEB>כִּי בוֹ שָׁבַת צוּר עוֹלָמִים.<QL>
 @t1<IL0><IR144><ENG>“Six days do your work”
 @lh<IL235.2><IR0><ZL><HEB>שֵֽׁשֶׁת יָמִים תַּrֲשֶׂה מְלַאכְתֶּֽךָ.<QL>
@@ -19208,14 +19208,14 @@
 @lh<IL235.2><IR0><ZL><HEB>וְיוֹם הַשְּׁ֒בִיrִי לֵאGהֶֽיךָ.<QL>
 @le<IL0><IR144><ENG>the Sabbath׀do no work on it
 @lh<IL235.2><IR0><ZL><HEB>שַׁבָּת Gא תַrֲשֶׂה בוֹ מְלָאכָה.<QL>
-@le<IL0><IR144><ENG>for He did everything in six days.@n1<*42>42@n2
+@le<IL0><IR144><ENG>for He did everything in six days.@n1<*44>44@n2
 @lh<IL235.2><IR0><ZL><HEB>כִּי כל rָשָׂה שֵֽׁשֶׁת יָמִים.<QL>
 @y1<IL0><IR144><ENG>Refrain:<BOC><ITC><QL>
 @y2<ZL>This day is honored above all days,
 @lh<IL235.2><IR0><ZL><HEB>יוֹם זֶה מְכֻבָּד מִכָּל יָמִים.<QL>
 @le<IL0><IR144><ENG>for on it rested the Rock of the Worlds.
 @lh<IL235.2><IR0><ZL><HEB>כִּי בוֹ שָׁבַת צוּר עוֹלָמִים.<QL>
-@t1<IL0><IR144><ENG>It is the first of the holy convocations,@n1<*43>43@n2
+@t1<IL0><IR144><ENG>It is the first of the holy convocations,@n1<*45>45@n2
 @lh<IL235.2><IR0><ZL><HEB>רִאשׁוֹן הוּא לְמִקְרָאֵי קוֹדֶשׁ.<QL>
 @le<IL0><IR144><ENG>a day of rest, the holy Sabbath day.
 @lh<IL235.2><IR0><ZL><HEB>יוֹם שַׁבָּתוֹן יוֹם שַׁבָּת קֽדֶשׁ.<QL>
@@ -19310,11 +19310,11 @@
 @lh<IL235.2><IR0><ZL><HEB>וְGא יֻשְׁבַּת.<QL>
 @le<IL0><IR144><ENG>Rest and be tranquil on the Sabbath day.
 @lh<IL235.2><IR0><ZL><HEB>שְׁבוּ נֽוּחוּ בְּיוֹם שַׁבָּת:<QL>
-@t1<IL0><IR144><ENG>Seek My resting place, and My sanctuary,@n1<*44>44@n2
+@t1<IL0><IR144><ENG>Seek My resting place, and My sanctuary,@n1<*46>46@n2
 @lh<IL235.2><IR0><ZL><HEB>דְּרוֹשׁ נָוִי וְאוּלָמִי.<QL>
 @le<IL0><IR144><ENG>and a sign of deliverance, make for me.
 @lh<IL235.2><IR0><ZL><HEB>וְאוֹת יֶֽשַׁע rֲשֵׂה rִמִּי.<QL>
-@le<IL0><IR144><ENG>Plant a branch within my vineyard,@n1<*45>45@n2
+@le<IL0><IR144><ENG>Plant a branch within my vineyard,@n1<*47>47@n2
 @lh<IL235.2><IR0><ZL><HEB>נְטַע שׂוֹרֵק בְּתוֹךְ כַּרְמִי.<QL>
 @le<IL0><IR144><ENG>consider the cry of my people.
 @lh<IL235.2><IR0><ZL><HEB>שְׁrֵה שַׁוְrַת בְּנֵי rַמִּי:<QL>
@@ -19328,7 +19328,7 @@
 @lh<IL235.2><IR0><ZL><HEB>שְׁמַע קוֹלִי בְּיוֹם אֶקְרָא:<QL>
 @t1<IL0><IR144><ENG>God, cause the wilderness to blossom
 @lh<IL235.2><IR0><ZL><HEB>אֱGהִים תֵּן בַּמִּדְבָּר הַר.<QL>
-@le<IL0><IR144><ENG>with myrtle, acacia, cypress and elm@n1<*46>46@n2
+@le<IL0><IR144><ENG>with myrtle, acacia, cypress and elm@n1<*48>48@n2
 @lh<IL235.2><IR0><ZL><HEB>הֲדַס שִׁטָּה בְּרוֹשׁ תִּדְהָר.<QL>
 @le<IL0><IR144><ENG>to those who encourage Sabbath observance
 @lh<IL235.2><IR0><ZL><HEB>וְלַמַּזְהִיר<QL>
@@ -19373,7 +19373,7 @@
 @y1<IL0><IR144><ENG>Refrain:<BOC><ITC><QL>
 @y2<ZL>_Sabbath is the day for Adonoy
 @rg@lh<IL235.2><IR0><ZL><HEB>שַׁבָּת הַיּוֹם לַיהוָה:<QL>
-@t1<IL0><IR144><ENG>It is forbidden to travel on the road@n1<*47>47@n2
+@t1<IL0><IR144><ENG>It is forbidden to travel on the road@n1<*49>49@n2
 @lh<IL235.2><IR0><ZL><HEB>מֵrֲבוֹר דֶּֽרֶךְ<QL>
 @le<IL0><IR144><ENG>or to overstep the boundaries;
 @lh<IL235.2><IR0><ZL><HEB>וּגְבוּלִים.<QL>
@@ -19674,7 +19674,7 @@
 @lh<IL235.2><IR0><ZL><HEB>פִּטּוּם הַקְּ֒טֽרֶת כֵּיצַד<QL>
 @le<IL0><IR144><ENG>Three hundred and sixty_eight
 @lh<IL235.2><IR0><ZL><HEB>שְׁGש מֵאוֹת וְשִׁשִּׁים וּשְׁ֒מוֹנָה<QL>
-@le<IL0><IR144><IT><ENG>manim@n3<ITC><*71>71@n4 were comprised therein,
+@le<IL0><IR144><IT><ENG>manim<ITC> were comprised therein,
 @lh<ENG><BOC><IL235.2><IR0><HEB><ZL>מָנִים הָיוּ בָהּ,<QL>
 @le<IL0><IR144><ENG>three hundred and sixty_five
 @lh<IL235.2><IR0><ZL><HEB>שְׁGש מֵאוֹת וְשִׁשִּׁים וַחֲמִשָּׁה<QL>
@@ -19932,7 +19932,7 @@
 @lh<IL235.2><IR0><ZL><HEB>כְּבוֹד מַלְ֒כוּתוֹ<QL>
 @le<IL0><IR144><ENG>is forever and ever.
 @lh<IL235.2><IR0><ZL><HEB>לְעוֹלָם וָrֶד:<QL>
-<@02><@02><ENG>Ashrei
+<@02><ENG>Ashrei
 <@02><HEB>אשרי
 @t2<IL0><IR144><ENG>Fortunate are those who dwell
 @bb<IL235.2><IR0><ZL><HEB>אַשְׁרֵי @rg<BOC><SZ14>יוֹשְׁ֒בֵי
@@ -20220,7 +20220,7 @@
 @lh<IL235.2><IR0><ZL><HEB>בְּלֵבָב שָׁלֵם
 @le<IL0><IR144><ENG>so that we shall not labor in vain@n1<*21>21@n2
 @lh<IL235.2><IR0><ZL><HEB>לְמַֽrַן Gא נִיגַע לָרִיק
-@le<IL0><IR144><ENG>nor bring forth that which causes dismay.@n121@n2
+@le<IL0><IR144><ENG>nor bring forth that which causes dismay.
 @lh<IL235.2><IR0><ZL><HEB>וְGא נֵלֵד לַבֶּהָלָה:
 @le<IL0><IR144><ENG>May it be Your will,
 @lh<IL235.2><IR0><ZL><HEB>יְהִי רָצוֹן מִלְּפָנֶֽיךָ
@@ -27758,7 +27758,7 @@ nsent
 @hs<IL235.2><IR0><ZL><HEB>זְמַנֵּי שָׂשׂוֹן
 @es<IL0><IR144><ENG>appointed festivals of holiness,
 @hs<IL235.2><IR0><ZL><HEB>וּמוֹrֲדֵי קֽדֶשׁ
-@es<IL0><IR144><ENG>and@N1<*4>4@N2 festivals for voluntary_offerings;
+@es<IL0><IR144><ENG>and@n1<*4>4@n2 festivals for voluntary_offerings;
 @hs<IL235.2><IR0><ZL><HEB>וְחַגֵּי נְדָבָה.
 @es<IL0><IR144><ENG>and You bequeathed to us
 @hs<IL235.2><IR0><ZL><HEB>וַתּוֹרִישֵֽׁנוּ
@@ -27953,7 +27953,7 @@ nsent
 @le<IL0><IR144><ENG>Sanctifier of
 @lh<IL235.2><IR0><ZL><HEB>מְקַדֵּשׁ
 @in<IL24><IR24><ENG>(On Shabbos, add:<QC>
-@t3<IL0><IR144>the Sabbath, and)@N1<*8>8@N2
+@t3<IL0><IR144>the Sabbath, and)@n1<*8>8@n2
 @hs<IL235.2><IR0><ZL><HEB>(הַשַּׁבָּת וְ)
 @le<IL0><IR144><ENG>Israel and the seasons.@n1<*9>9@n2
 @lh<IL235.2><IR0><ZL><HEB>יִשְׂרָאֵל וְהַזְּ֒מַנִּים:
@@ -29725,7 +29725,7 @@ nsent
 @le<IL0><IR144><ENG>Sanctifier of
 @lh<IL235.2><IR0><ZL><HEB>מְקַדֵּשׁ
 @in<IL24><IR24><ENG>(On Shabbos, add:<QC>
-@t3<IL0><IR144>the Sabbath, and)@N1<*13>13@N2
+@t3<IL0><IR144>the Sabbath, and)@n1<*13>13@n2
 @hs<IL235.2><IR0><ZL><HEB>(הַשַּׁבָּת וְ)
 @le<IL0><IR144><ENG>Israel and the seasons.@n1<*14>14@n2
 @lh<IL235.2><IR0><ZL><HEB>יִשְׂרָאֵל וְהַזְּ֒מַנִּים:

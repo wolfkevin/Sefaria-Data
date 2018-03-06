@@ -5,7 +5,19 @@ from os.path import dirname as loc
 from sources.Shulchan_Arukh.ShulchanArukh import *
 
 commentary_list = [
-    ("Be'er HaGolah", u'באר הגולה')
+    ("Be'er HaGolah", u'באר הגולה'),
+    ("Be'er HaGolah, Seder HaGet", u"באר הגולה, סדר הגט"),
+    ("Be'er HaGolah, Seder Halitzah", u"באר הגולה, סדר חליצה"),
+    ("Beur HaGra", u'ביאור הגר"א'),
+    ("Beur HaGra, Seder HaGet", u'ביאור הגר"א, סדר הגט'),
+    ("Beur HaGra, Seder Halitzah", u'ביאור הגר"א, סדר חליצה'),
+    ("Pithei Teshuva", u"פתחי תשובה"),
+    ("Pithei Teshuva, Seder HaGet", u"פתחי תשובה, סדר הגט"),
+    ("Pithei Teshuva, Seder Halitzah", u"פתחי תשובה, סדר חליצה"),
+    ("Pithei Teshuva, Shemot Anashim V'Nashim", u"פתחי תשובה, שמות אנשים ונשים"),
+    ("Turei Zahav", u"טורי זהב"),
+    ("Turei Zahav, Seder HaGet", u"טורי זהב, סדר הגט"),
+    ("Turei Zahav", "Shemot Anashim V'Nashim", u"טורי זהב, שמות אנשים ונשים"),
 ]
 commentary_list = [dict(zip(('en_title', 'he_title'), c)) for c in commentary_list]
 
