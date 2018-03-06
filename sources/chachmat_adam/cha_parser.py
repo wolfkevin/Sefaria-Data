@@ -393,6 +393,9 @@ ba_footnote_count = 0
 comment_count = 0
 small_title = ''
 
+shaarim_order = []
+shaarim_order.append(section_title)
+
 eng_titles_dict = {
     u'שער רוב וחזקה': 'Shaar Rov Vechazaka',
     u'שער הקבוע': 'Shaar haKavua',
@@ -406,25 +409,32 @@ eng_titles_dict = {
 binat_shaarim_text = {}
 binat_shaarim_text[section_title] = jagged_array.JaggedArray([])
 
+
 with codecs.open("binat_adam.txt") as file_read:
 
     for line in file_read:
-        print line
+        # print line
 
         if line[1:3] == '00':
             if cur_comment != '':
-                binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()))
+                binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment))
                 cur_comment = ''
             # binat_sections.append(Section(section_title, section_start, comment_count))
             section_title = line[3:].strip()
             # section_start = comment_count
             comment_count = 0
             binat_shaarim_text[section_title] = jagged_array.JaggedArray([])
+            if section_title != u'כללי ספק ספיקא ממנחת יעקב':
+                shaarim_order.append(section_title)
 
-        elif line[1:3] == '11' or line[1:3] == '55' or line[1:3] == '88':
-            if cur_comment != '':
-                cur_comment += u'<br>'
-            cur_comment = u'<b>' + line[3:].replace(u'@12', u"</b> ", 1)
+        elif line[1:3] == '11' or line[1:3] == '55' or line[1:3] == '88' or line[1:3] == '99':
+            if small_title != '':
+                cur_comment = checkIfWeShouldAddBr(cur_comment)
+                cur_comment += small_title
+                small_title = ''
+            line = line[3:].strip()
+            cur_comment = checkIfWeShouldAddBr(cur_comment)
+            cur_comment += u'<b>' + line.replace(u'@12', u"</b> ", 1)
             cur_comment = cur_comment.replace(u'@56', u'</b> ', 1)
 
         elif line[1:3] == '22':
