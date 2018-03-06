@@ -395,7 +395,7 @@ small_title = ''
 
 eng_titles_dict = {
     u'שער רוב וחזקה': 'Shaar Rov Vechazaka',
-    u'שער הקבוע': 'Shaar Kavua',
+    u'שער הקבוע': 'Shaar haKavua',
     u'שער איסור והיתר': 'Shaar Isur Veheter',
     u'שער בית הנשים': 'Shaar Beit haNashim',
     u'שער משפטי צדק': 'Shaar Mishpetei Tzedek',
@@ -467,7 +467,10 @@ with codecs.open("binat_adam.txt") as file_read:
         #     print "ERROR what is this", line
 
     # binat_sections.append(Section(section_title, section_start, siman_count))
-    binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()))
+    # binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()))
+
+for item in binat_shaarim_text:
+    ja_to_xml(binat_shaarim_text[item].array(), ["siman"], item + "_output.xml")
 
 #
 #             else:
