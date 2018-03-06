@@ -610,25 +610,56 @@ if post_ca:
     
 post_ba = False
 if post_ba:
+    ba_index_schema = SchemaNode()
+    ba_index_schema.add_primary_titles("Binat Adam", u"בינת אדם")
+    
+    for shaar_title in shaarim_order:
+        if shaar_title == u'שער הקבוע':
+            shaar_hakavua_schema = SchemaNode()
+            ba_index_schema.add_primary_titles(eng_titles_dict[unicode(shaar_title)], shaar_title)
+            ba_ja = JaggedArrayNode()
+            ba_ja.add_structure(["Siman"])
+            ba_ja.key = 'default'
+            ba_ja.default = True
+            ba_ja.validate()
+            shaar_hakavua_schema.append(ba_ja)
+            ss_ja = JaggedArrayNode()
+            ss_ja.add_structure(["Siman"])
+            ss_ja.key = 'Principles of Double Doubt from Minchat Yaakov'
+            ss_ja.validate() 
+            shaar_hakavua_schema.append(ss_ja)
+            ba_index_schema.append(shaar_hakavua_schema)
+            
+        else: 
+            ba_ja = JaggedArrayNode()
+            ba_ja.add_structure(["Siman"])
+            ba_ja.key = eng_titles_dict[unicode(shaar_title)]
+            ba_ja.validate()
+            ba_index_schema.append(ba_ja)
+
     ba_index = {
         "title": "Binat Adam",
         "dependence": "Commentary",
         "categories": ["Halakhah", "Commentary"],
         "schema": ba_index_schema.serialize(),
-        "alt_structs": {"Topic": ba_alt_schema.serialize()},
         "base_text_titles": ["Chochmat Adam"],
-        "default_struct": "Topic"
     }
+    post_index(ba_index)
     
-    ba_text_version = {
-        'versionTitle': "Hokhmat Adam, Vilna, 1844",
-        'versionSource': "http://dlib.rsl.ru/viewer/01006560322#?page=5",
-        'language': 'he',
-        'text': binat_ja.array()
-    }
-    # post_index(ba_index)
-    post_text("Binat Adam", ba_text_version)
-    # post_link(ba_links)
+    for shaar_title, shaar_text in binat_shaarim_text:
+        ba_text_version = {
+            'versionTitle': "Hokhmat Adam, Vilna, 1844",
+            'versionSource': "http://dlib.rsl.ru/viewer/01006560322#?page=5",
+            'language': 'he',
+            'text': shaar_text.array()
+        }
+        
+        if shaar_title == u'כללי ספק ספיקא ממנחת יעקב':
+            post_text("Binat Adam, Shaar haKavua, Principles of Double Doubt from Minchat Yaakov", ba_text_version)
+        else:
+            post_text("Binat Adam, " + eng_titles_dict[unicode(shaar_title)], ba_text_version)
+        
+    post_link(binat_links)
 
 
 # TODO: address questions:
