@@ -441,13 +441,21 @@ with codecs.open("binat_adam.txt") as file_read:
                     cur_comment += u'<big><strong>' + line[line.index('44', 5)+2:] + u'</strong></big>'
             else:
                 print "comment count off " + line
-
-            if len(binat_shaarim_text) > 3:
-                if footnotes[ba_footnote_count].letter != letter:
-                    print "ca letter " + footnotes[ba_footnote_count].letter + " " + str(footnotes[ba_footnote_count].klal_num) + " " + str(footnotes[ba_footnote_count].comment_num) + " vs footnote we think we are up to " + line
-                else:
-                    ba_footnote_count += 1
-
+                comment_count = getGematria(letter)
+        elif line[1:3] == '77':
+            small_title = u'<b>' + line[3:].strip() + u'</b>'
+            if u'לכלל' in small_title:
+                klal_idx_1 = small_title.index(' ', 8)
+                klal_idx_2 = small_title.index(' ', klal_idx_1+1)
+                klal_num = getGematria(small_title[klal_idx_1+1:klal_idx_2])
+                siman_idx_1 = small_title.index(' ', klal_idx_2+1)
+                siman_idx_2 = small_title.index(u'<', siman_idx_1)
+                siman_num = getGematria(small_title[siman_idx_1+1:siman_idx_2])
+                binat_links.append(Ca2BaLink(klal_num, siman_num, eng_titles_dict[unicode(section_title)], comment_count + 1))
+            
+        else:
+            print "what is " + line
+            
         # elif line[1:3] == '22':
         #
         #     na_footnote_count += 1
