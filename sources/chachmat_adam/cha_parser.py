@@ -135,17 +135,6 @@ def checkForFootnotes(line, symbol):
 
     return line
 
-
-# tags['00'] = 'klal_num'
-# tags['11'] = 'paragraph'
-# tags['22'] = 'klal_title'
-# tags['33'] = "reference_line"
-# tags['44'] = 'seif_num'
-# tags['55'] = 'begin_bold'
-# tags['66'] = 'end_bold'
-# tags['88'] = 'binat_comment'
-# tags['99'] = 'footer'
-
 def checkAndEditTag(tag, line):
     global klal_count, comment_count, ca_footnote_count, local_foot_count, cur_comment
 
@@ -405,6 +394,7 @@ eng_titles_dict = {
     u'שער משפטי צדק': 'Shaar Mishpetei Tzedek',
     u'שער רנה וישועה': 'Shaar Rinah Vishuah',
     u'שער השמחה': 'Shaar haSimcha',
+    u'אחרית דבר': 'Epilogue',
 }
 
 binat_shaarim_text = {}
