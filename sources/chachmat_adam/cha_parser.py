@@ -437,18 +437,35 @@ with codecs.open("binat_adam.txt") as file_read:
             cur_comment += u'<b>' + line.replace(u'@12', u"</b> ", 1)
             cur_comment = cur_comment.replace(u'@56', u'</b> ', 1)
 
-        elif line[1:3] == '22':
-            if cur_comment != '' and comment_count > 0:
-                binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()))
-                cur_comment = ''
-
+        elif line[1:3] == '22' and len(binat_shaarim_text) > 3 and section_title != u'שער משפטי צדק':
             letter = line[3:line.index(' ', 3)]
+            cur_comment = checkIfWeShouldAddBr(cur_comment)
+            cur_comment += u'<b>' + line[3:].strip() + u'</b>'
+            if footnotes[ba_footnote_count].letter != letter:
+                print "ca letter " + footnotes[ba_footnote_count].letter + " " + str(footnotes[ba_footnote_count].klal_num) + " " + str(footnotes[ba_footnote_count].comment_num) + " vs footnote we think we are up to " + line
+                
+            else:
+                ba_footnote_count += 1
+                binat_links.append(Ca2BaLink(footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].klal_num, eng_titles_dict[unicode(section_title)], comment_count))
+                if len(line) > 11:
+                    binat_links.append(Ca2BaLink(footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].klal_num, eng_titles_dict[unicode(section_title)], comment_count))
+                    ba_footnote_count += 1               
+
+        elif line[1:3] == '66' or line[1:3] == '22':
+            if cur_comment != '' and comment_count > 0:
+                binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment))
+                cur_comment = ''
+                if small_title != '':
+                    cur_comment += small_title
+                    small_title = ''
+            letter = line[line.index('(', 3):line.index(')', 3)] if line[1:3] == '66' else line[3:line.index(' ', 3)] 
             if getGematria(letter) == comment_count + 1:
                 comment_count += 1
                 if line.find('44', 5) > 0:
-                    if cur_comment != '':
-                        cur_comment += u'<br>'
-                    cur_comment += u'<big><strong>' + line[line.index('44', 5)+2:] + u'</strong></big>'
+                    cur_comment = checkIfWeShouldAddBr(cur_comment)
+                    cur_comment += u'<big><strong>' + line[line.index('44', 5)+2:].strip() + u'</strong></big>'
+                elif len(line.strip()) > 11:
+                    comment_count += 1                        
             else:
                 print "comment count off " + line
                 comment_count = getGematria(letter)
