@@ -418,7 +418,7 @@ with codecs.open("binat_adam.txt") as file_read:
             if section_title != u'כללי ספק ספיקא ממנחת יעקב':
                 shaarim_order.append(section_title)
 
-        elif line[1:3] == '11' or line[1:3] == '55' or line[1:3] == '88' or line[1:3] == '99':
+        elif line[1:3] == '11' or line[1:3] == '55' or line[1:3] == '88':
             if small_title != '':
                 cur_comment = checkIfWeShouldAddBr(cur_comment)
                 cur_comment += small_title
@@ -470,7 +470,9 @@ with codecs.open("binat_adam.txt") as file_read:
                 siman_idx_2 = small_title.index(u'<', siman_idx_1)
                 siman_num = getGematria(small_title[siman_idx_1+1:siman_idx_2])
                 binat_links.append(Ca2BaLink(klal_num, siman_num, eng_titles_dict[unicode(section_title)], comment_count + 1))
-            
+        elif line[1:3] == '99':
+            cur_comment = checkIfWeShouldAddBr(cur_comment)
+            cur_comment += u'<b>' + line[3:].strip() + u'</b>'
         else:
             print "what is " + line
             
