@@ -647,7 +647,7 @@ if post_ba:
             shaar_hakavua_schema.append(ba_ja)
             ss_ja = JaggedArrayNode()
             ss_ja.add_structure(["Siman"])
-            ss_ja.key = 'Principles of Double Doubt from Minchat Yaakov'
+            ss_ja.add_primary_titles('Principles of Double Doubt from Minchat Yaakov', u'כללי ספק ספיקא ממנחת יעקב')
             ss_ja.validate() 
             shaar_hakavua_schema.append(ss_ja)
             ba_index_schema.append(shaar_hakavua_schema)
@@ -655,7 +655,7 @@ if post_ba:
         else: 
             ba_ja = JaggedArrayNode()
             ba_ja.add_structure(["Siman"])
-            ba_ja.key = eng_titles_dict[unicode(shaar_title)]
+            ba_ja.add_primary_titles(eng_titles_dict[unicode(shaar_title)], shaar_title)
             ba_ja.validate()
             ba_index_schema.append(ba_ja)
 
