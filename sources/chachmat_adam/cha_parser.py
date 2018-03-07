@@ -89,16 +89,22 @@ def selfLink(klal_num, index, klal_link_num, par_index):
     }
 
 
-def Ca2BaLink(ca_klal_num, ca_seif_number, ba_section_title, ba_seif_number):
-    return {
+def Ca2BaLink(ca_klal_num, ca_seif_number, ba_section_title, ba_siman_count, ba_seif_number, data_order=0):
+    ref = {
         'refs': [
             "Chochmat Adam.{}.{}".format(ca_klal_num, ca_seif_number),
-            "Binat Adam, {}.{}".format(ba_section_title, ba_seif_number)
+            "Binat Adam, {}.{}.1-{}".format(ba_section_title, ba_siman_count, ba_seif_number)
         ],
-        'type': 'reference',
+        'type': 'commentary',
         'auto': True,
-        'generated_by': 'Chochmat Adam to Binat Adam linker'
+        'generated_by': 'Chochmat Adam to Binat Adam linker 2',
     }
+    if data_order > 0:
+        ref['inline_reference'] = {
+                'data-commentator': "Binat Adam",
+                "data-order": data_order,
+            }
+    return ref
 
 
 def tryAndSetBinatElement(title, count, comment):
