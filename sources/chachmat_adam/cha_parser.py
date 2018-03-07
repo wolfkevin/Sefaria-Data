@@ -141,6 +141,18 @@ def checkForFootnotes(line, symbol):
 
     return line
 
+def matchFootnotes(ba_footnote_count, line, section_title, siman_count):
+    if footnotes[ba_footnote_count].letter != letter:
+        print "ca letter " + footnotes[ba_footnote_count].letter + " " + str(footnotes[ba_footnote_count].klal_num) + " " + str(footnotes[ba_footnote_count].comment_num) + " vs footnote we think we are up to " + line     
+    else:
+        temp_binat_links.append([footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].comment_num, section_title, siman_count, getGematria(footnotes[ba_footnote_count].letter)])
+        ba_footnote_count += 1
+        if len(line) > 11:
+            temp_binat_links.append([footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].comment_num, section_title, siman_count, getGematria(footnotes[ba_footnote_count].letter)])
+            ba_footnote_count += 1
+            
+    return ba_footnote_count
+
 def checkAndEditTag(tag, line):
     global klal_count, comment_count, ca_footnote_count, local_foot_count, cur_comment
 
@@ -359,7 +371,7 @@ with codecs.open("ca_missing.txt") as file_read:
 
             if '$' in line or '@' in line:
                 if cur_comment != '' and comment_count != 0:
-                    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment))
+                    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u'')
                     cur_comment = ''
                 if '$' in line:
                     klal_count += 1
@@ -379,7 +391,7 @@ with codecs.open("ca_missing.txt") as file_read:
                     cur_comment += line.strip()
                     checkForFootnotes(line, '%')
 
-    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment))
+    chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u'')
 
 binat_ja = jagged_array.JaggedArray([[]])  # JA of [Klal[footnote, footnote]]
 section_title = u'שער רוב וחזקה'
@@ -404,8 +416,8 @@ eng_titles_dict = {
 }
 
 binat_shaarim_text = {}
-binat_shaarim_text[section_title] = jagged_array.JaggedArray([])
-
+binat_shaarim_text[section_title] = jagged_array.JaggedArray([[]])
+cur_comments = []
 
 with codecs.open("binat_adam.txt") as file_read:
 
@@ -413,59 +425,85 @@ with codecs.open("binat_adam.txt") as file_read:
         # print line
 
         if line[1:3] == '00':
-            if cur_comment != '':
-                binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment))
-                cur_comment = ''
+            if section_title == u'כללי ספק ספיקא ממנחת יעקב':
+                for idx, com in enumerate(cur_comments):
+                    binat_shaarim_text[section_title].set_element([idx], com, u'') 
+                cur_comments = []
+            elif cur_comments != [] and siman_count > 0:
+                binat_shaarim_text[section_title].set_element([siman_count - 1], cur_comments, [])
+                cur_comments = []
+            else:
+                continue
             # binat_sections.append(Section(section_title, section_start, comment_count))
             section_title = line[3:].strip()
             # section_start = comment_count
-            comment_count = 0
-            binat_shaarim_text[section_title] = jagged_array.JaggedArray([])
-            if section_title != u'כללי ספק ספיקא ממנחת יעקב':
+            # comment_count = 0
+            siman_count = 0
+            if section_title == u'כללי ספק ספיקא ממנחת יעקב':
+                binat_shaarim_text[section_title] = jagged_array.JaggedArray([])
+            else:
+                binat_shaarim_text[section_title] = jagged_array.JaggedArray([[]])
                 shaarim_order.append(section_title)
 
         elif line[1:3] == '11' or line[1:3] == '55' or line[1:3] == '88':
             if small_title != '':
-                cur_comment = checkIfWeShouldAddBr(cur_comment)
-                cur_comment += small_title
+                cur_comments.append(small_title)
+                # binat_shaarim_text[section_title].set_element([siman_count - 1, comment_count - 1], removeExtraSpaces(small_title))
+                # comment_count += 1
                 small_title = ''
             line = line[3:].strip()
             cur_comment = checkIfWeShouldAddBr(cur_comment)
             cur_comment += u'<b>' + line.replace(u'@12', u"</b> ", 1)
-            cur_comment = cur_comment.replace(u'@56', u'</b> ', 1)
+            cur_comments.append(cur_comment.replace(u'@56', u'</b> ', 1))
+            # if siman_count > 0:
+            #     binat_shaarim_text[section_title].set_element([siman_count - 1, comment_count - 1], removeExtraSpaces(cur_comment))
+            # else:
+            #     continue
+            cur_comment = ''
+            # comment_count += 1
 
         elif line[1:3] == '22' and len(binat_shaarim_text) > 3 and section_title != u'שער משפטי צדק':
             letter = line[3:line.index(' ', 3)]
-            cur_comment = checkIfWeShouldAddBr(cur_comment)
+            # cur_comment = checkIfWeShouldAddBr(cur_comment)
             cur_comment += u'<b>' + line[3:].strip() + u'</b>'
-            if footnotes[ba_footnote_count].letter != letter:
-                print "ca letter " + footnotes[ba_footnote_count].letter + " " + str(footnotes[ba_footnote_count].klal_num) + " " + str(footnotes[ba_footnote_count].comment_num) + " vs footnote we think we are up to " + line
-                
-            else:
-                ba_footnote_count += 1
-                binat_links.append(Ca2BaLink(footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].klal_num, eng_titles_dict[unicode(section_title)], comment_count))
-                if len(line) > 11:
-                    binat_links.append(Ca2BaLink(footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].klal_num, eng_titles_dict[unicode(section_title)], comment_count))
-                    ba_footnote_count += 1               
-
+            cur_comments.append(cur_comment)
+            # binat_shaarim_text[section_title].set_element([siman_count - 1, comment_count - 1], removeExtraSpaces(small_title))
+            cur_comment = ''
+            # comment_count = 0 if cur_comment == '' else comment_count + 1
+            ba_footnote_count = matchFootnotes(ba_footnote_count, line, section_title, siman_count)
+                         
+        elif line[1:3] == '22' and section_title == u'כללי ספק ספיקא ממנחת יעקב':
+            siman_count += 1
         elif line[1:3] == '66' or line[1:3] == '22':
-            if cur_comment != '' and comment_count > 0:
-                binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment))
-                cur_comment = ''
-                if small_title != '':
-                    cur_comment += small_title
-                    small_title = ''
+            if cur_comments != [] and siman_count > 0:
+                print(section_title)
+                binat_shaarim_text[section_title].set_element([siman_count - 1], cur_comments, [])
+                cur_comments = []
+            if small_title != '':
+                cur_comments.append(small_title)
+                # binat_shaarim_text[section_title].set_element([siman_count - 1, comment_count - 1], removeExtraSpaces(small_title))
+                # comment_count += 1
+                small_title = ''
+            # comment_count = 0
             letter = line[line.index('(', 3):line.index(')', 3)] if line[1:3] == '66' else line[3:line.index(' ', 3)] 
-            if getGematria(letter) == comment_count + 1:
-                comment_count += 1
+            if getGematria(letter) == siman_count + 1:
+                siman_count += 1
                 if line.find('44', 5) > 0:
-                    cur_comment = checkIfWeShouldAddBr(cur_comment)
+                    # cur_comment = checkIfWeShouldAddBr(cur_comment)
                     cur_comment += u'<big><strong>' + line[line.index('44', 5)+2:].strip() + u'</strong></big>'
+                    cur_comments.append(cur_comment)
+                    cur_comment = ''
+                        # binat_shaarim_text[section_title].set_element([siman_count - 1, comment_count - 1], removeExtraSpaces(cur_comment))
+                    # else:
+                    #     continue
+                    # comment_count += 1
                 elif len(line.strip()) > 11:
                     comment_count += 1                        
             else:
                 print "comment count off " + line
-                comment_count = getGematria(letter)
+                siman_count = getGematria(letter)
+            if section_title == u'שער משפטי צדק':
+                ba_footnote_count = matchFootnotes(ba_footnote_count, line, section_title, siman_count)
         elif line[1:3] == '77':
             small_title = u'<b>' + line[3:].strip() + u'</b>'
             if u'לכלל' in small_title:
@@ -475,10 +513,12 @@ with codecs.open("binat_adam.txt") as file_read:
                 siman_idx_1 = small_title.index(' ', klal_idx_2+1)
                 siman_idx_2 = small_title.index(u'<', siman_idx_1)
                 siman_num = getGematria(small_title[siman_idx_1+1:siman_idx_2])
-                binat_links.append(Ca2BaLink(klal_num, siman_num, eng_titles_dict[unicode(section_title)], comment_count + 1))
+                temp_binat_links.append([klal_num, siman_num, section_title, siman_count + 1])
         elif line[1:3] == '99':
-            cur_comment = checkIfWeShouldAddBr(cur_comment)
+            # cur_comment = checkIfWeShouldAddBr(cur_comment)
             cur_comment += u'<b>' + line[3:].strip() + u'</b>'
+            cur_comments.append(cur_comment)
+            cur_comment = ''
         else:
             print "what is " + line
             
@@ -493,10 +533,17 @@ with codecs.open("binat_adam.txt") as file_read:
         #     print "ERROR what is this", line
 
     # binat_sections.append(Section(section_title, section_start, siman_count))
-    # binat_shaarim_text[section_title].set_element([comment_count - 1], removeExtraSpaces(cur_comment.strip()))
+    binat_shaarim_text[section_title].set_element([siman_count - 1], cur_comments, [])
 
 for item in binat_shaarim_text:
-    ja_to_xml(binat_shaarim_text[item].array(), ["siman"], item + "_output.xml")
+    if item == u'כללי ספק ספיקא ממנחת יעקב':
+        ja_to_xml(binat_shaarim_text[item].array(), ["klal"], item + "_output.xml")
+    else:
+        ja_to_xml(binat_shaarim_text[item].array(), ["siman", "seif"], item + "_output.xml")
+    
+
+    with open(item + '.json', 'w') as fp:
+	    json.dump(binat_shaarim_text[item].array(), fp)
 
 
 ja_to_xml(chochmat_ja.array(), ["klal", "siman"], "chochmat_output.xml")
@@ -628,12 +675,12 @@ ca_kuntres_text_version = {
     'text': kuntrus_ja.array()
 }
 
-post_ca = True
+post_ca = False
 if post_ca:
     
-    post_index(ca_index)
-    post_text("Chochmat Adam", ca_text_version)
-    post_text("Chochmat Adam, Kuntres Matzevet Moshe", ca_kuntres_text_version)
+    print post_index(ca_index)
+    print post_text("Chochmat Adam", ca_text_version, index_count="on")
+    print post_text("Chochmat Adam, Kuntres Matzevet Moshe", ca_kuntres_text_version, index_count="on")
     # post_link(self_links)
     
 post_ba = False
@@ -646,13 +693,13 @@ if post_ba:
             shaar_hakavua_schema = SchemaNode()
             shaar_hakavua_schema.add_primary_titles(eng_titles_dict[unicode(shaar_title)], shaar_title)
             ba_ja = JaggedArrayNode()
-            ba_ja.add_structure(["Siman"])
+            ba_ja.add_structure(["Siman", "Seif"])
             ba_ja.key = 'default'
             ba_ja.default = True
             ba_ja.validate()
             shaar_hakavua_schema.append(ba_ja)
             ss_ja = JaggedArrayNode()
-            ss_ja.add_structure(["Siman"])
+            ss_ja.add_structure(["Klal"])
             ss_ja.add_primary_titles('Principles of Double Doubt from Minchat Yaakov', u'כללי ספק ספיקא ממנחת יעקב')
             ss_ja.validate() 
             shaar_hakavua_schema.append(ss_ja)
@@ -660,7 +707,7 @@ if post_ba:
             
         else: 
             ba_ja = JaggedArrayNode()
-            ba_ja.add_structure(["Siman"])
+            ba_ja.add_structure(["Siman", "Seif"])
             ba_ja.add_primary_titles(eng_titles_dict[unicode(shaar_title)], shaar_title)
             ba_ja.validate()
             ba_index_schema.append(ba_ja)
