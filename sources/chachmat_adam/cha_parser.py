@@ -666,9 +666,9 @@ if post_ba:
         "schema": ba_index_schema.serialize(),
         "base_text_titles": ["Chochmat Adam"],
     }
-    post_index(ba_index)
-    
-    for shaar_title, shaar_text in binat_shaarim_text:
+    # post_index(ba_index)
+     
+    for shaar_title, shaar_text in binat_shaarim_text.items():
         ba_text_version = {
             'versionTitle': "Hokhmat Adam, Vilna, 1844",
             'versionSource': "http://dlib.rsl.ru/viewer/01006560322#?page=5",
