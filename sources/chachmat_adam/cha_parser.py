@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import os, sys
 
-import codecs, string
+import codecs, string, json
 
 from collections import namedtuple
 
@@ -38,7 +38,7 @@ cur_comment = ''
 cur_klal_tile = u'דין מי הוא ראוי לשחוט'
 prev_tag = ''
 
-binat_links = []
+temp_binat_links = []
 self_links = []
 chochmat_ja = jagged_array.JaggedArray([[]])
 
@@ -452,7 +452,6 @@ with codecs.open("binat_adam.txt") as file_read:
                 # comment_count += 1
                 small_title = ''
             line = line[3:].strip()
-            cur_comment = checkIfWeShouldAddBr(cur_comment)
             cur_comment += u'<b>' + line.replace(u'@12', u"</b> ", 1)
             cur_comments.append(cur_comment.replace(u'@56', u'</b> ', 1))
             # if siman_count > 0:
@@ -498,7 +497,7 @@ with codecs.open("binat_adam.txt") as file_read:
                     #     continue
                     # comment_count += 1
                 elif len(line.strip()) > 11:
-                    comment_count += 1                        
+                    siman_count += 1                        
             else:
                 print "comment count off " + line
                 siman_count = getGematria(letter)
@@ -732,12 +731,20 @@ if post_ba:
         if shaar_title == u'כללי ספק ספיקא ממנחת יעקב':
             resp = post_text("Binat Adam, Shaar haKavua, Principles of Double Doubt from Minchat Yaakov", ba_text_version, index_count='on')
         else:
+        # if shaar_title == u'שער הקבוע' or shaar_title == u'שער איסור והיתר':
             resp = post_text("Binat Adam, " + eng_titles_dict[unicode(shaar_title)], ba_text_version)
-            
         print(resp)
-        
-    post_link(binat_links)
 
+binat_links = []
+post_links = True
+if post_links:
+    for link in temp_binat_links:
+        letter = 0 if len(link) < 5 else link[4]
+        binat_links.append(Ca2BaLink(link[0], link[1], eng_titles_dict[unicode(link[2])], link[3], len(binat_shaarim_text[link[2]].get_element([link[3]-1])), letter))
+        post_link(Ca2BaLink(link[0], link[1], eng_titles_dict[unicode(link[2])], link[3], len(binat_shaarim_text[link[2]].get_element([link[3]-1])), letter))
+    # post_link(binat_links)
+
+print binat_links
 
 # TODO: address questions:
 '''
