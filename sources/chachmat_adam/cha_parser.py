@@ -677,9 +677,11 @@ if post_ba:
         }
         
         if shaar_title == u'כללי ספק ספיקא ממנחת יעקב':
-            post_text("Binat Adam, Shaar haKavua, Principles of Double Doubt from Minchat Yaakov", ba_text_version)
+            resp = post_text("Binat Adam, Shaar haKavua, Principles of Double Doubt from Minchat Yaakov", ba_text_version, index_count='on')
         else:
-            post_text("Binat Adam, " + eng_titles_dict[unicode(shaar_title)], ba_text_version)
+            resp = post_text("Binat Adam, " + eng_titles_dict[unicode(shaar_title)], ba_text_version)
+            
+        print(resp)
         
     post_link(binat_links)
 
