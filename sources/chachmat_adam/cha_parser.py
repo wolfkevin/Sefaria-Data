@@ -638,7 +638,7 @@ if post_ba:
     for shaar_title in shaarim_order:
         if shaar_title == u'שער הקבוע':
             shaar_hakavua_schema = SchemaNode()
-            ba_index_schema.add_primary_titles(eng_titles_dict[unicode(shaar_title)], shaar_title)
+            shaar_hakavua_schema.add_primary_titles(eng_titles_dict[unicode(shaar_title)], shaar_title)
             ba_ja = JaggedArrayNode()
             ba_ja.add_structure(["Siman"])
             ba_ja.key = 'default'
