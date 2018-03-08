@@ -90,11 +90,13 @@ mapping = dict.fromkeys(map(ord, u":.\n)"))  # chars to eliminate when parsing C
 def getKlalNum(klal):
     return getGematria(klal.find("klal_num").text.split()[1])
 
+
 def checkIfWeShouldAddBr(comment):
     if comment != '':
         return comment + u'<br>'
     else:
         return ''
+
 
 def getRidOfSofit(txt):
     if txt.find("ך") >= 0:
@@ -111,30 +113,30 @@ def getRidOfSofit(txt):
 def selfLink(klal_num, index, klal_link_num, par_index):
     return {
         'refs': [
-            "Chochmat Adam.{}.{}".format(klal_num, index),
-            "Chochmat Adam.{}.{}".format(klal_link_num, getGematria(getRidOfSofit(par_index)))
+            "Chokhmat Adam.{}.{}".format(klal_num, index),
+            "Chokhmat Adam.{}.{}".format(klal_link_num, getGematria(getRidOfSofit(par_index)))
         ],
         'type': 'reference',
         'auto': True,
-        'generated_by': 'Chochmat Adam self linker'
+        'generated_by': 'Chokhmat Adam self linker'
     }
 
 
 def Ca2BaLink(ca_klal_num, ca_seif_number, ba_section_title, ba_siman_count, ba_seif_number, data_order=0):
     ref = {
         'refs': [
-            "Chochmat Adam.{}.{}".format(ca_klal_num, ca_seif_number),
+            "Chokhmat Adam.{}.{}".format(ca_klal_num, ca_seif_number),
             "Binat Adam, {}.{}.1-{}".format(ba_section_title, ba_siman_count, ba_seif_number)
         ],
         'type': 'commentary',
         'auto': True,
-        'generated_by': 'Chochmat Adam to Binat Adam linker 2',
+        'generated_by': 'Chokhmat Adam to Binat Adam linker 2',
     }
     if data_order > 0:
         ref['inline_reference'] = {
-                'data-commentator': "Binat Adam",
-                "data-order": data_order,
-            }
+            'data-commentator': "Binat Adam",
+            "data-order": data_order,
+        }
     return ref
 
 
@@ -146,6 +148,7 @@ def tryAndSetBinatElement(title, count, comment):
         binat_shaarim_text[title].set_element([count - 1], removeExtraSpaces(comment.strip()))
         comment = ''
     return comment
+
 
 def checkForFootnotes(line, symbol):
     global klal_count, comment_count, ca_footnote_count, local_foot_count
@@ -166,23 +169,32 @@ def checkForFootnotes(line, symbol):
 
         footnotes[ca_footnote_count] = Footnote(klal_count, comment_count, letter)
         line = line.replace(line[footnote_index:end_footnote],
-                            u'<i data-commentator="{}" data-order="{}"></i>'.format("Binat Adam", getGematria(letter)), 1)
+                            u'<i data-commentator="{}" data-order="{}"></i>'.format("Binat Adam", getGematria(letter)),
+                            1)
 
         ca_footnote_count += 1
 
     return line
 
+
 def matchFootnotes(ba_footnote_count, line, section_title, siman_count):
     if footnotes[ba_footnote_count].letter != letter:
-        print "ca letter " + footnotes[ba_footnote_count].letter + " " + str(footnotes[ba_footnote_count].klal_num) + " " + str(footnotes[ba_footnote_count].comment_num) + " vs footnote we think we are up to " + line     
+        print "ca letter " + footnotes[ba_footnote_count].letter + " " + str(
+            footnotes[ba_footnote_count].klal_num) + " " + str(
+            footnotes[ba_footnote_count].comment_num) + " vs footnote we think we are up to " + line
     else:
-        temp_binat_links.append([footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].comment_num, section_title, siman_count, getGematria(footnotes[ba_footnote_count].letter)])
+        temp_binat_links.append(
+            [footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].comment_num, section_title,
+             siman_count, getGematria(footnotes[ba_footnote_count].letter)])
         ba_footnote_count += 1
         if len(line) > 11:
-            temp_binat_links.append([footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].comment_num, section_title, siman_count, getGematria(footnotes[ba_footnote_count].letter)])
+            temp_binat_links.append(
+                [footnotes[ba_footnote_count].klal_num, footnotes[ba_footnote_count].comment_num, section_title,
+                 siman_count, getGematria(footnotes[ba_footnote_count].letter)])
             ba_footnote_count += 1
-            
+
     return ba_footnote_count
+
 
 def checkAndEditTag(tag, line):
     global klal_count, comment_count, ca_footnote_count, local_foot_count, cur_comment
@@ -370,7 +382,7 @@ with codecs.open("chachmat_adam.txt") as file_read:
                 chochmat_ja.set_element([klal_count - 1, comment_count - 1], removeExtraSpaces(cur_comment), u"")
                 cur_comment = ''
                 kuntrus_dict[unicode(prev_title)] = jagged_array.JaggedArray([])
-                
+
         elif line[0] is '!':
             shaarim.append(Section(prev_shaar_title, start_shaar_num, klal_count))
             prev_shaar_title = line[1:].strip()
@@ -435,30 +447,18 @@ small_title = ''
 shaarim_order = []
 shaarim_order.append(section_title)
 
-eng_titles_dict = {
-    u'שער רוב וחזקה': 'Shaar Rov Vechazaka',
-    u'שער הקבוע': 'Shaar haKavua',
-    u'שער איסור והיתר': 'Shaar Isur Veheter',
-    u'שער בית הנשים': 'Shaar Beit haNashim',
-    u'שער משפטי צדק': 'Shaar Mishpetei Tzedek',
-    u'שער רנה וישועה': 'Shaar Rinah Vishuah',
-    u'שער השמחה': 'Shaar haSimcha',
-    u'אחרית דבר': 'Epilogue',
-}
-
 binat_shaarim_text = {}
 binat_shaarim_text[section_title] = jagged_array.JaggedArray([[]])
 cur_comments = []
 
 with codecs.open("binat_adam.txt") as file_read:
-
     for line in file_read:
         # print line
 
         if line[1:3] == '00':
             if section_title == u'כללי ספק ספיקא ממנחת יעקב':
                 for idx, com in enumerate(cur_comments):
-                    binat_shaarim_text[section_title].set_element([idx], com, u'') 
+                    binat_shaarim_text[section_title].set_element([idx], com, u'')
                 cur_comments = []
             elif cur_comments != [] and siman_count > 0:
                 binat_shaarim_text[section_title].set_element([siman_count - 1], cur_comments, [])
@@ -501,7 +501,7 @@ with codecs.open("binat_adam.txt") as file_read:
             cur_comment = ''
             # comment_count = 0 if cur_comment == '' else comment_count + 1
             ba_footnote_count = matchFootnotes(ba_footnote_count, line, section_title, siman_count)
-                         
+
         elif line[1:3] == '22' and section_title == u'כללי ספק ספיקא ממנחת יעקב':
             siman_count += 1
         elif line[1:3] == '66' or line[1:3] == '22':
@@ -515,20 +515,20 @@ with codecs.open("binat_adam.txt") as file_read:
                 # comment_count += 1
                 small_title = ''
             # comment_count = 0
-            letter = line[line.index('(', 3):line.index(')', 3)] if line[1:3] == '66' else line[3:line.index(' ', 3)] 
+            letter = line[line.index('(', 3):line.index(')', 3)] if line[1:3] == '66' else line[3:line.index(' ', 3)]
             if getGematria(letter) == siman_count + 1:
                 siman_count += 1
                 if line.find('44', 5) > 0:
                     # cur_comment = checkIfWeShouldAddBr(cur_comment)
-                    cur_comment += u'<big><strong>' + line[line.index('44', 5)+2:].strip() + u'</strong></big>'
+                    cur_comment += u'<big><strong>' + line[line.index('44', 5) + 2:].strip() + u'</strong></big>'
                     cur_comments.append(cur_comment)
                     cur_comment = ''
-                        # binat_shaarim_text[section_title].set_element([siman_count - 1, comment_count - 1], removeExtraSpaces(cur_comment))
+                    # binat_shaarim_text[section_title].set_element([siman_count - 1, comment_count - 1], removeExtraSpaces(cur_comment))
                     # else:
                     #     continue
                     # comment_count += 1
                 elif len(line.strip()) > 11:
-                    siman_count += 1                        
+                    siman_count += 1
             else:
                 print "comment count off " + line
                 siman_count = getGematria(letter)
@@ -538,11 +538,11 @@ with codecs.open("binat_adam.txt") as file_read:
             small_title = u'<b>' + line[3:].strip() + u'</b>'
             if u'לכלל' in small_title:
                 klal_idx_1 = small_title.index(' ', 8)
-                klal_idx_2 = small_title.index(' ', klal_idx_1+1)
-                klal_num = getGematria(small_title[klal_idx_1+1:klal_idx_2])
-                siman_idx_1 = small_title.index(' ', klal_idx_2+1)
+                klal_idx_2 = small_title.index(' ', klal_idx_1 + 1)
+                klal_num = getGematria(small_title[klal_idx_1 + 1:klal_idx_2])
+                siman_idx_1 = small_title.index(' ', klal_idx_2 + 1)
                 siman_idx_2 = small_title.index(u'<', siman_idx_1)
-                siman_num = getGematria(small_title[siman_idx_1+1:siman_idx_2])
+                siman_num = getGematria(small_title[siman_idx_1 + 1:siman_idx_2])
                 temp_binat_links.append([klal_num, siman_num, section_title, siman_count + 1])
         elif line[1:3] == '99':
             # cur_comment = checkIfWeShouldAddBr(cur_comment)
@@ -551,7 +551,7 @@ with codecs.open("binat_adam.txt") as file_read:
             cur_comment = ''
         else:
             print "what is " + line
-            
+
         # elif line[1:3] == '22':
         #
         #     na_footnote_count += 1
@@ -570,18 +570,16 @@ for item in binat_shaarim_text:
         ja_to_xml(binat_shaarim_text[item].array(), ["klal"], item + "_output.xml")
     else:
         ja_to_xml(binat_shaarim_text[item].array(), ["siman", "seif"], item + "_output.xml")
-    
 
     with open(item + '.json', 'w') as fp:
-	    json.dump(binat_shaarim_text[item].array(), fp)
-
+        json.dump(binat_shaarim_text[item].array(), fp)
 
 ja_to_xml(chochmat_ja.array(), ["klal", "siman"], "chochmat_output.xml")
 ja_to_xml(kuntrus_ja.array(), ["klal", "siman"], "kuntres_output.xml")
 
-
 ca_index_schema = SchemaNode()
-ca_index_schema.add_primary_titles("Chochmat Adam", u"חכמת אדם")
+ca_index_schema.add_primary_titles("Chokhmat Adam", u"חכמת אדם")
+ca_index_schema.add_title("Chochmat Adam", lang='en')
 
 intro_node = JaggedArrayNode()
 intro_node.add_primary_titles("Author's Introduction", u"הקדמת המחבר")
@@ -612,41 +610,41 @@ ca_halacha_schema = SchemaNode()
 
 alt_intro_node = ArrayMapNode()
 alt_intro_node.add_primary_titles("Author's Introduction", u"הקדמת המחבר")
-alt_intro_node.wholeRef = "Chochmat Adam, Author's Introduction"
+alt_intro_node.wholeRef = "Chokhmat Adam, Author's Introduction"
 alt_intro_node.depth = 0
 ca_halacha_schema.append(alt_intro_node)
 
 for section in sections:
     if section.start == 51:  # censored section makes you have to do this manually
         censored_map_node_1 = ArrayMapNode()
-        censored_map_node_1.add_primary_titles("temp", section.title)
-        censored_map_node_1.wholeRef = "Chochmat Adam.{}-{}".format(section.start, 64)
+        censored_map_node_1.add_primary_titles("Laws Relating to Libational Wine", section.title)
+        censored_map_node_1.wholeRef = "Chokhmat Adam.{}-{}".format(section.start, 64)
         censored_map_node_1.includeSections = True
         censored_map_node_1.depth = 0
         ca_halacha_schema.append(censored_map_node_1)
         censored_map_node_2 = ArrayMapNode()
-        censored_map_node_2.add_primary_titles("temp", u'הלכות מאכלי עכו"ם')
-        censored_map_node_2.add_title("temp", "en", True)
-        censored_map_node_2.wholeRef = "Chochmat Adam.{}-{}".format(65, 74)
+        censored_map_node_2.add_primary_titles("Laws Relating to Food of Idol Worshipers", u'הלכות מאכלי עכו"ם')
+        censored_map_node_2.wholeRef = "Chokhmat Adam.{}-{}".format(65, 74)
         censored_map_node_2.includeSections = True
         censored_map_node_2.depth = 0
         ca_halacha_schema.append(censored_map_node_2)
         censored_map_node_3 = ArrayMapNode()
-        censored_map_node_3.add_primary_titles("temp", u'הלכות יין נסך')
-        censored_map_node_3.wholeRef = "Chochmat Adam.{}-{}".format(75, 83)
+        censored_map_node_3.add_primary_titles("Laws Relating to Libational Wine", u'הלכות יין נסך')
+        censored_map_node_3.wholeRef = "Chokhmat Adam.{}-{}".format(75, 83)
         censored_map_node_3.includeSections = True
         censored_map_node_3.depth = 0
         ca_halacha_schema.append(censored_map_node_3)
         censored_map_node_4 = ArrayMapNode()
-        censored_map_node_4.add_primary_titles("temp", u'הלכות עבודת כוכבים')
-        censored_map_node_4.wholeRef = "Chochmat Adam.{}-{}".format(84, section.end)
+        censored_map_node_4.add_primary_titles("Laws Relating to Idol Worship", u'הלכות עבודת כוכבים')
+        censored_map_node_4.wholeRef = "Chokhmat Adam.{}-{}".format(84, section.end)
         censored_map_node_4.includeSections = True
         censored_map_node_4.depth = 0
         ca_halacha_schema.append(censored_map_node_4)
     else:
         map_node = ArrayMapNode()
-        map_node.add_primary_titles("temp", section.title)
-        map_node.wholeRef = "Chochmat Adam.{}-{}".format(section.start, section.end)
+        print(section.title)
+        map_node.add_primary_titles(eng_halachic_titles[unicode(section.title)], section.title)
+        map_node.wholeRef = "Chokhmat Adam.{}-{}".format(section.start, section.end)
         map_node.includeSections = True
         map_node.depth = 0
         map_node.validate()
@@ -654,15 +652,15 @@ for section in sections:
 
 map_node = ArrayMapNode()
 map_node.add_primary_titles("Kuntres Matzevet Moshe", u"קונטרס מצבת משה")
-map_node.wholeRef = "Chochmat Adam, Kuntres Matzevet Moshe.{}-{}".format(1, 1)
+map_node.wholeRef = "Chokhmat Adam, Kuntres Matzevet Moshe.{}-{}".format(1, 1)
 map_node.includeSections = True
 map_node.depth = 0
 map_node.validate()
 ca_halacha_schema.append(map_node)
 
 map_node = ArrayMapNode()
-map_node.add_primary_titles("temp", u"הנהגת חברה קדישא")
-map_node.wholeRef = "Chochmat Adam, Kuntres Matzevet Moshe.{}-{}".format(2, 2)
+map_node.add_primary_titles("Customs of the Chevra Kadisha", u"הנהגת חברה קדישא")
+map_node.wholeRef = "Chokhmat Adam, Kuntres Matzevet Moshe.{}-{}".format(2, 2)
 map_node.includeSections = True
 map_node.depth = 0
 map_node.validate()
@@ -675,14 +673,14 @@ ca_shaar_schema.append(alt_intro_node)
 for shaar in shaarim:
     map_node = ArrayMapNode()
     map_node.add_primary_titles(eng_titles_dict[unicode(shaar.title)], shaar.title)
-    map_node.wholeRef = "Chochmat Adam.{}-{}".format(shaar.start, shaar.end)
+    map_node.wholeRef = "Chokhmat Adam.{}-{}".format(shaar.start, shaar.end)
     map_node.includeSections = True
     map_node.depth = 0
     map_node.validate()
     ca_shaar_schema.append(map_node)
 
 ca_index = {
-    "title": "Chochmat Adam",
+    "title": "Chokhmat Adam",
     "categories": ["Halakhah"],
     "schema": ca_index_schema.serialize(),
     "alt_structs": {
@@ -707,17 +705,16 @@ ca_kuntres_text_version = {
 
 post_ca = False
 if post_ca:
-    
     print post_index(ca_index)
-    print post_text("Chochmat Adam", ca_text_version, index_count="on")
-    print post_text("Chochmat Adam, Kuntres Matzevet Moshe", ca_kuntres_text_version, index_count="on")
+    print post_text("Chokhmat Adam", ca_text_version, index_count="on")
+    print post_text("Chokhmat Adam, Kuntres Matzevet Moshe", ca_kuntres_text_version, index_count="on")
     # post_link(self_links)
-    
+
 post_ba = False
 if post_ba:
     ba_index_schema = SchemaNode()
     ba_index_schema.add_primary_titles("Binat Adam", u"בינת אדם")
-    
+
     for shaar_title in shaarim_order:
         if shaar_title == u'שער הקבוע':
             shaar_hakavua_schema = SchemaNode()
@@ -731,11 +728,11 @@ if post_ba:
             ss_ja = JaggedArrayNode()
             ss_ja.add_structure(["Klal"])
             ss_ja.add_primary_titles('Principles of Double Doubt from Minchat Yaakov', u'כללי ספק ספיקא ממנחת יעקב')
-            ss_ja.validate() 
+            ss_ja.validate()
             shaar_hakavua_schema.append(ss_ja)
             ba_index_schema.append(shaar_hakavua_schema)
-            
-        else: 
+
+        else:
             ba_ja = JaggedArrayNode()
             ba_ja.add_structure(["Siman", "Seif"])
             ba_ja.add_primary_titles(eng_titles_dict[unicode(shaar_title)], shaar_title)
@@ -747,7 +744,7 @@ if post_ba:
         "dependence": "Commentary",
         "categories": ["Halakhah", "Commentary"],
         "schema": ba_index_schema.serialize(),
-        "base_text_titles": ["Chochmat Adam"],
+        "base_text_titles": ["Chokhmat Adam"],
     }
     # post_index(ba_index)
      
@@ -775,7 +772,7 @@ if post_links:
         post_link(Ca2BaLink(link[0], link[1], eng_titles_dict[unicode(link[2])], link[3], len(binat_shaarim_text[link[2]].get_element([link[3]-1])), letter))
     # post_link(binat_links)
 
-print binat_links
+    print binat_links
 
 # TODO: address questions:
 '''
