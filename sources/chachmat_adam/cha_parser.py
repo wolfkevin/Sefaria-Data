@@ -53,6 +53,37 @@ tags['66'] = 'end_bold'
 tags['88'] = 'binat_comment'
 tags['99'] = 'footer'
 
+eng_titles_dict = {
+    u'שער רוב וחזקה': 'Shaar Rov Vechazaka',
+    u'שער הקבוע': 'Shaar haKavua',
+    u'שער איסור והיתר': 'Shaar Isur Veheter',
+    u'שער בית הנשים': 'Shaar Beit haNashim',
+    u'שער משפטי צדק': 'Shaar Mishpetei Tzedek',
+    u'שער רנה וישועה': 'Shaar Rinah Vishuah',
+    u'שער השמחה': 'Shaar haSimcha',
+    u'אחרית דבר': 'Epilogue',
+}
+
+eng_halachic_titles = {
+    u'הקדמת המחבר': "Author's Introduction",
+    u'הלכות שחיטה': 'Laws of Ritual Slaughter',
+    u'הלכות אבר מן החי': 'Laws Relating to a Limb From a Living Animal',
+    u'הלכות מליחה': 'Laws of Salting',
+    u'הלכות בשר וחלב': 'Laws Relating to Meat with Milk',
+    u'הלכות תערובות': 'Laws Relating to Admixtures',
+    u'הלכות מאכלי עכו"ם': 'Laws Relating to Food of Idol Worshipers',
+    u'הלכות יין נסך': 'Laws Relating to Libational Wine',
+    u'הלכות עבודת כוכבים': 'Laws Relating to Idol Worship',
+    u'הלכות נדרים': 'Laws of Vows',
+    u'הלכות נדה': 'Laws Relating to the Menstruant',
+    u'הלכות רבית': 'Laws Relating to Interest',
+    u'הלכות צדקה': 'Laws of Charity',
+    u'הלכות מילה ופדיון הבן': 'Laws of Circumcision and Laws of Redemption of the Firstborn',
+    u'הלכות אבילות': 'Laws of Mourning',
+    u'קונטרס מצבת משה': 'Kuntres Matzevet Moshe',
+    u'הנהגת חברה קדישא': 'Customs of the Chevra Kadisha',
+}
+
 mapping = dict.fromkeys(map(ord, u":.\n)"))  # chars to eliminate when parsing Chochmat Adam numbers
 
 
