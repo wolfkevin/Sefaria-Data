@@ -710,7 +710,7 @@ if post_ca:
     print post_text("Chokhmat Adam, Kuntres Matzevet Moshe", ca_kuntres_text_version, index_count="on")
     # post_link(self_links)
 
-post_ba = False
+post_ba = True
 if post_ba:
     ba_index_schema = SchemaNode()
     ba_index_schema.add_primary_titles("Binat Adam", u"בינת אדם")
@@ -749,8 +749,8 @@ if post_ba:
         "schema": ba_index_schema.serialize(),
         "base_text_titles": ["Chokhmat Adam"],
     }
-    # post_index(ba_index)
-     
+    post_index(ba_index)
+
     for shaar_title, shaar_text in binat_shaarim_text.items():
         ba_text_version = {
             'versionTitle': "Hokhmat Adam, Vilna, 1844",
@@ -758,17 +758,16 @@ if post_ba:
             'language': 'he',
             'text': shaar_text.array()
         }
-        else:
-        # if shaar_title == u'שער הקבוע' or shaar_title == u'שער איסור והיתר':
-            resp = post_text("Binat Adam, " + eng_titles_dict[unicode(shaar_title)], ba_text_version)
-        print(resp)
 
         if shaar_title == u'כללי ספק ספיקא':
             resp = post_text("Binat Adam, Shaar haKavua, Principles of Double Doubt",
                              ba_text_version, index_count='on')
+        # else:
+        #     resp = post_text("Binat Adam, " + eng_titles_dict[unicode(shaar_title)], ba_text_version)
+            print(resp)
 
 binat_links = []
-post_links = True
+post_links = False
 if post_links:
     for link in temp_binat_links:
         letter = 0 if len(link) < 5 else link[4]
