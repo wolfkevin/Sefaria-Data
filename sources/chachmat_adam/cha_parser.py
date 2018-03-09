@@ -456,21 +456,19 @@ with codecs.open("binat_adam.txt") as file_read:
         # print line
 
         if line[1:3] == '00':
-            if section_title == u'כללי ספק ספיקא ממנחת יעקב':
+            if section_title == u'כללי ספק ספיקא':
                 for idx, com in enumerate(cur_comments):
                     binat_shaarim_text[section_title].set_element([idx], com, u'')
                 cur_comments = []
             elif cur_comments != [] and siman_count > 0:
                 binat_shaarim_text[section_title].set_element([siman_count - 1], cur_comments, [])
                 cur_comments = []
-            else:
-                continue
             # binat_sections.append(Section(section_title, section_start, comment_count))
             section_title = line[3:].strip()
             # section_start = comment_count
             # comment_count = 0
             siman_count = 0
-            if section_title == u'כללי ספק ספיקא ממנחת יעקב':
+            if section_title == u'כללי ספק ספיקא' or section_title == u'אחרית דבר':  # d1 arrays
                 binat_shaarim_text[section_title] = jagged_array.JaggedArray([])
             else:
                 binat_shaarim_text[section_title] = jagged_array.JaggedArray([[]])
@@ -495,15 +493,15 @@ with codecs.open("binat_adam.txt") as file_read:
         elif line[1:3] == '22' and len(binat_shaarim_text) > 3 and section_title != u'שער משפטי צדק':
             letter = line[3:line.index(' ', 3)]
             # cur_comment = checkIfWeShouldAddBr(cur_comment)
-            cur_comment += u'<b>' + line[3:].strip() + u'</b>'
-            cur_comments.append(cur_comment)
+            cur_comment += u'(' + line[3:].strip() + u') '
+            # cur_comments.append(cur_comment)
             # binat_shaarim_text[section_title].set_element([siman_count - 1, comment_count - 1], removeExtraSpaces(small_title))
             cur_comment = ''
             # comment_count = 0 if cur_comment == '' else comment_count + 1
             ba_footnote_count = matchFootnotes(ba_footnote_count, line, section_title, siman_count)
 
-        elif line[1:3] == '22' and section_title == u'כללי ספק ספיקא ממנחת יעקב':
-            siman_count += 1
+        elif line[1:3] == '22' and section_title == u'כללי ספק ספיקא':
+            continue
         elif line[1:3] == '66' or line[1:3] == '22':
             if cur_comments != [] and siman_count > 0:
                 print(section_title)
@@ -563,10 +561,12 @@ with codecs.open("binat_adam.txt") as file_read:
         #     print "ERROR what is this", line
 
     # binat_sections.append(Section(section_title, section_start, siman_count))
-    binat_shaarim_text[section_title].set_element([siman_count - 1], cur_comments, [])
+    shaarim_order.append(section_title)
+    for idx, com in enumerate(cur_comments):
+        binat_shaarim_text[section_title].set_element([idx], com, u'')
 
 for item in binat_shaarim_text:
-    if item == u'כללי ספק ספיקא ממנחת יעקב':
+    if item == u'כללי ספק ספיקא':
         ja_to_xml(binat_shaarim_text[item].array(), ["klal"], item + "_output.xml")
     else:
         ja_to_xml(binat_shaarim_text[item].array(), ["siman", "seif"], item + "_output.xml")
@@ -580,6 +580,7 @@ ja_to_xml(kuntrus_ja.array(), ["klal", "siman"], "kuntres_output.xml")
 ca_index_schema = SchemaNode()
 ca_index_schema.add_primary_titles("Chokhmat Adam", u"חכמת אדם")
 ca_index_schema.add_title("Chochmat Adam", lang='en')
+ca_index_schema.add_title("Chachmat Adam", lang='en')
 
 intro_node = JaggedArrayNode()
 intro_node.add_primary_titles("Author's Introduction", u"הקדמת המחבר")
@@ -727,14 +728,17 @@ if post_ba:
             shaar_hakavua_schema.append(ba_ja)
             ss_ja = JaggedArrayNode()
             ss_ja.add_structure(["Klal"])
-            ss_ja.add_primary_titles('Principles of Double Doubt from Minchat Yaakov', u'כללי ספק ספיקא ממנחת יעקב')
+            ss_ja.add_primary_titles('Principles of Double Doubt', u'כללי ספק ספיקא')
             ss_ja.validate()
             shaar_hakavua_schema.append(ss_ja)
             ba_index_schema.append(shaar_hakavua_schema)
 
         else:
             ba_ja = JaggedArrayNode()
-            ba_ja.add_structure(["Siman", "Seif"])
+            if shaar_title == u'אחרית דבר':
+                ba_ja.add_structure(["Comment"])
+            else:
+                ba_ja.add_structure(["Siman", "Seif"])
             ba_ja.add_primary_titles(eng_titles_dict[unicode(shaar_title)], shaar_title)
             ba_ja.validate()
             ba_index_schema.append(ba_ja)
@@ -755,13 +759,14 @@ if post_ba:
             'language': 'he',
             'text': shaar_text.array()
         }
-        
-        if shaar_title == u'כללי ספק ספיקא ממנחת יעקב':
-            resp = post_text("Binat Adam, Shaar haKavua, Principles of Double Doubt from Minchat Yaakov", ba_text_version, index_count='on')
         else:
         # if shaar_title == u'שער הקבוע' or shaar_title == u'שער איסור והיתר':
             resp = post_text("Binat Adam, " + eng_titles_dict[unicode(shaar_title)], ba_text_version)
         print(resp)
+
+        if shaar_title == u'כללי ספק ספיקא':
+            resp = post_text("Binat Adam, Shaar haKavua, Principles of Double Doubt",
+                             ba_text_version, index_count='on')
 
 binat_links = []
 post_links = True
