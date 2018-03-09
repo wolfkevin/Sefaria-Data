@@ -496,7 +496,6 @@ with codecs.open("binat_adam.txt") as file_read:
             cur_comment += u'(' + line[3:].strip() + u') '
             # cur_comments.append(cur_comment)
             # binat_shaarim_text[section_title].set_element([siman_count - 1, comment_count - 1], removeExtraSpaces(small_title))
-            cur_comment = ''
             # comment_count = 0 if cur_comment == '' else comment_count + 1
             ba_footnote_count = matchFootnotes(ba_footnote_count, line, section_title, siman_count)
 
@@ -773,8 +772,10 @@ post_links = True
 if post_links:
     for link in temp_binat_links:
         letter = 0 if len(link) < 5 else link[4]
-        binat_links.append(Ca2BaLink(link[0], link[1], eng_titles_dict[unicode(link[2])], link[3], len(binat_shaarim_text[link[2]].get_element([link[3]-1])), letter))
-        post_link(Ca2BaLink(link[0], link[1], eng_titles_dict[unicode(link[2])], link[3], len(binat_shaarim_text[link[2]].get_element([link[3]-1])), letter))
+        binat_links.append(Ca2BaLink(link[0], link[1], eng_titles_dict[unicode(link[2])], link[3],
+                                     len(binat_shaarim_text[link[2]].get_element([link[3] - 1])), letter))
+        post_link(Ca2BaLink(link[0], link[1], eng_titles_dict[unicode(link[2])], link[3],
+                            len(binat_shaarim_text[link[2]].get_element([link[3] - 1])), letter))
     # post_link(binat_links)
 
     print binat_links
