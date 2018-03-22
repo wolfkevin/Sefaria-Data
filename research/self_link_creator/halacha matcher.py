@@ -7,11 +7,13 @@ import codecs
 from collections import namedtuple
 titles_dict = {
     "Shulchan Arukh, Yoreh De'ah": u'שלחן ערוך, יורה דעה',
-    "Shulchan Arukh, Orach Chayim": u'אורח חיים',
+    "Shulchan Arukh, Orach Chayim": u'שלחן ערוך, אורח חיים',
+    "Shulchan Arukh, Even HaEzer": u'שלחן ערוך, אבן העזר',
+    "Shulchan Arukh, Choshen Mishpat": u'שלחן ערוך, חושן משפט',
 }
-filename = "Shulchan Arukh, Orach Chayim - he - merged.json"
-filepath = './shulchan arukh/{}'.format(filename)
-fileoutpath = './output/'.format()
+fileend = " - he - merged.json"
+filepath = './shulchan arukh/'
+fileoutpath = './output/'
 he_ref = u''  # hebrew name of referenced text
 
 self_ref_words = [u'לקמן', u'לעיל', u'להלן', u'עיין', u'ע\"ל']
@@ -358,8 +360,8 @@ class Seif:
     def is_valid_siman_num(self, siman):
         return isGematria(siman) and len(siman_length) > getGematria(siman)
 
-    def is_valid_seif_num(self, siman_num, seif_num):
-        return isGematria(seif_num) and siman_length[getGematria(siman_num)] >= getGematria(seif_num)
+    def is_valid_seif_num(self, seif_num):
+        return isGematria(seif_num) and siman_length[self.cur_siman_num_ref] >= getGematria(seif_num)
 
     def siman_relative_to_ref_word(self, ref_word, siman_num_idx):
         siman_num = getGematria(self.text_words[siman_num_idx])
@@ -382,9 +384,11 @@ class Seif:
 
     def find_insert_idx(self, end_idx):
         end_insert = 0
-        while end_insert < len(self.original_words[end_idx]) \
-                and not any(end_delimiter == self.original_words[end_idx][end_insert]
-                            for end_delimiter in [u'.', u',', u':', u')', u'<', u']']):
+        if len(self.text_words) <= end_idx:
+            print "uh oh"
+        while (end_insert < len(self.original_words[end_idx])) \
+                and (not any(end_delimiter == self.original_words[end_idx][end_insert]
+                            for end_delimiter in [u'.', u',', u':', u')', u'<', u']'])):
             end_insert += 1
         return end_insert
 
@@ -416,37 +420,33 @@ class Seif:
         row['text with ref'] = u" ".join(self.original_words[self.cur_word_idx:end_idx]) + u" " + link_insert
         self.csv_rows.append(row)
 
-    def is_continuation(self, ref_num, potential_continuation_idx):
-        gematria_idx = self.find_insert_idx(potential_continuation_idx)
-        potential_continuation = self.text_words[potential_continuation_idx][:gematria_idx]
-        if isGematria(potential_continuation) and \
-                (getGematria(ref_num) + 1 == getGematria(potential_continuation)):
-            self.cur_cont_num_ref = getGematria(potential_continuation)
-            return True
-        elif len(potential_continuation) > 1 and \
-                potential_continuation[0] == u'ו' and \
-                isGematria(potential_continuation[1:]) \
-                and (getGematria(ref_num) + 1 == getGematria(potential_continuation[1:])):
-            self.cur_cont_num_ref = getGematria(potential_continuation[1:])
-            return True
-        return False
+    def is_continuation(self, ref_num, end_idx, potential_cont_idx):
+        if len(self.text_words) > potential_cont_idx:
+            gematria_idx = self.find_insert_idx(potential_cont_idx)
+            potential_continuation = self.text_words[potential_cont_idx][:gematria_idx]
+            if self.is_valid_seif_num(potential_continuation) and \
+                    (ref_num + 1 == getGematria(potential_continuation)):
+                self.cur_cont_num_ref = getGematria(potential_continuation)
+                return self.is_continuation(self.cur_cont_num_ref, potential_cont_idx, potential_cont_idx + 1)
+
+            elif len(potential_continuation) > 1 and \
+                    potential_continuation[0] == u'ו' and \
+                    self.is_valid_seif_num(potential_continuation[1:]) \
+                    and (ref_num + 1 == getGematria(potential_continuation[1:])):
+                self.cur_cont_num_ref = getGematria(potential_continuation[1:])
+                return self.is_continuation(self.cur_cont_num_ref, potential_cont_idx, potential_cont_idx + 1)
+        return end_idx
 
     def get_seif_link(self, siman_num, seif_num_idx, is_shorthand_seif=False):
         seif_num = self.text_words[seif_num_idx][1:] if is_shorthand_seif else self.text_words[seif_num_idx]
         seif_num_gematria_idx = self.find_insert_idx(
             seif_num_idx)  # sometimes can be appended to html so isGematria will return false
-        if self.is_valid_seif_num(siman_num, seif_num[:seif_num_gematria_idx]):
+        if self.is_valid_seif_num(seif_num[:seif_num_gematria_idx]):
             self.cur_seif_num_ref = getGematria(seif_num[:seif_num_gematria_idx])
-            if len(self.text_words) > seif_num_idx + 1 and \
-                    self.is_continuation(seif_num[:seif_num_gematria_idx], seif_num_idx + 1):
-                link_insert = self.create_link_insert(seif_num_idx + 1)
-                self.add_csv_row(seif_num_idx + 1, link_insert)
-                self.original_words[seif_num_idx + 1] = link_insert
-                seif_num_idx += 1
-            else:
-                link_insert = self.create_link_insert(seif_num_idx)
-                self.add_csv_row(seif_num_idx, link_insert)
-                self.original_words[seif_num_idx] = link_insert
+            end_idx = self.is_continuation(self.cur_seif_num_ref, seif_num_idx, seif_num_idx + 1)
+            link_insert = self.create_link_insert(end_idx)
+            self.add_csv_row(end_idx, link_insert)
+            self.original_words[end_idx] = link_insert
             if len(self.text_words) > seif_num_idx + 2:
                 if self.is_seif_word(seif_num_idx + 1):
                     # siman x seif y and seif z
@@ -461,33 +461,34 @@ class Seif:
             # if self.is_continuation(seif_num, self.text_words[seif_num_idx+1])
 
     def get_siman_link(self, siman_num_idx, self_ref_word=''):
-        siman_num = self.text_words[siman_num_idx]
-        if self.is_valid_siman_num(siman_num) \
-                and self.siman_relative_to_ref_word(self_ref_word, siman_num_idx):
-            self.cur_siman_num_ref = getGematria(siman_num)
-            if len(self.text_words) > siman_num_idx + 2:
-                if self.is_seif_word(siman_num_idx + 1):
-                    self.get_seif_link(siman_num, siman_num_idx + 2)
-                elif self.is_siman_word(siman_num_idx + 1):
-                    link_insert = self.create_link_insert(siman_num_idx)
-                    self.add_csv_row(siman_num_idx, link_insert)
-                    self.original_words[siman_num_idx] = link_insert
-                    self.get_siman_link(siman_num_idx + 2)
-                    # append siman link
-                elif self.is_position_word(siman_num_idx + 1):
-                    # ayein siman x and end of siman y
-                    link_insert = self.create_link_insert(siman_num_idx)
-                    self.add_csv_row(siman_num_idx, link_insert)
-                    self.original_words[siman_num_idx] = link_insert
-                    if self.is_siman_word(siman_num_idx + 2):
-                        self.get_siman_link(siman_num_idx + 3, self_ref_word)
-                elif self.is_shorthand_seif(siman_num_idx + 1):
-                    self.get_seif_link(siman_num, siman_num_idx + 1, True)
-                # TODO: maybe add continuation siman here
-                else:
-                    link_insert = self.create_link_insert(siman_num_idx)
-                    self.add_csv_row(siman_num_idx, link_insert)
-                    self.original_words[siman_num_idx] = link_insert
+        if len(self.text_words) > siman_num_idx:
+            siman_num = self.text_words[siman_num_idx]
+            if self.is_valid_siman_num(siman_num) \
+                    and self.siman_relative_to_ref_word(self_ref_word, siman_num_idx):
+                self.cur_siman_num_ref = getGematria(siman_num)
+                if len(self.text_words) > siman_num_idx + 2:
+                    if self.is_seif_word(siman_num_idx + 1):
+                        self.get_seif_link(siman_num, siman_num_idx + 2)
+                    elif self.is_siman_word(siman_num_idx + 1):
+                        link_insert = self.create_link_insert(siman_num_idx)
+                        self.add_csv_row(siman_num_idx, link_insert)
+                        self.original_words[siman_num_idx] = link_insert
+                        self.get_siman_link(siman_num_idx + 2)
+                        # append siman link
+                    elif self.is_position_word(siman_num_idx + 1):
+                        # ayein siman x and end of siman y
+                        link_insert = self.create_link_insert(siman_num_idx)
+                        self.add_csv_row(siman_num_idx, link_insert)
+                        self.original_words[siman_num_idx] = link_insert
+                        if self.is_siman_word(siman_num_idx + 2):
+                            self.get_siman_link(siman_num_idx + 3, self_ref_word)
+                    elif self.is_shorthand_seif(siman_num_idx + 1):
+                        self.get_seif_link(siman_num, siman_num_idx + 1, True)
+                    # TODO: maybe add continuation siman here
+                    else:
+                        link_insert = self.create_link_insert(siman_num_idx)
+                        self.add_csv_row(siman_num_idx, link_insert)
+                        self.original_words[siman_num_idx] = link_insert
 
     def get_ref(self, word_idx, self_ref_word):
         if self.is_self_refword(self_ref_word):
@@ -509,24 +510,24 @@ class Seif:
 def to_utf8(lst):
     return [unicode(elem).encode('utf-8') for elem in lst]
 
+for title in titles_dict.keys():
+    with codecs.open(filepath+title+fileend, 'r', "utf-8") as fr:
+        file_content = json.load(fr)
+        en_title = file_content['title']
+        he_ref = titles_dict[en_title]
+        simanim = file_content['text']
+        with codecs.open(fileoutpath+en_title+'.csv', 'w', 'utf-8') as csvfile:
+        # fieldnames = ['Source', 'riginal text', 'text with ref']
+        # writer.writeheader()
+            csvfile.write(u'Source\tOriginal Text\tText With Ref\n')
 
-with codecs.open(filepath, 'r', "utf-8") as fr:
-    file_content = json.load(fr)
-    en_title = file_content['title']
-    he_ref = titles_dict[en_title]
-    simanim = file_content['text']
-    with codecs.open(fileoutpath+en_title+'.csv', 'w', 'utf-8') as csvfile:
-    # fieldnames = ['Source', 'riginal text', 'text with ref']
-    # writer.writeheader()
-        csvfile.write(u'Source\tOriginal Text\tText With Ref\n')
-
-        siman_length.append(0)
-        for siman in simanim:
-            siman_length.append(len(siman))
-        for siman_idx, siman in enumerate(simanim):
-            for seif_idx, seif_text in enumerate(siman):
-                seif = Seif(seif_text, siman_idx, seif_idx)
-                seif.get_selfrefs()
-                for link in seif.csv_rows:
-                    csvfile.write(u'{}\t{}\t{}\n'.format(link['source'], link['original text'], link['text with ref']))
+            siman_length.append(0)
+            for siman in simanim:
+                siman_length.append(len(siman))
+            for siman_idx, siman in enumerate(simanim):
+                for seif_idx, seif_text in enumerate(siman):
+                    seif = Seif(seif_text, siman_idx, seif_idx)
+                    seif.get_selfrefs()
+                    for link in seif.csv_rows:
+                        csvfile.write(u'{}\t{}\t{}\n'.format(link['source'], link['original text'], link['text with ref']))
                 # writer.writerow(to_utf8(link))
