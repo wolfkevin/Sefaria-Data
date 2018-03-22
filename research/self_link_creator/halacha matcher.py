@@ -5,11 +5,14 @@ import re
 import string
 import codecs
 from collections import namedtuple
-
-filename = "Shulchan Arukh, Yoreh De'ah - he - merged.json"
+titles_dict = {
+    "Shulchan Arukh, Yoreh De'ah": u'שלחן ערוך, יורה דעה',
+    "Shulchan Arukh, Orach Chayim": u'אורח חיים',
+}
+filename = "Shulchan Arukh, Orach Chayim - he - merged.json"
 filepath = './shulchan arukh/{}'.format(filename)
-fileoutpath = './output/{}.csv'.format(filename[:filename.find('-')])
-he_ref = u'שלחן ערוך, יורה דעה'  # hebrew name of referenced text
+fileoutpath = './output/'.format()
+he_ref = u''  # hebrew name of referenced text
 
 self_ref_words = [u'לקמן', u'לעיל', u'להלן', u'עיין', u'ע\"ל']
 siman_words = [u"סי'", u'סימן', u'ס\"ס']
@@ -507,21 +510,23 @@ def to_utf8(lst):
     return [unicode(elem).encode('utf-8') for elem in lst]
 
 
-with codecs.open(filepath, 'r', "utf-8") as fr, codecs.open(fileoutpath, 'w', 'utf-8') as csvfile:
+with codecs.open(filepath, 'r', "utf-8") as fr:
+    file_content = json.load(fr)
+    en_title = file_content['title']
+    he_ref = titles_dict[en_title]
+    simanim = file_content['text']
+    with codecs.open(fileoutpath+en_title+'.csv', 'w', 'utf-8') as csvfile:
     # fieldnames = ['Source', 'riginal text', 'text with ref']
     # writer.writeheader()
-    csvfile.write(u'Source\tOriginal Text\tText With Ref\n')
+        csvfile.write(u'Source\tOriginal Text\tText With Ref\n')
 
-    file_content = json.load(fr)
-    ref = file_content['title']
-    simanim = file_content['text']
-    siman_length.append(0)
-    for siman in simanim:
-        siman_length.append(len(siman))
-    for siman_idx, siman in enumerate(simanim):
-        for seif_idx, seif_text in enumerate(siman):
-            seif = Seif(seif_text, siman_idx, seif_idx)
-            seif.get_selfrefs()
-            for link in seif.csv_rows:
-                csvfile.write(u'{}\t{}\t{}\n'.format(link['source'], link['original text'], link['text with ref']))
+        siman_length.append(0)
+        for siman in simanim:
+            siman_length.append(len(siman))
+        for siman_idx, siman in enumerate(simanim):
+            for seif_idx, seif_text in enumerate(siman):
+                seif = Seif(seif_text, siman_idx, seif_idx)
+                seif.get_selfrefs()
+                for link in seif.csv_rows:
+                    csvfile.write(u'{}\t{}\t{}\n'.format(link['source'], link['original text'], link['text with ref']))
                 # writer.writerow(to_utf8(link))
