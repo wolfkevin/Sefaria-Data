@@ -6,14 +6,15 @@ import string
 import codecs
 from collections import namedtuple
 
-filepath = './shulchan arukh/Shulchan Arukh, Orach Chayim - he - merged.json'
-fileoutpath = 'Shulchan Arukh, Orach Chayim_output.csv'
-he_ref = u'שלחן ערוך, אורח חיים'  # hebrew name of referenced text
+filename = "Shulchan Arukh, Yoreh De'ah - he - merged.json"
+filepath = './shulchan arukh/{}'.format(filename)
+fileoutpath = './output/{}.csv'.format(filename[:filename.find('-')])
+he_ref = u'שלחן ערוך, יורה דעה'  # hebrew name of referenced text
 
 self_ref_words = [u'לקמן', u'לעיל', u'להלן', u'עיין', u'ע\"ל']
 siman_words = [u"סי'", u'סימן', u'ס\"ס']
-position_words = [u'ס\"ס', u'ריש', u'סוף']
-seif_words = [u'סעיף', u"ס''"]
+position_words = [u'ריש', u'סוף']
+seif_words = [u'סעי', u"ס''"]
 SelfLink = namedtuple('SelfLink', ['insert', 'offset'])
 
 siman_length = []
@@ -62,11 +63,14 @@ def getGematria(txt):
 
 def isGematria(txt):
     txt = getRidOfSofit(txt)
-    txt = re.sub('[\', ":.\n)]', '', txt)
+    txt = re.sub('[\', ":.\n)]', u'', txt)
     if txt.find(u"טו") >= 0:
         txt = txt.replace(u"טו", u"יה")
     elif txt.find(u"טז") >= 0:
         txt = txt.replace(u"טז", u"יו")
+
+    if len(txt) == 0:
+        return False
 
     while txt[0] == u'ת':
         txt = txt[1:]
@@ -116,6 +120,28 @@ def getRidOfSofit(txt):
     if txt.find(u"ץ") >= 0:
         txt = txt.replace(u"ץ", u"צ")
     return txt
+
+
+def strip_nekud(word):
+    data = word.replace(u"\u05B0", "")
+    data = data.replace(u"\u05B1", "")
+    data = data.replace(u"\u05B2", "")
+    data = data.replace(u"\u05B3", "")
+    data = data.replace(u"\u05B4", "")
+    data = data.replace(u"\u05B5", "")
+    data = data.replace(u"\u05B6", "")
+    data = data.replace(u"\u05B7", "")
+    data = data.replace(u"\u05B8", "")
+    data = data.replace(u"\u05B9", "")
+    data = data.replace(u"\u05BB", "")
+    data = data.replace(u"\u05BC", "")
+    data = data.replace(u"\u05BD", "")
+    data = data.replace(u"\u05BF", "")
+    data = data.replace(u"\u05C1", "")
+    data = data.replace(u"\u05C2", "")
+    data = data.replace(u"\u05C3", "")
+    data = data.replace(u"\u05C4", "")
+    return data
 
 
 def isContinuationLink(siman_1, siman_2):
@@ -281,26 +307,31 @@ def getSelfLinks(cur_siman, comment, cur_klal_num, isChelekBet):
 class Seif:
 
     def __init__(self, seif_text, siman_num, seif_num):
-        self.text_words = seif_text.split()
+        self.original_words = seif_text.split()
+        self.text_words = strip_nekud(seif_text).split()
         self.siman_num = siman_idx + 1
         self.seif_num = seif_idx + 1
-        # self.link_inserts = []
         self.csv_rows = []
+        self.cur_end_idx = 0
+        self.cur_word_idx = 0
+        self.cur_siman_num_ref = 0
+        self.cur_seif_num_ref = 0
+        self.cur_cont_num_ref = 0
 
-    def create_seif_ref(self, siman_num_idx):
-        return Seif.SeifRef(self)
-
-    class SeifRef:
-        def __init__(self, seif_inst, siman_num_idx):
-            self.seif_inst = seif_inst
-            self.siman_num_idx = siman_num_idx
-            self.seif_num_idx = 0
-            self.cont_num_idx = 0
-
-            self.siman_num = siman_idx + 1
-            self.seif_num = seif_idx + 1
-            self.text_inserts = []
-            self.csv_rows = []
+    # def create_seif_ref(self, siman_num_idx):
+    #     return Seif.SeifRef(self)
+    #
+    # class SeifRef:
+    #     def __init__(self, seif_inst, siman_num_idx):
+    #         self.seif_inst = seif_inst
+    #         self.siman_num_idx = siman_num_idx
+    #         self.seif_num_idx = 0
+    #         self.cont_num_idx = 0
+    #
+    #         self.siman_num = siman_idx + 1
+    #         self.seif_num = seif_idx + 1
+    #         self.text_inserts = []
+    #         self.csv_rows = []
 
     def is_self_refword(self, word):
         return any(self_ref_word in word for self_ref_word in self_ref_words)
@@ -314,11 +345,18 @@ class Seif:
     def is_seif_word(self, word_idx):
         return any(seif_word in self.text_words[word_idx] for seif_word in seif_words)
 
+    def is_shorthand_seif(self, word_idx):
+        if self.text_words[word_idx][:1] == u'ס':
+            return True
+        elif u'ס' in self.text_words[word_idx][:self.text_words[word_idx].find(u'"')]:
+            print "here"
+        return False
+
     def is_valid_siman_num(self, siman):
         return isGematria(siman) and len(siman_length) > getGematria(siman)
 
     def is_valid_seif_num(self, siman_num, seif_num):
-        return isGematria(seif_num) and len(siman_length[getGematria(siman_num)]) > getGematria(seif_num)
+        return isGematria(seif_num) and siman_length[getGematria(siman_num)] >= getGematria(seif_num)
 
     def siman_relative_to_ref_word(self, ref_word, siman_num_idx):
         siman_num = getGematria(self.text_words[siman_num_idx])
@@ -326,90 +364,142 @@ class Seif:
             if self.siman_num >= siman_num:
                 return True
             else:
-                print "not actually behind " + ref_word + siman_num
+                print u"not actually ahead in {} {} but says: {} {} {}".format(self.siman_num, self.seif_num, ref_word,
+                                                                               self.text_words[siman_num_idx - 1],
+                                                                               self.text_words[siman_num_idx])
         elif u'לקמן' in ref_word or u'להלן' in ref_word:
             if siman_num >= self.siman_num:
                 return True
             else:
-                print "not actually ahead " + ref_word + siman_num
+                print u"not actually behind in {} {} but says: {} {} {}".format(self.siman_num, self.seif_num, ref_word,
+                                                                                self.text_words[siman_num_idx - 1],
+                                                                                self.text_words[siman_num_idx + 1])
         else:
             return True
 
     def find_insert_idx(self, end_idx):
         end_insert = 0
-        while end_insert < len(self.text_words[end_idx]) \
-                and not any(end_delimiter == self.text_words[end_idx][end_insert]
-                            for end_delimiter in [u'.', u':', u')', u'<']):
+        while end_insert < len(self.original_words[end_idx]) \
+                and not any(end_delimiter == self.original_words[end_idx][end_insert]
+                            for end_delimiter in [u'.', u',', u':', u')', u'<', u']']):
             end_insert += 1
         return end_insert
 
-    def create_link_insert_text(self, link_num_1_idx, link_num_2_idx=0, continuation_link_idx=0):
-        link_num_1 = self.text_words[link_num_1_idx]
-        insert_text = u"({} {}".format(he_ref, numToHeb(getGematria(link_num_1)))
-        if link_num_2_idx > 0:
-            link_num_2 = self.text_words[link_num_2_idx]
-            insert_text += u", {}".format(numToHeb(getGematria(link_num_2)))
-        if continuation_link_idx:
-            continuation_link = self.text_words[continuation_link_idx]
-            insert_text += u'-{}'.format(numToHeb(getGematria(continuation_link)))
+    def create_link_insert_text(self):
+        insert_text = u"({} {}".format(he_ref, numToHeb(self.cur_siman_num_ref))
+        if self.cur_seif_num_ref > 0:
+            insert_text += u", {}".format(numToHeb(self.cur_seif_num_ref))
+            self.cur_seif_num_ref = 0
+        if self.cur_cont_num_ref > 0:
+            insert_text += u'-{}'.format(numToHeb(self.cur_cont_num_ref))
+            self.cur_cont_num_ref = 0
         return insert_text + u')'
-        # return SelfLink(insert_text + u")", insert_offset)
 
-    def create_link_insert(self, siman_num_idx, seif_num_idx=0, continuation_link_idx=0):
-        end_idx = max(siman_num_idx, seif_num_idx, continuation_link_idx)
+    def create_link_insert(self, end_idx):
         insert_idx = self.find_insert_idx(end_idx)
-        link_insert_text = self.create_link_insert_text(siman_num_idx, seif_num_idx, continuation_link_idx)
+        link_insert_text = self.create_link_insert_text()
 
-        if insert_idx == len(self.text_words[insert_idx]):
-            return u'{} {}'.format(self.text_words[insert_idx], link_insert_text)
+        if insert_idx == len(self.original_words[end_idx]):
+            return u'{} {}'.format(self.original_words[end_idx], link_insert_text)
         else:
-            word_pre_insert = self.text_words[end_idx][:insert_idx]
-            word_post_insert = self.text_words[end_idx][insert_idx:]
+            word_pre_insert = self.original_words[end_idx][:insert_idx]
+            word_post_insert = self.original_words[end_idx][insert_idx:]
             return u'{} {}{}'.format(word_pre_insert, link_insert_text, word_post_insert)
 
-
-    def create_csv_row(self, end_idx, link_insert):
+    def add_csv_row(self, end_idx, link_insert):
         row = {}
         row['source'] = u'{} {}:{}'.format(he_ref, self.siman_num, self.seif_num)
-        row['original text'] = u" ".join(self.text_words[self.cur_word_idx - 2:end_idx + 2])
-        row['text with ref'] = u" ".join(self.text_words[self.cur_word_idx:end_idx]) + u" " + link_insert
+        row['original text'] = u" ".join(self.original_words[self.cur_word_idx - 2:end_idx + 4])
+        row['text with ref'] = u" ".join(self.original_words[self.cur_word_idx:end_idx]) + u" " + link_insert
         self.csv_rows.append(row)
 
-    def get_siman_link(self, siman_idx, self_ref_word):
-        siman_num_idx = siman_idx + 1
+    def is_continuation(self, ref_num, potential_continuation_idx):
+        gematria_idx = self.find_insert_idx(potential_continuation_idx)
+        potential_continuation = self.text_words[potential_continuation_idx][:gematria_idx]
+        if isGematria(potential_continuation) and \
+                (getGematria(ref_num) + 1 == getGematria(potential_continuation)):
+            self.cur_cont_num_ref = getGematria(potential_continuation)
+            return True
+        elif len(potential_continuation) > 1 and \
+                potential_continuation[0] == u'ו' and \
+                isGematria(potential_continuation[1:]) \
+                and (getGematria(ref_num) + 1 == getGematria(potential_continuation[1:])):
+            self.cur_cont_num_ref = getGematria(potential_continuation[1:])
+            return True
+        return False
+
+    def get_seif_link(self, siman_num, seif_num_idx, is_shorthand_seif=False):
+        seif_num = self.text_words[seif_num_idx][1:] if is_shorthand_seif else self.text_words[seif_num_idx]
+        seif_num_gematria_idx = self.find_insert_idx(
+            seif_num_idx)  # sometimes can be appended to html so isGematria will return false
+        if self.is_valid_seif_num(siman_num, seif_num[:seif_num_gematria_idx]):
+            self.cur_seif_num_ref = getGematria(seif_num[:seif_num_gematria_idx])
+            if len(self.text_words) > seif_num_idx + 1 and \
+                    self.is_continuation(seif_num[:seif_num_gematria_idx], seif_num_idx + 1):
+                link_insert = self.create_link_insert(seif_num_idx + 1)
+                self.add_csv_row(seif_num_idx + 1, link_insert)
+                self.original_words[seif_num_idx + 1] = link_insert
+                seif_num_idx += 1
+            else:
+                link_insert = self.create_link_insert(seif_num_idx)
+                self.add_csv_row(seif_num_idx, link_insert)
+                self.original_words[seif_num_idx] = link_insert
+            if len(self.text_words) > seif_num_idx + 2:
+                if self.is_seif_word(seif_num_idx + 1):
+                    # siman x seif y and seif z
+                    self.get_seif_link(siman_num, seif_num_idx + 2)
+                # TODO: maybe this could happen but don't think so
+                #  elif self.is_shorthand_seif(seif_num_idx + 1):
+                #     self.get_seif_link(siman_num, seif_num_idx + 1, True)
+                elif self.is_siman_word(seif_num_idx + 1):
+                    # siman x seif y and siman z
+                    self.get_siman_link(seif_num_idx + 2)
+                # TODO: maybe add vi not continuation here or something
+            # if self.is_continuation(seif_num, self.text_words[seif_num_idx+1])
+
+    def get_siman_link(self, siman_num_idx, self_ref_word=''):
         siman_num = self.text_words[siman_num_idx]
         if self.is_valid_siman_num(siman_num) \
                 and self.siman_relative_to_ref_word(self_ref_word, siman_num_idx):
-            # link_insert = createLinkInsert(self.text_words[siman_num_idx])
+            self.cur_siman_num_ref = getGematria(siman_num)
             if len(self.text_words) > siman_num_idx + 2:
-                if self.is_seif_word(siman_num_idx + 2):
-                    print('here')
-                    # self.get_seif_link()
-                elif self.is_siman_word(siman_num_idx + 2):
+                if self.is_seif_word(siman_num_idx + 1):
+                    self.get_seif_link(siman_num, siman_num_idx + 2)
+                elif self.is_siman_word(siman_num_idx + 1):
                     link_insert = self.create_link_insert(siman_num_idx)
-                    self.csv_rows.append(self.create_csv_row(siman_num_idx, link_insert))
-                    self.text_words[siman_num_idx] = link_insert
+                    self.add_csv_row(siman_num_idx, link_insert)
+                    self.original_words[siman_num_idx] = link_insert
+                    self.get_siman_link(siman_num_idx + 2)
                     # append siman link
+                elif self.is_position_word(siman_num_idx + 1):
+                    # ayein siman x and end of siman y
+                    link_insert = self.create_link_insert(siman_num_idx)
+                    self.add_csv_row(siman_num_idx, link_insert)
+                    self.original_words[siman_num_idx] = link_insert
+                    if self.is_siman_word(siman_num_idx + 2):
+                        self.get_siman_link(siman_num_idx + 3, self_ref_word)
+                elif self.is_shorthand_seif(siman_num_idx + 1):
+                    self.get_seif_link(siman_num, siman_num_idx + 1, True)
                 # TODO: maybe add continuation siman here
                 else:
                     link_insert = self.create_link_insert(siman_num_idx)
-                    self.row_inserts.append(self.create_csv_row(siman_num_idx, link_insert))
-                    self.text_words[siman_num_idx] = link_insert
+                    self.add_csv_row(siman_num_idx, link_insert)
+                    self.original_words[siman_num_idx] = link_insert
 
     def get_ref(self, word_idx, self_ref_word):
-        row = {}
-        # row = []
         if self.is_self_refword(self_ref_word):
             self.cur_word_idx = word_idx
             if len(self.text_words) > word_idx + 2:
                 if self.is_position_word(word_idx + 1):
                     # e.g. לקמן ריש סימן רפ"ב
                     if self.is_siman_word(word_idx + 2):
-                        insert_link, end_siman_idx = self.get_siman_link(word_idx + 2, self_ref_word)
-                # elif self.is_siman_word(word_idx+2):
+                        self.get_siman_link(word_idx + 3, self_ref_word)
+                elif self.is_siman_word(word_idx + 1):
+                    self.get_siman_link(word_idx + 2, self_ref_word)
 
     def get_selfrefs(self):
         for word_idx, word in enumerate(self.text_words):
+
             self.get_ref(word_idx, word)
 
 
@@ -418,15 +508,15 @@ def to_utf8(lst):
 
 
 with codecs.open(filepath, 'r', "utf-8") as fr, codecs.open(fileoutpath, 'w', 'utf-8') as csvfile:
-    fieldnames = ['source', 'original text', 'text with ref']
+    # fieldnames = ['Source', 'riginal text', 'text with ref']
     # writer.writeheader()
-    csvfile.write(u'source\toriginal text\ttext with ref\n')
+    csvfile.write(u'Source\tOriginal Text\tText With Ref\n')
 
     file_content = json.load(fr)
     ref = file_content['title']
     simanim = file_content['text']
     siman_length.append(0)
-    for siman in enumerate(simanim):
+    for siman in simanim:
         siman_length.append(len(siman))
     for siman_idx, siman in enumerate(simanim):
         for seif_idx, seif_text in enumerate(siman):
