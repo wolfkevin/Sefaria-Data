@@ -516,7 +516,7 @@ for title in titles_dict.keys():
         en_title = file_content['title']
         he_ref = titles_dict[en_title]
         simanim = file_content['text']
-        with codecs.open(fileoutpath+en_title+'.csv', 'w', 'utf-8') as csvfile:
+        with codecs.open(fileoutpath+en_title+'.tsv', 'w', 'utf-8') as csvfile:
         # fieldnames = ['Source', 'riginal text', 'text with ref']
         # writer.writeheader()
             csvfile.write(u'Source\tOriginal Text\tText With Ref\n')
