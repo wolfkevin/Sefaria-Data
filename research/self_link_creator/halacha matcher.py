@@ -27,13 +27,15 @@ titles_dict = {
     "Shulchan Arukh, Even HaEzer": u'שלחן ערוך, אבן העזר',
     "Shulchan Arukh, Choshen Mishpat": u'שלחן ערוך, חושן משפט',
     "Beit Shmuel": u'שלחן ערוך, אבן העזר',
+    "Chelkat Mechokek": u'שלחן ערוך, אבן העזר',
 }
 
 titles_to_parse = [
-    "Shulchan Arukh, Yoreh De'ah",
-    "Shulchan Arukh, Orach Chayim",
-    "Shulchan Arukh, Even HaEzer",
-    "Shulchan Arukh, Choshen Mishpat",
+    # "Shulchan Arukh, Yoreh De'ah",
+    # "Shulchan Arukh, Orach Chayim",
+    # "Shulchan Arukh, Even HaEzer",
+    # "Shulchan Arukh, Choshen Mishpat",
+    "Chelkat Mechokek"
 ]
 
 fileend = " - he - merged.json"
@@ -427,10 +429,10 @@ class Seif:
         elif u'לקמן' in ref_word or u'להלן' in ref_word:
             if siman_num >= self.siman_num:
                 return True
-            else:
-                print u"not actually behind in {} {} but says: {} {} {}".format(self.siman_num, self.seif_num, ref_word,
-                                                                                self.text_words[siman_num_idx - 1],
-                                                                                self.text_words[siman_num_idx + 1])
+            # else:
+            #     print u"not actually behind in {} {} but says: {} {} {}".format(self.siman_num, self.seif_num, ref_word,
+            #                                                                     self.text_words[siman_num_idx - 1],
+            #                                                                     self.text_words[siman_num_idx + 1])
         else:
             return True
 
@@ -565,13 +567,13 @@ def to_utf8(lst):
     return [unicode(elem).encode('utf-8') for elem in lst]
 
 
-# with codecs.open(filepath + "shulchan Arukh, Even HaEzer" + fileend, 'r', "utf-8") as fr:
-#     file_content = json.load(fr)
-#     simanim = file_content['text']
-#     siman_length = []
-#     siman_length.append(0)
-#     for siman in simanim:
-#         siman_length.append(len(siman))
+with codecs.open(filepath + "Shulchan Arukh, Even HaEzer" + fileend, 'r', "utf-8") as fr:
+    file_content = json.load(fr)
+    simanim = file_content['text']
+    siman_length = []
+    siman_length.append(0)
+    for siman in simanim:
+        siman_length.append(len(siman))
 
 for title in titles_to_parse:
     with codecs.open(filepath + title + fileend, 'r', "utf-8") as fr:
@@ -580,13 +582,13 @@ for title in titles_to_parse:
         he_ref = titles_dict[en_title]
         simanim = file_content['text']
         with codecs.open(fileoutpath + en_title + '_test.tsv', 'w', 'utf-8') as csvfile:
-            # fieldnames = ['Source', 'riginal text', 'text with ref']
+            # fieldnames     = ['Source', 'riginal text', 'text with ref']
             # writer.writeheader()
             csvfile.write(u'Source\tOriginal Text\tText With Ref\n')
-            siman_length = []
-            siman_length.append(0)
-            for siman in simanim:
-                siman_length.append(len(siman))
+            # siman_length = []
+            # siman_length.append(0)
+            # for siman in simanim:
+            #     siman_length.append(len(siman))
             for siman_idx, siman in enumerate(simanim):
                 for seif_idx, seif_text in enumerate(siman):
                     seif = Seif(seif_text, siman_idx, seif_idx)
