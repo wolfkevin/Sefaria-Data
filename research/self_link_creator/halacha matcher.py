@@ -5,24 +5,74 @@ import re
 import string
 import codecs
 from collections import namedtuple
+
+import urllib
+import urllib2
+from urllib2 import URLError, HTTPError
+import json
+import pdb
+import os
+import sys
+import codecs
+import re
+# import http_request
+
+p = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, p)
+sys.path.insert(0, "../")
+
 titles_dict = {
     "Shulchan Arukh, Yoreh De'ah": u'שלחן ערוך, יורה דעה',
     "Shulchan Arukh, Orach Chayim": u'שלחן ערוך, אורח חיים',
     "Shulchan Arukh, Even HaEzer": u'שלחן ערוך, אבן העזר',
     "Shulchan Arukh, Choshen Mishpat": u'שלחן ערוך, חושן משפט',
+    "Beit Shmuel": u'שלחן ערוך, אבן העזר',
 }
+
+titles_to_parse = [
+    "Shulchan Arukh, Yoreh De'ah",
+    "Shulchan Arukh, Orach Chayim",
+    "Shulchan Arukh, Even HaEzer",
+    "Shulchan Arukh, Choshen Mishpat",
+]
+
 fileend = " - he - merged.json"
 filepath = './shulchan arukh/'
 fileoutpath = './output/'
 he_ref = u''  # hebrew name of referenced text
 
-self_ref_words = [u'לקמן', u'לעיל', u'להלן', u'עיין', u'ע\"ל']
-siman_words = [u"סי'", u'סימן', u'ס\"ס']
+self_ref_words = [u'לקמן', u'לעיל', u'להלן', u'עיין', u'ע\"ל', u"ע'"]
+siman_words = [u"סי'", u'סימן', u'ס\"ס', u'ס"ס', u"ס''ס"]
 position_words = [u'ריש', u'סוף']
-seif_words = [u'סעי', u"ס''"]
+seif_words = [u'סעי', u"ס'"]
 SelfLink = namedtuple('SelfLink', ['insert', 'offset'])
 
 siman_length = []
+
+
+"""
+Local Settings Example file for Sefaria-Data scripts
+Copy this file to "local_settings.py" and import values as needed.
+e.g.:
+import sys
+import os
+# for a script located two directories below this file
+p = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, p)
+from local_settings import *
+sys.path.insert(0, SEFARIA_PROJECT_PATH)
+os.environ['DJANGO_SETTINGS_MODULE'] = "settings"
+from sefaria.model import *
+"local_settings.py" is excluded from this Git repo.
+"""
+
+# In scripts you can add this value to your Python path so that you can
+# import from sefaria, if this path is not already set in your environment
+SEFARIA_PROJECT_PATH = "/path/your/copy/of/Sefaria-Project"
+
+SEFARIA_SERVER = "http://draft.sefaria.org"
+
+API_KEY = "6fC09W4nRt37WGpVyMKGyjcCXLchaCR8RDVODE10r38"
 
 gematria = {}
 gematria[u'א'] = 1
@@ -65,6 +115,19 @@ def getGematria(txt):
         index += 1
     return sum
 
+
+
+def post_text(ref, text, index_count="off", skip_links=False, server=SEFARIA_SERVER):
+    # textJSON = json.dumps(text)
+    ref = ref.replace(" ", "_")
+    url = server+'/api/texts/'+ref
+    params, body = {}, {'apikey': API_KEY}
+    if index_count == "on":
+        params['count_after'] = 1
+    if skip_links:
+        params['skip_links'] = True
+
+    return http_request(url, params=params, body=body, json_payload=text, method="POST")
 
 def isGematria(txt):
     txt = getRidOfSofit(txt)
@@ -323,21 +386,6 @@ class Seif:
         self.cur_seif_num_ref = 0
         self.cur_cont_num_ref = 0
 
-    # def create_seif_ref(self, siman_num_idx):
-    #     return Seif.SeifRef(self)
-    #
-    # class SeifRef:
-    #     def __init__(self, seif_inst, siman_num_idx):
-    #         self.seif_inst = seif_inst
-    #         self.siman_num_idx = siman_num_idx
-    #         self.seif_num_idx = 0
-    #         self.cont_num_idx = 0
-    #
-    #         self.siman_num = siman_idx + 1
-    #         self.seif_num = seif_idx + 1
-    #         self.text_inserts = []
-    #         self.csv_rows = []
-
     def is_self_refword(self, word):
         return any(self_ref_word in word for self_ref_word in self_ref_words)
 
@@ -361,7 +409,11 @@ class Seif:
         return isGematria(siman) and len(siman_length) > getGematria(siman)
 
     def is_valid_seif_num(self, seif_num):
-        return isGematria(seif_num) and siman_length[self.cur_siman_num_ref] >= getGematria(seif_num)
+        if isGematria(seif_num) and siman_length[self.cur_siman_num_ref] >= getGematria(seif_num):
+            return True
+        else:
+            print("weird")
+            return False
 
     def siman_relative_to_ref_word(self, ref_word, siman_num_idx):
         siman_num = getGematria(self.text_words[siman_num_idx])
@@ -382,14 +434,16 @@ class Seif:
         else:
             return True
 
-    def find_insert_idx(self, end_idx):
+    def find_insert_idx(self, end_idx, is_shorthand_seif=False):
         end_insert = 0
         if len(self.text_words) <= end_idx:
             print "uh oh"
         while (end_insert < len(self.original_words[end_idx])) \
                 and (not any(end_delimiter == self.original_words[end_idx][end_insert]
-                            for end_delimiter in [u'.', u',', u':', u')', u'<', u']'])):
+                             for end_delimiter in [u'.', u',', u':', u')', u'<', u'<'  u']'])):
             end_insert += 1
+        if is_shorthand_seif:
+            end_insert -= 1
         return end_insert
 
     def create_link_insert_text(self):
@@ -416,7 +470,11 @@ class Seif:
     def add_csv_row(self, end_idx, link_insert):
         row = {}
         row['source'] = u'{} {}:{}'.format(he_ref, self.siman_num, self.seif_num)
-        row['original text'] = u" ".join(self.original_words[self.cur_word_idx - 2:end_idx + 4])
+        backward_offset = self.cur_word_idx if self.cur_word_idx < 2 else 2
+        # forward_offset = len(self.original_words) - 1 if self.cur_end_idx + 3 >= len(self.original_words) else self.cur_end_idx + 3
+        row['original text'] = u" ".join(self.original_words[self.cur_word_idx - backward_offset:end_idx + 4])
+        if row['original text'] == '':
+            print "stop"
         row['text with ref'] = u" ".join(self.original_words[self.cur_word_idx:end_idx]) + u" " + link_insert
         self.csv_rows.append(row)
 
@@ -437,90 +495,95 @@ class Seif:
                 return self.is_continuation(self.cur_cont_num_ref, potential_cont_idx, potential_cont_idx + 1)
         return end_idx
 
-    def get_seif_link(self, siman_num, seif_num_idx, is_shorthand_seif=False):
-        seif_num = self.text_words[seif_num_idx][1:] if is_shorthand_seif else self.text_words[seif_num_idx]
-        seif_num_gematria_idx = self.find_insert_idx(
-            seif_num_idx)  # sometimes can be appended to html so isGematria will return false
-        if self.is_valid_seif_num(seif_num[:seif_num_gematria_idx]):
-            self.cur_seif_num_ref = getGematria(seif_num[:seif_num_gematria_idx])
-            end_idx = self.is_continuation(self.cur_seif_num_ref, seif_num_idx, seif_num_idx + 1)
-            link_insert = self.create_link_insert(end_idx)
-            self.add_csv_row(end_idx, link_insert)
-            self.original_words[end_idx] = link_insert
-            if len(self.text_words) > seif_num_idx + 2:
-                if self.is_seif_word(seif_num_idx + 1):
-                    # siman x seif y and seif z
-                    self.get_seif_link(siman_num, seif_num_idx + 2)
-                # TODO: maybe this could happen but don't think so
-                #  elif self.is_shorthand_seif(seif_num_idx + 1):
-                #     self.get_seif_link(siman_num, seif_num_idx + 1, True)
-                elif self.is_siman_word(seif_num_idx + 1):
-                    # siman x seif y and siman z
-                    self.get_siman_link(seif_num_idx + 2)
-                # TODO: maybe add vi not continuation here or something
-            # if self.is_continuation(seif_num, self.text_words[seif_num_idx+1])
+    def get_seif_link(self, seif_num_idx, is_shorthand_seif=False):
+        if len(self.text_words) > seif_num_idx:
+            seif_num = self.text_words[seif_num_idx][1:] if is_shorthand_seif else self.text_words[seif_num_idx]
+            seif_num_gematria_idx = self.find_insert_idx(
+                seif_num_idx, is_shorthand_seif)  # sometimes can be appended to html so isGematria will return false
+            if self.is_valid_seif_num(seif_num[:seif_num_gematria_idx]):
+                if self.cur_siman_num_ref == 0:
+                    self.cur_siman_num_ref = self.siman_num
+                self.cur_seif_num_ref = getGematria(seif_num[:seif_num_gematria_idx])
+                self.cur_end_idx = self.is_continuation(self.cur_seif_num_ref, seif_num_idx, seif_num_idx + 1)
+                self.get_ref(seif_num_idx + 1)
 
     def get_siman_link(self, siman_num_idx, self_ref_word=''):
         if len(self.text_words) > siman_num_idx:
             siman_num = self.text_words[siman_num_idx]
+            if siman_num == u"אוקמיה":
+                print("found ya")
             if self.is_valid_siman_num(siman_num) \
                     and self.siman_relative_to_ref_word(self_ref_word, siman_num_idx):
                 self.cur_siman_num_ref = getGematria(siman_num)
-                if len(self.text_words) > siman_num_idx + 2:
-                    if self.is_seif_word(siman_num_idx + 1):
-                        self.get_seif_link(siman_num, siman_num_idx + 2)
-                    elif self.is_siman_word(siman_num_idx + 1):
-                        link_insert = self.create_link_insert(siman_num_idx)
-                        self.add_csv_row(siman_num_idx, link_insert)
-                        self.original_words[siman_num_idx] = link_insert
-                        self.get_siman_link(siman_num_idx + 2)
-                        # append siman link
-                    elif self.is_position_word(siman_num_idx + 1):
-                        # ayein siman x and end of siman y
-                        link_insert = self.create_link_insert(siman_num_idx)
-                        self.add_csv_row(siman_num_idx, link_insert)
-                        self.original_words[siman_num_idx] = link_insert
-                        if self.is_siman_word(siman_num_idx + 2):
-                            self.get_siman_link(siman_num_idx + 3, self_ref_word)
-                    elif self.is_shorthand_seif(siman_num_idx + 1):
-                        self.get_seif_link(siman_num, siman_num_idx + 1, True)
-                    # TODO: maybe add continuation siman here
-                    else:
-                        link_insert = self.create_link_insert(siman_num_idx)
-                        self.add_csv_row(siman_num_idx, link_insert)
-                        self.original_words[siman_num_idx] = link_insert
+                self.cur_end_idx = siman_num_idx
+                self.get_ref(siman_num_idx + 1, self_ref_word)
 
-    def get_ref(self, word_idx, self_ref_word):
-        if self.is_self_refword(self_ref_word):
-            self.cur_word_idx = word_idx
-            if len(self.text_words) > word_idx + 2:
-                if self.is_position_word(word_idx + 1):
-                    # e.g. לקמן ריש סימן רפ"ב
-                    if self.is_siman_word(word_idx + 2):
-                        self.get_siman_link(word_idx + 3, self_ref_word)
-                elif self.is_siman_word(word_idx + 1):
-                    self.get_siman_link(word_idx + 2, self_ref_word)
+    def get_ref(self, word_idx, self_ref_word=''):
+        if len(self.text_words) > word_idx:
+            if self.is_position_word(word_idx):
+                # e.g. לקמן ריש סימן רפ"ב
+                self.get_ref(word_idx + 1, self_ref_word)
+            elif self.is_siman_word(word_idx):
+                # e.g לקמן סימן רפ"ב
+                if self.cur_siman_num_ref != 0:
+                    link_insert = self.create_link_insert(self.cur_end_idx)
+                    self.add_csv_row(self.cur_end_idx, link_insert)
+                    self.original_words[self.cur_end_idx] = link_insert
+                    self.cur_siman_num_ref = 0
+                self.get_siman_link(word_idx + 1, self_ref_word)
+            elif self.is_seif_word(word_idx):
+                # e.g לקמן סימן רפ"ב
+                if self.cur_seif_num_ref != 0:
+                    link_insert = self.create_link_insert(self.cur_end_idx)
+                    self.add_csv_row(self.cur_end_idx, link_insert)
+                    self.original_words[self.cur_end_idx] = link_insert
+                    self.cur_seif_num_ref = 0
+                self.get_seif_link(word_idx + 1)
+            elif self.is_shorthand_seif(word_idx):
+                if self.cur_seif_num_ref != 0:
+                    link_insert = self.create_link_insert(self.cur_end_idx)
+                    self.add_csv_row(self.cur_end_idx, link_insert)
+                    self.original_words[self.cur_end_idx] = link_insert
+                    self.cur_seif_num_ref = 0
+                self.get_seif_link(word_idx, True)
+        if self.cur_siman_num_ref != 0:
+            link_insert = self.create_link_insert(self.cur_end_idx)
+            self.add_csv_row(self.cur_end_idx, link_insert)
+            self.original_words[self.cur_end_idx] = link_insert
+            self.cur_siman_num_ref = 0
 
     def get_selfrefs(self):
         for word_idx, word in enumerate(self.text_words):
-
-            self.get_ref(word_idx, word)
+            if u'אסורה' in word and self.siman_num == 7:
+                print "gotcha"
+            if self.is_self_refword(word):
+                self.cur_word_idx = word_idx
+                self.get_ref(word_idx + 1, word)
 
 
 def to_utf8(lst):
     return [unicode(elem).encode('utf-8') for elem in lst]
 
-for title in titles_dict.keys():
-    with codecs.open(filepath+title+fileend, 'r', "utf-8") as fr:
+
+# with codecs.open(filepath + "shulchan Arukh, Even HaEzer" + fileend, 'r', "utf-8") as fr:
+#     file_content = json.load(fr)
+#     simanim = file_content['text']
+#     siman_length = []
+#     siman_length.append(0)
+#     for siman in simanim:
+#         siman_length.append(len(siman))
+
+for title in titles_to_parse:
+    with codecs.open(filepath + title + fileend, 'r', "utf-8") as fr:
         file_content = json.load(fr)
         en_title = file_content['title']
         he_ref = titles_dict[en_title]
         simanim = file_content['text']
-        with codecs.open(fileoutpath+en_title+'.tsv', 'w', 'utf-8') as csvfile:
-        # fieldnames = ['Source', 'riginal text', 'text with ref']
-        # writer.writeheader()
+        with codecs.open(fileoutpath + en_title + '_test.tsv', 'w', 'utf-8') as csvfile:
+            # fieldnames = ['Source', 'riginal text', 'text with ref']
+            # writer.writeheader()
             csvfile.write(u'Source\tOriginal Text\tText With Ref\n')
-
+            siman_length = []
             siman_length.append(0)
             for siman in simanim:
                 siman_length.append(len(siman))
@@ -529,5 +592,6 @@ for title in titles_dict.keys():
                     seif = Seif(seif_text, siman_idx, seif_idx)
                     seif.get_selfrefs()
                     for link in seif.csv_rows:
-                        csvfile.write(u'{}\t{}\t{}\n'.format(link['source'], link['original text'], link['text with ref']))
+                        csvfile.write(
+                            u'{}\t{}\t{}\n'.format(link['source'], link['original text'], link['text with ref']))
                 # writer.writerow(to_utf8(link))
