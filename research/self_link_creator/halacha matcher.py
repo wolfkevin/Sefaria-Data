@@ -117,20 +117,6 @@ def getGematria(txt):
         index += 1
     return sum
 
-
-
-def post_text(ref, text, index_count="off", skip_links=False, server=SEFARIA_SERVER):
-    # textJSON = json.dumps(text)
-    ref = ref.replace(" ", "_")
-    url = server+'/api/texts/'+ref
-    params, body = {}, {'apikey': API_KEY}
-    if index_count == "on":
-        params['count_after'] = 1
-    if skip_links:
-        params['skip_links'] = True
-
-    return http_request(url, params=params, body=body, json_payload=text, method="POST")
-
 def isGematria(txt):
     txt = getRidOfSofit(txt)
     txt = re.sub('[\', ":.\n)]', u'', txt)
