@@ -213,7 +213,8 @@ index = {
     "categories": ["Talmud", "Bavli", "Commentary", "Ritva", "Seder Nashim"],
     "schema": index_schema.serialize(),
     "alt_structs": { "Chapters": alt_schema.serialize()},
-    "base_text_titles": ["Yevamot"]
+    "base_text_titles": ["Yevamot"],
+    "collective_title": "Ritva",
 }
 
 text_version = {
