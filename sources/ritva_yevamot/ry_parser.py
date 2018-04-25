@@ -49,6 +49,7 @@ def checkAndEditTag(tag, line, file):
                 word_index = line.find(' ', potential_index)
 
         # beginning of comment so assume DH is everything before this word
+        # would have been better to do this with regex
         for word in [u"פי'", u"כלומר" ,  u'ק"ל', u"פירוש",  u"רשי", u'רש"י', u'ר"ת', u"קשי'", u'ר"י', u'נ"ל', u"הקשו", u"הק'", u'קשה', u"דכתב", u"וקשיא", u"אני אומ", u'וא"ת', u"ואיכא", u'י"ל', u"לא גרס", u'ל״ג', u"תוס'", u"כן הוא", u"ודעת", u"ויש", u"דפ'", u'רשב"א', u"ועוד", u"וכיון", u'י"א', u"וכתבו", u"יש לפרש", u"פירש", u"לפרושי", u'ז"ל']:
             potential_index = line.find(word, 0, 1000)
             if potential_index is not -1 and potential_index < word_index:   # want to find earliest delimiter
@@ -120,10 +121,6 @@ with open("ry_parsed.xml") as file_read:
 
     for daf in soup.find_all("daf")[1:]:
 
-        # getGematria and check if amud bet or aleph
-        # daf_num = (getGematria(daf.h2.text.split()[1]) - 1) * 2 + 1 if daf.h2.text.split('"')[1] == u'ב' \
-        #     else ((getGematria(daf.h2.text.split()[1]) - 1) * 2)
-
         daf_num = str(getGematria(daf.h2.text.split()[1])) + 'a' if daf.h2.text.endswith(u'א') \
             else str(getGematria(daf.h2.text.split()[1])) + 'b'
 
@@ -163,16 +160,11 @@ with open("ry_parsed.xml") as file_read:
 
         prev_daf_count = comment_num
 
-        if comment_text:  # is a last comment that exists
-            comments.append(bleach.clean(comment_text, tags=['b'], strip=True))
-            print "does this happen?"
-
         daf_ja.set_element([get_page(int(daf_num[:-1]), daf_num[-1])], comments, [])
     sections.append(Section(perek_title, perek_start, daf_num + "." + str(comment_num)))
 
 ja_to_xml(daf_ja.array(), ["daf", "comment"])
 
-# print sections
 
 links = []
 
@@ -190,7 +182,6 @@ index_schema = JaggedArrayNode()
 index_schema.add_primary_titles("Ritva on Yevamot", u'ריטב"א על יבמות')
 index_schema.add_structure(["Daf", "Comment"], address_types=["Talmud", "Integer"])
 index_schema.validate()
-
 
 alt_schema = SchemaNode()
 
@@ -223,7 +214,11 @@ text_version = {
     'language': 'he',
     'text': daf_ja.array()
 }
-
-post_index(index)
-post_text("Ritva on Yevamot", text_version, index_count="on")
+post = True
+if post:
+    print "Posting"
+    resp = post_index(index, weak_network=True)
+    print resp
+    resp = post_text("Ritva on Yevamot", text_version, index_count="on", weak_network=True)
+    print resp
 
