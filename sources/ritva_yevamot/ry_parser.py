@@ -224,15 +224,6 @@ text_version = {
     'text': daf_ja.array()
 }
 
-# print long_count
-
 post_index(index)
-
 post_text("Ritva on Yevamot", text_version, index_count="on")
 
-
-# TODO: address questions:
-'''
-Questions:=
-
-'''
