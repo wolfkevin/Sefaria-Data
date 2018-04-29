@@ -762,8 +762,8 @@ if post_ba:
         if shaar_title == u'כללי ספק ספיקא':
             resp = post_text("Binat Adam, Shaar haKavua, Principles of Double Doubt",
                              ba_text_version, index_count='on')
-        # else:
-        #     resp = post_text("Binat Adam, " + eng_titles_dict[unicode(shaar_title)], ba_text_version)
+        else:
+            resp = post_text("Binat Adam, " + eng_titles_dict[unicode(shaar_title)], ba_text_version)
             print(resp)
 
 binat_links = []
