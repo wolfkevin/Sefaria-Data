@@ -788,8 +788,6 @@ Klalim - 64 or 138
 Seifim - 57
 
 Questions:
-- where is the second half of the printed
-- how are we spelling chochma
 
 BA:
 Comments - up to 62 but not only on one klal
