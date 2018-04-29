@@ -294,7 +294,7 @@ def isReferenceToAnotherWork(comment_words, klal_index):
 
 
 def referencesChelekBet(comment_words, klal_index):
-    return any(word in comment_words[klal_index - 1] for word in [u"שבת", u"לולב", u"תענית", u"פסח"])
+    return any(word in comment_words[klal_index - 1] for word in [u"שבת", u"לולב", u"תענית", u"פסח", u"סוכה"])
 
 
 def isUpcoming(cur_siman, siman_link_num, cur_klal_num=0, klal_link_num=0):
@@ -445,12 +445,19 @@ def getKlalim(soup, ca_1_ja, ca_2_ja):
             comment_text = bleach.clean(comment, tags=['i', 'strong', 'big', 'small', 'br'],
                                         attributes=['data-commentator', 'data-order'], strip=True)
 
-            # klal_index = comment_text.find(u'כלל')
-            #
-            # if klal_index is not -1:  # check for self links in the text
-            #     word_before_klal_idx = comment_text[:comment_text[:klal_index].rfind(' ')].rfind(' ')
-            #     comment_w_links = getSelfLinks(siman + 1, comment_text[word_before_klal_idx:], klal_num, isChelekBet)
-            #     comment_text = comment_text[:word_before_klal_idx + 1] + comment_w_links
+        
+            # לקמן עי' עיון  ״ועיין בהל' סוכה ״ בואר ועיין  נכתב תמצא כתב ברר באר
+            klal_index = comment_text.find(u'כלל')
+            # check if klal exists
+
+            if klal_index is not -1:  # check for self links in the text
+                word_before_klal_idx = comment_text[:comment_text[:klal_index].rfind(' ')].rfind(' ')
+                print comment_text[word_before_klal_idx:word_before_klal_idx+20]
+                comment_w_links = getSelfLinks(siman + 1, comment_text[word_before_klal_idx:], klal_num, isChelekBet)
+                # comment_text = comment_text[:word_before_klal_idx + 1] + comment_w_links
+            
+            # check if within klal reference
+            
 
             while comment.next_sibling and comment.next_sibling.name == 'list_comment':
                 comment_text += u"<br><b>" + comment.next_sibling.text.replace("@55", u"</b> ", 1)
@@ -722,28 +729,28 @@ na_2_text_version = {
     'text': nishmat_2_ja.array()
 }
 
-# add_term("Klal", u"כלל", scheme="section_names")
-#
-# add_term("Chayei Adam", u'חיי אדם')
+add_term("Klal", u"כלל", scheme="section_names")
+
+add_term("Chayei Adam", u'חיי אדם')
 
 
 # resp = http_request(SEFARIA_SERVER + "/api/category", body={'apikey': API_KEY},
 #                     json_payload={"path": ["Halakhah", "Commentary", "Chayei Adam"], "sharedTitle": "Chayei Adam"},
 #                     method="POST")
 # add_category("Chayei Adam", ["Halakhah", "Commentary", "Chayei Adam"])
-#
+# 
 # post_index(ca_index)
-#
+# 
 # post_index(na_index)
-#
+# 
 # post_text("Chayei Adam", ca_1_text_version)
 # post_text("Chayei Adam, Shabbat and Festivals", ca_2_text_version, index_count='on')
-
-# post_link(self_links)
-
+# 
+# # post_link(self_links)
+# 
 # post_text("Nishmat Adam", na_1_text_version)
 # post_text("Nishmat Adam, Shabbat and Festivals", na_2_text_version, index_count='on')
-#
+# 
 # post_link(na_links)
 
 # TODO: address questions:
