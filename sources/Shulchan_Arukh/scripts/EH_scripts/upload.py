@@ -11,8 +11,8 @@ import os
 import argparse
 import requests
 import unicodecsv
-from sefaria.model import *
 from sources import functions
+from sefaria.model import *
 from sources.Shulchan_Arukh.ShulchanArukh import *
 
 
@@ -93,6 +93,52 @@ def generic_cleaner(ja, clean_callback):
             ja[i][j] = clean_callback(seif)
 
 
+def even_haezer_clean(ja):
+    def clean(strn):
+        strn = re.sub(ur'\(?%\)', u'', strn)
+        strn = re.sub(u'/[\u05d0-\u05ea]{1,3}\]', u'', strn)
+        strn = re.sub(u'(\s){2,}', u'\g<1>', strn)
+        strn = re.sub(u' +$', u'', strn)
+        return strn
+
+    generic_cleaner(ja, clean)
+
+
+def gra_clean(ja):
+    def clean(strn):
+        strn = re.sub(ur'\+44[\u05d0-\u05ea]{1,2}[)\]]', u'', strn)
+        strn = re.sub(u'(\s){2,}', u'\g<1>', strn)
+        strn = re.sub(u' +$', u'', strn)
+        return strn
+    generic_cleaner(ja, clean)
+
+
+def do_nothing(ja):
+    pass
+
+
+def add_siman_headers(ja):
+    xml_simanim = root.get_base_text().get_simanim()
+    assert len(ja) == len(xml_simanim)
+    for siman, xml_siman in zip(ja, xml_simanim):
+        title_text = re.sub(u' *\n *', u'', xml_siman.Tag.contents[0].text)
+        if title_text == u'':
+            continue
+        if re.search(u'@', title_text) is not None:
+            print u'Weird mark at Siman {}'.format(xml_siman.num)
+        siman[0] = u'<b>{}</b><br>{}'.format(title_text, siman[0])
+
+
+cleaning_methods = {
+    u"Beur HaGra": gra_clean,
+    u"Pithei Teshuva": do_nothing,
+    u"Turei Zahav": do_nothing,
+    u"Be'er HaGolah": do_nothing
+
+
+}
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--title", default=None)
@@ -124,6 +170,9 @@ if __name__ == "__main__":
                 commentaries.get_commentary_by_title('Seder Halitzah').render(),
         }
         book_index = shulchan_arukh_index(user_args.server)
+        add_siman_headers(book_data[base_text_title])
+        cleaner_method = even_haezer_clean
+        # even_haezer_clean(book_data[base_text_title])
 
     else:
         book_xml = commentaries.get_commentary_by_title(user_args.title)
@@ -137,18 +186,21 @@ if __name__ == "__main__":
             book_data[part_name] = part_xml.render()
             links += part_xml.collect_links()
         book_index = commentary_index(book_name, he_book_name, user_args.title)
+        cleaner_method = cleaning_methods[user_args.title]
 
         if user_args.add_term:
             functions.add_term(user_args.title, book_xml.titles['he'], server=user_args.server)
 
         functions.add_category(user_args.title, book_index['categories'], server=user_args.server)
+    for piece in book_data.values():
+        cleaner_method(piece)
 
     if user_args.verbose:
         print book_index
     functions.post_index(book_index, server=user_args.server)
     version = {
-        "versionTitle": "Something Something Lemberg Something",
-        "versionSource": "fie fi fo fum",
+        "versionTitle": "Apei Ravrevei: Shulchan Aruch Even HaEzer, Lemberg, 1886",
+        "versionSource": "http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId=NNL_ALEPH002097680",
         "language": "he",
         "text": None
     }
@@ -167,8 +219,11 @@ if __name__ == "__main__":
         num_parts -= 1
     if links:
         functions.post_link(links, server=user_args.server)
-    functions.post_flags({'ref': book_name, 'lang': 'he', 'vtitle': version['versionTitle']},
-                         {'versionTitleInHebrew': u"""פי פיי פו פאם"""}, user_args.server)
+
+    flags = {'versionTitleInHebrew': u"""אפי רברבי: שלחן ערוך אבן העזר, למברג תרמ"ו"""}
+    if user_args.title is None:
+        flags['priority'] = 2
+    functions.post_flags({'ref': book_name, 'lang': 'he', 'vtitle': version['versionTitle']}, flags, user_args.server)
 
     try:
         requests.post(os.environ['SLACK_URL'], json={'text': '{} uploaded successfully'.format(book_name)})
