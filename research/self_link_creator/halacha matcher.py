@@ -1,33 +1,29 @@
 # -*- coding: utf-8 -*-
-import os
-import json
-import re
-import string
-import codecs
 from collections import namedtuple
-
-import urllib
-import urllib2
-from urllib2 import URLError, HTTPError
 import json
-import pdb
-import os
-import sys
 import codecs
 import re
-# import http_request
+from sources.functions import numToHeb, getGematria, isGematria, post_index, post_text
+from sefaria.utils.hebrew import strip_nikkud, normalize_final_letters_in_str
+from sefaria.datatype import jagged_array
+from sefaria.model import *
 
-p = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, p)
-sys.path.insert(0, "../")
+old_titles_dict = {
+    "Shulchan Arukh, Yoreh De'ah": u'שולחן ערוך יורה דעה',
+    "Shulchan Arukh, Orach Chayim": u'שולחן ערוך אורח חיים',
+    "Shulchan Arukh, Even HaEzer": u'שולחן ערוך אבן העזר',
+    "Shulchan Arukh, Choshen Mishpat": u'שולחן ערוך חושן משפט',
+    "Beit Shmuel": u'שולחן ערוך אבן העזר',
+    "Chelkat Mechokek": u'שולחן ערוך אבן העזר',
+}
 
 titles_dict = {
-    "Shulchan Arukh, Yoreh De'ah": u'שלחן ערוך, יורה דעה',
-    "Shulchan Arukh, Orach Chayim": u'שלחן ערוך, אורח חיים',
-    "Shulchan Arukh, Even HaEzer": u'שלחן ערוך, אבן העזר',
-    "Shulchan Arukh, Choshen Mishpat": u'שלחן ערוך, חושן משפט',
-    "Beit Shmuel": u'שלחן ערוך, אבן העזר',
-    "Chelkat Mechokek": u'שלחן ערוך, אבן העזר',
+    "Shulchan Arukh, Yoreh De'ah": u'שו"ע יו"ד',
+    "Shulchan Arukh, Orach Chayim": u'שו"ע או"ח ',
+    "Shulchan Arukh, Even HaEzer": u'שו"ע אב"ה',
+    "Shulchan Arukh, Choshen Mishpat": u'שו"ע חו"מ',
+    "Beit Shmuel": u'שו"ע אב"ה',
+    "Chelkat Mechokek": u'שו"ע אב"ה',
 }
 
 titles_to_parse = [
@@ -38,18 +34,21 @@ titles_to_parse = [
     "Chelkat Mechokek"
 ]
 
+print Ref.is_ref(u'שו"ע אב"ה')
+
 fileend = " - he - merged.json"
 filepath = './shulchan arukh/'
 fileoutpath = './output/'
 he_ref = u''  # hebrew name of referenced text
+en_title = ''
 
-self_ref_words = [u'לקמן', u'לעיל', u'להלן', u'עיין', u'ע\"ל', u"ע'"]
+self_ref_words = [u'לקמן', u'לעיל', u'להלן', u'עיין', u'ע\"ל', u"ע'", u"לק'"]
 siman_words = [u"סי'", u'סימן', u'ס\"ס', u'ס"ס', u"ס''ס"]
 position_words = [u'ריש', u'סוף']
 seif_words = [u'סעי', u"ס'"]
 SelfLink = namedtuple('SelfLink', ['insert', 'offset'])
 
-siman_length = []
+# siman_length = []
 
 
 """
@@ -75,129 +74,6 @@ SEFARIA_PROJECT_PATH = "/path/your/copy/of/Sefaria-Project"
 SEFARIA_SERVER = "http://draft.sefaria.org"
 
 API_KEY = "6fC09W4nRt37WGpVyMKGyjcCXLchaCR8RDVODE10r38"
-
-gematria = {}
-gematria[u'א'] = 1
-gematria[u'ב'] = 2
-gematria[u'ג'] = 3
-gematria[u'ד'] = 4
-gematria[u'ה'] = 5
-gematria[u'ו'] = 6
-gematria[u'ז'] = 7
-gematria[u'ח'] = 8
-gematria[u'ט'] = 9
-gematria[u'י'] = 10
-gematria[u'כ'] = 20
-gematria[u'ל'] = 30
-gematria[u'מ'] = 40
-gematria[u'נ'] = 50
-gematria[u'ס'] = 60
-gematria[u'ע'] = 70
-gematria[u'פ'] = 80
-gematria[u'צ'] = 90
-gematria[u'ק'] = 100
-gematria[u'ר'] = 200
-gematria[u'ש'] = 300
-gematria[u'ת'] = 400
-gematria[u'ם'] = 40
-gematria[u'ן'] = 50
-gematria[u'ף'] = 80
-gematria[u'ץ'] = 90
-
-
-def getGematria(txt):
-    if not isinstance(txt, unicode):
-        txt = txt.decode('utf-8')
-    index = 0
-    sum = 0
-    while index <= len(txt) - 1:
-        if txt[index:index + 1] in gematria:
-            sum += gematria[txt[index:index + 1]]
-
-        index += 1
-    return sum
-
-def isGematria(txt):
-    txt = getRidOfSofit(txt)
-    txt = re.sub('[\', ":.\n)]', u'', txt)
-    if txt.find(u"טו") >= 0:
-        txt = txt.replace(u"טו", u"יה")
-    elif txt.find(u"טז") >= 0:
-        txt = txt.replace(u"טז", u"יו")
-
-    if len(txt) == 0:
-        return False
-
-    while txt[0] == u'ת':
-        txt = txt[1:]
-
-    if len(txt) == 1:
-        if txt[0] < u'א' or txt[0] > u'ת':
-            return False
-    elif len(txt) == 2:
-        if txt[0] < u'י' or (txt[0] < u'ק' and txt[1] > u'ט'):
-            return False
-    elif len(txt) == 3:
-        if txt[0] < u'ק' or txt[1] < u'י' or txt[2] > u'ט':
-            return False
-    else:
-        return False
-
-    return True
-
-
-def numToHeb(engnum=u""):
-    engnum = str(engnum)
-    numdig = len(engnum)
-    hebnum = u""
-    letters = [[u"" for i in range(3)] for j in range(10)]
-    letters[0] = [u"", u"א", u"ב", u"ג", u"ד", u"ה", u"ו", u"ז", u"ח", u"ט"]
-    letters[1] = [u"", u"י", u"כ", u"ל", u"מ", u"נ", u"ס", u"ע", u"פ", u"צ"]
-    letters[2] = [u"", u"ק", u"ר", u"ש", u"ת", u"תק", u"תר", u"תש", u"תת", u"תתק"]
-    if (numdig > 3):
-        print "We currently can't handle numbers larger than 999"
-        exit()
-    for count in range(numdig):
-        hebnum += letters[numdig - count - 1][int(engnum[count])]
-    hebnum = re.sub(u'יה', u'טו', hebnum)
-    hebnum = re.sub(u'יו', u'טז', hebnum)
-    return hebnum
-
-
-def getRidOfSofit(txt):
-    if txt == None:
-        print "pause"
-    if txt.find(u"ך") >= 0:
-        txt = txt.replace(u"ך", u"כ")
-    if txt.find(u"ם") >= 0:
-        txt = txt.replace(u"ם", u"מ")
-    if txt.find(u"ף") >= 0:
-        txt = txt.replace(u"ף", u"פ")
-    if txt.find(u"ץ") >= 0:
-        txt = txt.replace(u"ץ", u"צ")
-    return txt
-
-
-def strip_nekud(word):
-    data = word.replace(u"\u05B0", "")
-    data = data.replace(u"\u05B1", "")
-    data = data.replace(u"\u05B2", "")
-    data = data.replace(u"\u05B3", "")
-    data = data.replace(u"\u05B4", "")
-    data = data.replace(u"\u05B5", "")
-    data = data.replace(u"\u05B6", "")
-    data = data.replace(u"\u05B7", "")
-    data = data.replace(u"\u05B8", "")
-    data = data.replace(u"\u05B9", "")
-    data = data.replace(u"\u05BB", "")
-    data = data.replace(u"\u05BC", "")
-    data = data.replace(u"\u05BD", "")
-    data = data.replace(u"\u05BF", "")
-    data = data.replace(u"\u05C1", "")
-    data = data.replace(u"\u05C2", "")
-    data = data.replace(u"\u05C3", "")
-    data = data.replace(u"\u05C4", "")
-    return data
 
 
 def isContinuationLink(siman_1, siman_2):
@@ -364,7 +240,7 @@ class Seif:
 
     def __init__(self, seif_text, siman_num, seif_num):
         self.original_words = seif_text.split()
-        self.text_words = strip_nekud(seif_text).split()
+        self.text_words = strip_nikkud(seif_text).split()
         self.siman_num = siman_idx + 1
         self.seif_num = seif_idx + 1
         self.csv_rows = []
@@ -394,14 +270,10 @@ class Seif:
         return False
 
     def is_valid_siman_num(self, siman):
-        return isGematria(siman) and len(siman_length) > getGematria(siman)
+        return isGematria(siman) and Ref.is_ref("{} {}".format(en_title, getGematria(siman)))
 
     def is_valid_seif_num(self, seif_num):
-        if isGematria(seif_num) and siman_length[self.cur_siman_num_ref] >= getGematria(seif_num):
-            return True
-        else:
-            print("weird")
-            return False
+        return isGematria(seif_num) and Ref.is_ref("{} {}:{}".format(en_title, self.cur_siman_num_ref, getGematria(seif_num)))
 
     def siman_relative_to_ref_word(self, ref_word, siman_num_idx):
         siman_num = getGematria(self.text_words[siman_num_idx])
@@ -553,19 +425,23 @@ def to_utf8(lst):
     return [unicode(elem).encode('utf-8') for elem in lst]
 
 
-with codecs.open(filepath + "Shulchan Arukh, Even HaEzer" + fileend, 'r', "utf-8") as fr:
-    file_content = json.load(fr)
-    simanim = file_content['text']
-    siman_length = []
-    siman_length.append(0)
-    for siman in simanim:
-        siman_length.append(len(siman))
+# with codecs.open(filepath + "Shulchan Arukh, Even HaEzer" + fileend, 'r', "utf-8") as fr:
+#     file_content = json.load(fr)
+#     simanim = file_content['text']
+#     siman_length = []
+#     siman_length.append(0)
+#     for siman in simanim:
+#         siman_length.append(len(siman))
+
+
 
 for title in titles_to_parse:
+    new_simanim_ja = jagged_array.JaggedArray([[]])
+    # text_w_links = [[]]
     with codecs.open(filepath + title + fileend, 'r', "utf-8") as fr:
         file_content = json.load(fr)
         en_title = file_content['title']
-        he_ref = titles_dict[en_title]
+        he_ref = old_titles_dict[en_title]
         simanim = file_content['text']
         with codecs.open(fileoutpath + en_title + '_test.tsv', 'w', 'utf-8') as csvfile:
             # fieldnames     = ['Source', 'riginal text', 'text with ref']
@@ -576,10 +452,22 @@ for title in titles_to_parse:
             # for siman in simanim:
             #     siman_length.append(len(siman))
             for siman_idx, siman in enumerate(simanim):
+                # siman_w_links = []
                 for seif_idx, seif_text in enumerate(siman):
                     seif = Seif(seif_text, siman_idx, seif_idx)
                     seif.get_selfrefs()
+                    new_simanim_ja.set_element([siman_idx, seif_idx], u' '.join(seif.original_words), u'')
+                    # siman_w_links.append(u' '.join(seif.original_words))
                     for link in seif.csv_rows:
                         csvfile.write(
                             u'{}\t{}\t{}\n'.format(link['source'], link['original text'], link['text with ref']))
+                # text_w_links.append(siman_w_links)
                 # writer.writerow(to_utf8(link))
+                
+    text_version = {
+        'versionTitle': "Merged with generated links",
+        'versionSource': "http://draft.sefaria.org/Chelkat_Mechokek",
+        'language': 'he',
+        'text': new_simanim_ja.array(),
+    }
+    post_text(title, text_version)
