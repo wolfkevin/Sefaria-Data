@@ -102,6 +102,8 @@ with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvf
         # for d1 in d1im:
         #     d1_length.append(len(d1))
         for d1_idx, d1 in enumerate(TEXT_JA):   
+        text_len = len(BASE_TEXT_JA)
+        for d1_idx, seg_text in enumerate(TEXT_JA):   
             # d1_w_links = []
             for d2_idx, d2 in enumerate(d1):
                 for d3_idx, seg_text in enumerate(d2):
@@ -132,6 +134,8 @@ with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvf
                             csvfile.write(u'{}\t{}\t{}\n'.format(
                                 (ref.normal() + u' ' + convert_index_to_daf(d1_idx)+u'.'+unicode(d3_idx)),
                                 og_text[match.start()-20:].strip(),
+                                (ref.normal() + u' ' + convert_index_to_daf(d1_idx)+u'.'+unicode(d1_idx)),
+                                og_text[match.start()-20:match.end()+len(insert)+1].strip(),
                                 seg_text[match.start()-1+offset:match.end()+offset+len(insert)+1].strip()))
                             offset += len(insert)
             # seg = Segment(BASE_TEXT, seg_text, d1_idx, d2_idx)
