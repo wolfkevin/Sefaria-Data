@@ -104,11 +104,16 @@ with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvf
                     og_text = seg_text
                     offset = 0
                     for match in re.finditer(talmud_str, seg_text):
-                        # if u'דפ' in match.group(11):
-                        #     pass
-                        if isGematria(match.group(16)) and (match.group(2) or match.group(17)):
-                            if match.group(4):
-                                pass
+                        if (match.group(2) or match.group(17)) and isGematria(match.group(16)) and (text_len >= gematria(match.group(16))*2-1) and (gematria(match.group(16)) > 1):
+                            insert = u'{} '.format(BASE_TEXT.he_normal()) 
+                            if u'"' in match.group(16):
+                                if not match.group(17) and not match.group(9) and not match.group(14):
+                                    if re.search(ur'ע"[אב]', match.group(16)):
+                                        insert += u'{} '.format(numToHeb(convert_index_to_daf(d1_idx)[:-1]))
+                                    else:
+                                        continue
+                            text_changed = True
+                            links_added += 1
                             for group_num in [9, 14, 16]:
                                 # group 9 or 14 and if neither then before group 16
                                 if match.start(group_num) > 0:
@@ -116,14 +121,12 @@ with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvf
                                     break
                             # if match.group(7) or match.group(12):
                             assert start
-                            if match.group(7) or match.group(11) or match.group(12) or (u')' in re.sub(ur'(.*?)[\s$].*', ur'\1', seg_text[match.end()+offset:])):
+                            if match.group(7) or match.group(11) or match.group(12) or (seg_text[match.start()+offset-1] == u'(') or (u')' in re.sub(ur'(.*?)[\s$].*', ur'\1', seg_text[match.end()+offset:])):
                                 # check for before and after for parentheses
-                                insert = u'{} '.format(BASE_TEXT.he_normal()) 
                                 seg_text = seg_text[:start] + insert + seg_text[start:]
                             else:
-                                insert = u'({} '.format(BASE_TEXT.he_normal())
-                                seg_text = seg_text[:start] + insert + seg_text[start:match.end()+offset] + u')' + seg_text[match.end()+offset:]
-                                offset += 1
+                                seg_text = seg_text[:start] + u'(' + insert + seg_text[start:match.end()+offset] + u')' + seg_text[match.end()+offset:]
+                                offset += 2
                             
                             csvfile.write(u'{}\t{}\t{}\n'.format(
                                 (ref.normal() + u' ' + convert_index_to_daf(d1_idx)+u'.'+unicode(d3_idx)),
@@ -132,22 +135,21 @@ with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvf
                                 og_text[match.start()-20:match.end()+len(insert)+1].strip(),
                                 seg_text[match.start()-1+offset:match.end()+offset+len(insert)+1].strip()))
                             offset += len(insert)
-            # seg = Segment(BASE_TEXT, seg_text, d1_idx, d2_idx)
-            # seg.get_selfrefs()
-            # new_text_ja.set_element([d1_idx, d2_idx], u' '.join(seg.original_words), u'')
-            # # d1_w_links.append(u' '.join(d2.original_words))
-            # for link in seg.csv_rows:
-            #     
-            # text_w_links.append(d1_w_links)
-            # writer.writerow(to_utf8(link))
-
-    # text_version = {
-    #     'versionTitle': "Merged with generated links",
-    #     'versionSource': "http://proto.sefaria.org/{}".format(title),
-    #     'language': 'he',
-    #     'text': new_text_ja.array(),
-    # }
-    # post_text(title, text_version)
+                    new_text_ja.set_element([d1_idx], seg_text, u'')
+        if text_changed:
+            try:
+                text_version = {
+                    'versionTitle': text_chunk.version().versionTitle,
+                    'versionSource': text_chunk.version().versionSource,
+                    'language': 'he',
+                    'text': new_text_ja.array(),
+                }
+                csvfile.write(u'{}\t{}\t{}\n'.format(title.title, links_added, text_chunk.version().versionTitle))
+                # post_text(title.title, text_version)
+                print "Changed: " + title.title + ' ' + text_chunk.version().versionTitle + " Version: " + text_chunk.version().versionSource
+            except:
+                print title.title + " is a merged text"
+                csvfile.write(u'{}\t{}\t{}\n'.format(title.title, links_added, 'MERGED TEXT'))
 # ''' 
 # # כדיליף לקמן (עמוד ב)
 # תענית (פ"ב דף טז: ולקמן דף סג.)
