@@ -106,14 +106,19 @@ def isGematria(txt):
     else:
         return False
     return True
-
+#skip (להלן|לעיל|לקמן) ((ילפ|ב|פ(\'|\")).{0,30}) (\(|\[)?((דף|ד\')(\.)? )?[א-ת]*
+self_ref_words = u'(להלן|לעיל|לקמן)'
+filler_words = u"(ילפ|ב|פ(\'|\"))"
+daf_words = u"((דף|ד\')(\.)? )"
+parentheses = u'(\(|\[)'
+amud_words = u'(:|\.| ע\"ב| ע\"א)'
 
 # u'עיין', u'ע\"ל', u"ע'", u"לק'", u'באר'
-# talmud_str = ur"(להלן|לעיל|לקמן)( |\(|{|\[)((((ילפ|ב).{0,30})|דף|ד')( |{|\(|\[))?(([א-ת]*)(:|\.))"
-talmud_str = ur"(להלן|לעיל|לקמן) ((((ילפ|ב).{0,30})?(\(|\[)))?(((דף|ד')(\.)? )?(([א-ת]*)(:|\.|)))"
-talmud_str_re = re.compile(talmud_str)
+# talmud_str = ur"(להלן|לעיל|לקמן) ((ילפ|ב|פ('|\")).{0,30})?(\(|\[)?((דף|ד')(\.)? )?([א-ת]*)(:|\.| ע\"ב| ע\"א)?"
+talmud_str = ur'(להלן|לעיל|לקמן) (((ילפ|ב|פ(\'|")|פרק).{0,30} ((\(|\[)?((דף|ד\')(\.)? )|(\(|\[)))|(\(|\[)?((דף|ד\')(\.)? )?)([א-ת]{1,3})\'?(?!\")(:|\.| ע"ב| ע"א)?'
+# talmud_str3 = ur'{} (({}.{{0,30}} ({}?{}|{}))|{}?{}?)[א-ת]{{0,3}}{}?'.format(self_ref_words, filler_words, parentheses, daf_words, parentheses, parentheses, daf_words, amud_words)
 with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvfile:
-    csvfile.write(u'Source\tText With Ref\n')
+    csvfile.write(u'Source\tOG Text\tText With Ref\n')
     for title in IndexSet({"$and": [{"categories": "Talmud"}, {"categories": "Commentary"},  {"schema.depth": 3}]}):
         # new_text_ja = jagged_array.JaggedArray([[]])
         # text_w_links = [[]]
@@ -130,24 +135,35 @@ with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvf
             # d1_w_links = []
             for d2_idx, d2 in enumerate(d1):
                 for d3_idx, seg_text in enumerate(d2):
+                    og_text = seg_text
                     offset = 0
                     for match in re.finditer(talmud_str, seg_text):
-                        if u'דפ' in match.group(11):
-                            pass
-                        if len(match.group(11)) > 0 and isGematria(match.group(11)):
-                            #TODO insert into text after item the object match.end()
-                            # match.group(7)
-                            if seg_text[match.end()+offset] == u')':
+                        # if u'דפ' in match.group(11):
+                        #     pass
+                        if isGematria(match.group(16)) and (match.group(2) or match.group(17)):
+                            if match.group(4):
+                                pass
+                            for group_num in [9, 14, 16]:
+                                # group 9 or 14 and if neither then before group 16
+                                if match.start(group_num) > 0:
+                                    start = match.start(group_num) + offset
+                                    break
+                            # if match.group(7) or match.group(12):
+                            assert start
+                            if match.group(7) or match.group(11) or match.group(12) or (u')' in re.sub(ur'(.*?)[\s$].*', ur'\1', seg_text[match.end()+offset:])):
+                                # check for before and after for parentheses
                                 insert = u'{} '.format(BASE_TEXT.he_normal()) 
-                                seg_text = seg_text[:match.regs[7][0]+offset] + insert + seg_text[match.regs[7][0]+offset:]
+                                seg_text = seg_text[:start] + insert + seg_text[start:]
                             else:
                                 insert = u'({} '.format(BASE_TEXT.he_normal())
-                                seg_text = seg_text[:match.regs[7][0]+offset] + insert + seg_text[match.regs[7][0]+offset:match.end()+offset] + u')' + seg_text[match.end()+offset:]
+                                seg_text = seg_text[:start] + insert + seg_text[start:match.end()+offset] + u')' + seg_text[match.end()+offset:]
                                 offset += 1
-                            csvfile.write(u'{}\t{}\t{}\n'.format((ref.normal() + u' ' + convert_index_to_daf(d1_idx)+u'.'+unicode(d3_idx)), seg_text[match.start()+offset-20:match.end()+offset+len(insert)+2], seg_text[match.start()-1+offset:match.end()+offset+len(insert)+1]))
+                            
+                            csvfile.write(u'{}\t{}\t{}\n'.format(
+                                (ref.normal() + u' ' + convert_index_to_daf(d1_idx)+u'.'+unicode(d3_idx)),
+                                og_text[match.start()-20:].strip(),
+                                seg_text[match.start()-1+offset:match.end()+offset+len(insert)+1].strip()))
                             offset += len(insert)
-                        else:
-                            pass
             # seg = Segment(BASE_TEXT, seg_text, d1_idx, d2_idx)
             # seg.get_selfrefs()
             # new_text_ja.set_element([d1_idx, d2_idx], u' '.join(seg.original_words), u'')
