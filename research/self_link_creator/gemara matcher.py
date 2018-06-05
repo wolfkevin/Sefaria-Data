@@ -9,36 +9,6 @@ from data_utilities.util import numToHeb
 from sefaria.datatype import jagged_array
 from sefaria.model import *
 
-titles_dict = {
-    "Shulchan Arukh, Yoreh De'ah": u'שו"ע יו"ד',
-    "Shulchan Arukh, Orach Chayim": u'שו"ע או"ח ',
-    "Shulchan Arukh, Even HaEzer": u'שו"ע אב"ה',
-    "Shulchan Arukh, Choshen Mishpat": u'שו"ע חו"מ',
-    "Beit Shmuel": u'שו"ע אב"ה',
-    "Chelkat Mechokek": u'שו"ע אב"ה',
-}
-
-titles_to_parse = [
-    "Rashi on Zevachim",
-    # "Shulchan Arukh, Orach Chayim",
-    # "Shulchan Arukh, Even HaEzer",
-    # "Shulchan Arukh, Choshen Mishpat",
-    # "Chelkat Mechokek"
-]
-
-# indx = Ref("Shulchan Arukh, Orach Chayim").index
-# indx.struct_objs['Topic'].default = True
-# ind = {
-# }
-# for k, v in indx:
-#     ind[k] = v
-# post_index(indx)
-
-fileend = " - he - merged.json"
-filepath = 'shulchan arukh/'
-fileoutpath = './output/'
-# he_ref = u''  # hebrew name of referenced text
-
 self_ref_words = [u'לקמן', u'לעיל', u'להלן', u'עיין', u'ע\"ל', u"ע'", u"לק'", u'באר']
 siman_words = [u"סי'", u'סימן', u'ס\"ס', u'ס"ס', u"ס''ס"]
 position_words = [u'ריש', u'סוף']
@@ -115,7 +85,7 @@ amud_words = u'(:|\.| ע\"ב| ע\"א)'
 
 # u'עיין', u'ע\"ל', u"ע'", u"לק'", u'באר'
 # talmud_str = ur"(להלן|לעיל|לקמן) ((ילפ|ב|פ('|\")).{0,30})?(\(|\[)?((דף|ד')(\.)? )?([א-ת]*)(:|\.| ע\"ב| ע\"א)?"
-talmud_str = ur'(להלן|לעיל|לקמן) (((ילפ|ב|פ(\'|")|פרק).{0,30} ((\(|\[)?((דף|ד\')(\.)? )|(\(|\[)))|(\(|\[)?((דף|ד\')(\.)? )?)([א-ת]{1,3})\'?(?!\")(:|\.| ע"ב| ע"א)?'
+talmud_str = ur'(להלן|לעיל|לקמן) (((ילפ|ב|פ(\'|")|פרק).{0,30} ((\(|\[)?((דף|ד\')(\.)? )|(\(|\[)))|(\(|\[)?((דף|ד\')(\.)? )?)([א-ת]{1,3})\'?(?!\")(:|\.| ע"(א|ב)|, (א|ב))'
 # talmud_str3 = ur'{} (({}.{{0,30}} ({}?{}|{}))|{}?{}?)[א-ת]{{0,3}}{}?'.format(self_ref_words, filler_words, parentheses, daf_words, parentheses, parentheses, daf_words, amud_words)
 with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvfile:
     csvfile.write(u'Source\tOG Text\tText With Ref\n')
