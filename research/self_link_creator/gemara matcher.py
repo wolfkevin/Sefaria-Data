@@ -85,7 +85,7 @@ amud_words = u'(:|\.| ע\"ב| ע\"א)'
 
 # u'עיין', u'ע\"ל', u"ע'", u"לק'", u'באר'
 # talmud_str = ur"(להלן|לעיל|לקמן) ((ילפ|ב|פ('|\")).{0,30})?(\(|\[)?((דף|ד')(\.)? )?([א-ת]*)(:|\.| ע\"ב| ע\"א)?"
-talmud_str = ur'(להלן|לעיל|לקמן) (((ילפ|ב|פ(\'|")|פרק).{0,30} ((\(|\[)?((דף|ד\')(\.)? )|(\(|\[)))|(\(|\[)?((דף|ד\')(\.)? )?)([א-ת]{1,3})\'?(?!\")(:|\.| ע"(א|ב)|, (א|ב))'
+talmud_str = ur'(להלן|לעיל|לקמן) (((ילפ|ב|פ(\'|")|פרק).{0,30} ((\(|\[)?((דף|ד\')(\.)? )|(\(|\[)))|(\(|\[)?((דף|ד\')(\.)? )?)([א-ת][א-ת"]?["א-ת]?["א-ת]?)\'?(?!\")(:|\.| ע"[אב]|, ?[אב])?'
 # talmud_str3 = ur'{} (({}.{{0,30}} ({}?{}|{}))|{}?{}?)[א-ת]{{0,3}}{}?'.format(self_ref_words, filler_words, parentheses, daf_words, parentheses, parentheses, daf_words, amud_words)
 with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvfile:
     csvfile.write(u'Source\tOG Text\tText With Ref\n')
@@ -93,15 +93,9 @@ with codecs.open(filepath + 'commentary' + '_test4.tsv', 'wb+', 'utf-8') as csvf
         # new_text_ja = jagged_array.JaggedArray([[]])
         # text_w_links = [[]]
         ref = Ref(title.title)
-        # he_ref = ref.he_normal()
-        TEXT_JA = TextChunk(ref, 'he').text
+        text_chunk = TextChunk(ref, 'he')
         BASE_TEXT = Ref(ref.index.base_text_titles[0])
         BASE_TEXT_JA = TextChunk(BASE_TEXT, 'he').text
-        # d1_length = []
-        # d1_length.append(0)
-        # for d1 in d1im:
-        #     d1_length.append(len(d1))
-        for d1_idx, d1 in enumerate(TEXT_JA):   
         text_len = len(BASE_TEXT_JA)
         for d1_idx, seg_text in enumerate(TEXT_JA):   
             # d1_w_links = []
