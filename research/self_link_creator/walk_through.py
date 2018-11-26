@@ -4,13 +4,13 @@ import json
 import codecs
 import re
 from sources.functions import post_index, post_text
-from sefaria.utils.hebrew import strip_nikkud, normalize_final_letters_in_str, gematria
+from sefaria.utils.hebrew import strip_nikkud, normalize_final_letters_in_str, gematria, has_cantillation
 from data_utilities.util import numToHeb
 from sefaria.datatype import jagged_array
 from sefaria.model import *
 from sefaria.system.exceptions import BookNameError
 
-post = False
+post = True
 
 def isGematria(txt):
     txt = normalize_final_letters_in_str(txt)
@@ -52,7 +52,7 @@ daf_words = ur"(?P<daf_prepend>ב?\u05d3[\u05e3\u05e4\u05f3']\s+)?"
 daf_number = ur'(?P<daf_number>[״”״\'ֿ׳\"א-ת]+)'
 parentheses = ur'(?P<parentheses>[\(\[{])'
 amud_words = ur'(?P<amud>[:.]|(ע(מוד |[”״”"\'ֿ׳]+)|,? )[אב])?'
-perek_prepend = ur"(פ['׳]|פרק|[רס][\"””״׳\']+פ)\s+"
+perek_prepend = ur"(פ['׳]|פרק|[רס][\"”“״׳\']+פ)\s+"
 not_siman_words = ur'''(?!\s*ס(י?[\'ֿ׳]|ימן|[”״”"\'ֿ׳]+ס))'''
 
 
@@ -77,7 +77,7 @@ with codecs.open('perakim.txt', 'r', encoding='utf-8') as fr:
     perakim_names = perakim_names[:-1] + ur').?.?'
     print(perakim_names)
 
-filler_outside_words = ur'((ו?ב?(סוף|ריש)(\s+הפרק)?|ופ["””״׳\']+ק דבתרא|בברייתא|תנן)\s+)?'
+filler_outside_words = ur'((ו?ב?(סוף|ריש)(\s+הפרק)?|ופ[\u059E\u201C"””״׳\']+ק דבתרא|בברייתא|תנן)\s+)?'
 filler_inside_words = ur'(?P<filler_inside>ו?ב?(סוף|ריש)\s+)?'
 
 perek_str = perek_prepend + perakim_names + filler_outside_words + parentheses + filler_inside_words + daf_words + daf_number + amud_words + not_siman_words
@@ -93,28 +93,33 @@ def walk_thru_action(s, tref, heTref, version):
     seg_text = u''
     pre_idx = 0
     offset = 0
+    if re.search(ur'[א-ת](\'\'|[\"“”])[א-ת]', s):
+        re.sub(ur'[א-ת](\'\'|[\"“”])[א-ת]', ur'״', s)
+        text_changed = True
     text_changed = False
-    for match in re.finditer(perek_str, s):
-        daf = match.group('daf_number')
-        talmud_title = perek_to_mesechet_dict[match.group('perek_name')]
-        # alt_titles = mesechet_to_alt_titles[talmud_title]
-        if (isGematria(daf) and Ref().is_ref(talmud_title + u' ' + daf)) or daf == u'שם':
-            text_changed = True
-            links_added += 1
-            indx = match.end('parentheses')
-            if s[match.end()] == u')' or s[match.end()] == u']':
-                seg_text += s[pre_idx:match.start('parentheses')] + u'(' + talmud_title + u' ' + s[indx:match.end()] + u')'
-                pre_idx = match.end() + 1
+    if has_cantillation(s, detect_vowels=True):
+        s = strip_nikkud(s)
+        for match in re.finditer(perek_str, s):  
+            daf = match.group('daf_number')
+            talmud_title = perek_to_mesechet_dict[match.group('perek_name')]
+            # alt_titles = mesechet_to_alt_titles[talmud_title]
+            if (isGematria(daf) and Ref().is_ref(talmud_title + u' ' + daf)) or daf == u'שם':
+                text_changed = True
+                links_added += 1
+                indx = match.end('parentheses')
+                if s[match.end()] == u')' or s[match.end()] == u']':
+                    seg_text += s[pre_idx:match.start('parentheses')] + u'(' + talmud_title + u' ' + s[indx:match.end()] + u')'
+                    pre_idx = match.end() + 1
+                else:
+                    seg_text += s[pre_idx:indx] + talmud_title + u' ' + s[indx:match.end()]  
+                    pre_idx = match.end()
+                csvfile.write(u'{}\t{}\t{}\n'.format(
+                    tref, s[match.start():match.end()+1].strip(),
+                    seg_text[match.start()+offset:].strip()))
+                offset += len(talmud_title)+1
             else:
-                seg_text += s[pre_idx:indx] + talmud_title + u' ' + s[indx:match.end()]  
-                pre_idx = match.end()
-            csvfile.write(u'{}\t{}\t{}\n'.format(
-                tref, s[match.start():match.end()+1].strip(),
-                seg_text[match.start()+offset:].strip()))
-            offset += len(talmud_title)+1
-        else:
-            pass
-            # print tref
+                pass
+                # print tref
     seg_text += s[pre_idx:]
     if re.search(ur'ֿֿ[\(\[](ריש|סוף)', seg_text):
         print u"SEG TEXT: {}".format(seg_text) 
