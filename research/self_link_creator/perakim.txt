@@ -10,6 +10,8 @@ Avodah_Zarah,4,רבי ישמעאל
 Avodah_Zarah,4,ר ישמעאל
 Avodah_Zarah,4,ר׳ ישמעאל
 Avodah_Zarah,4,ר' ישמעאל
+Avodah_Zarah,4,ר״י
+Avodah_Zarah,4,ר"י
 Avodah_Zarah,5,ה?שוכר את הפועל
 Megillah,1,מגילה נקראת
 Megillah,2,ה?קורא למפרע
@@ -235,6 +237,8 @@ Yevamot,5,רבן גמליאל
 Yevamot,5,ר גמליאל
 Yevamot,5,ר׳ גמליאל
 Yevamot,5,ר' גמליאל
+Yevamot,5,ר״ג
+Yevamot,5,ר"ג
 Yevamot,6,ה?בא על יבמתו
 Yevamot,7,אלמנה לכהן גדול
 Yevamot,7,אלמנה לכ"ג
@@ -272,6 +276,8 @@ Shabbat,9,אמר רבי עקיבא
 Shabbat,9,אמר ר׳ עקיבא
 Shabbat,9,אמר ר עקיבא
 Shabbat,9,אמר ר' עקיבא
+Shabbat,9,אמר ר"ע
+Shabbat,9,אמר ר״ע
 Shabbat,10,ה?מצניע
 Shabbat,11,ה?זורק
 Shabbat,12,ה?בונה
@@ -289,6 +295,8 @@ Shabbat,19,רבי אלי?עזר דמילה
 Shabbat,19,ר' אלי?עזר דמילה
 Shabbat,19,ר אלי?עזר דמילה
 Shabbat,19,ר׳ אלי?עזר דמילה
+Shabbat,19,ר"א דמילה
+Shabbat,19,ר״א דמילה
 Shabbat,20,תולין
 Shabbat,20,תולים
 Shabbat,21,נו?טל אדם את בנו
@@ -429,6 +437,8 @@ Nedarim,9,רבי אלי?עזר
 Nedarim,9,ר אלי?עזר
 Nedarim,9,ר׳ אלי?עזר
 Nedarim,9,ר' אלי?עזר
+Nedarim,9,ר"א
+Nedarim,9,ר״א
 Nedarim,10,נערה המאורסה
 Nedarim,11,ו?אלו נדרים
 Menachot,1,כל ה?מנחות
