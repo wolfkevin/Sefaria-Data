@@ -51,7 +51,7 @@ self_ref_words = ur'(להלן|לעיל|לקמן)'
 daf_words = ur"(?P<daf_prepend>ב?\u05d3[\u05e3\u05e4\u05f3']\s+)?"
 daf_number = ur'(?P<daf_number>[״”״\'ֿ׳\"א-ת]+(?![א-ת]))'
 parentheses = ur'(?P<parentheses>[\(\[{]?)'
-sham = ur'(?P<sham>שם\s)'
+sham = ur'(?P<sham>שם\s)?'
 amud_words = ur'''(?P<amud>[:.]|(\s+ע(מוד\s+|[”״”"\'ֿ׳]+)|,?\s*)[אב](?![א-ת]))?'''
 perek_prepend = ur"(פ['׳]|\u05e4\u05bc?\u05b6?\u05e8\u05b6?\u05e7(?:\u05d9\u05b4?\u05dd)?|[רס][\"”“״׳\']+פ|ו?ב?(סוף|ריש)|איתא)\s*"
 not_siman_words = ur'''(?!\s*ס(י?[''׳]|ימן|[”״”"\'׳]+ס))'''
@@ -252,36 +252,31 @@ def walk_thru_action(s, tref, heTref, version):
                     text_changed = True
                     links_added += 1
                     if match.group("sham"):
-                        seg_text += s[pre_idx:match.start('sham')] + talmud_title + u' ' + s[match.end('sham'):match.end()+3]
-                        pre_idx = match.end() - 3 + 2  # subtract length of sham and space and add whats added to end
+                        if u'(' in match.group():
+                            seg_text += s[pre_idx:match.start('sham')] + talmud_title + u' ' + s[match.end('sham'):match.end()+3]
+                            pre_idx = match.end() + 3 + 3  # subtract length of sham and space and add whats added to end
                     else:
-                        for group in ["filler_inside", "daf_prepend", 'daf_number']
+                        for group in ["filler_inside", "daf_prepend", 'daf_number']:
                             if match.group(group):
                                 if re.search(ur'[\(\[\{]', match.group()):
-                                    if s[match.end()] == u']' and u'[' in match.group():
-                                        seg_text += s[pre_idx:s.index(u'[', match.start())] + u'(' + s[s.index(u'[', match.start())+1:match.start(group)] + talmud_title + u' ' + s[match.start(group):match.end()] + u')' + s[match.end()]
-                                        pre_idx = match.end() + 1
+                                    if (s[match.end()] == u']') and (u'[' in match.group()):
+                                        seg_text += s[pre_idx:s.index(u'[', start=match.start())] + u'(' + s[s.index(u'[', start=match.start())+1:match.start(group)] + talmud_title + u' ' + s[match.start(group):match.end()] + u')' + s[match.end()]
+                                        pre_idx = match.end() + 2
                                     else:
-                                        seg_text += s[pre_idx::match.start(group)] + talmud_title + u' ' + s[match.start(group):match.end()+2]
-                                        pre_idx = match.end() + 1
+                                        seg_text += s[pre_idx:match.start(group)] + talmud_title + u' ' + s[match.start(group):match.end()+2]
+                                        pre_idx = match.end() + 2
                                 else:
-                                    if group != 'daf_prepend' and not match.group('amud'):
+                                    if (group != 'daf_prepend') and (not match.group('amud')):
                                         continue
-                                    seg_text += s[pre_idx::match.start(group)] + u'(' + talmud_title + u' ' + s[match.start(group):match.end()] + u')'
-                                    pre_idx = match.end() + 1
+                                    seg_text += s[pre_idx:match.start(group)] + u'(' + talmud_title + u' ' + s[match.start(group):match.end()] + u')'
+                                    pre_idx = match.end()
+                                break
                                         
                             # if (u'(' not in s[match.start():match.end()]) and (u'[' not in s[match.start():match.end()]):
                     #      print u"{} : {} no front parentheses".format(tref, s[match.start():match.end()])
-                    
-                    # indx = match.end('parentheses')
-                    # if s[match.end()] == u')' or s[match.end()] == u']':
-                    #     # seg_text += s[pre_idx:match.start('parentheses')] + u'(' + talmud_title + u' ' + s[indx:match.end()] + u')'
-                    #     pre_idx = match.end() + 1
-                    # else:
-                    #     seg_text += s[pre_idx:indx] + talmud_title + u' ' + s[indx:match.end()+2]
-                    #     pre_idx = match.end() + 2
-                    #     pre_idx = match.end()
-                    csvfile.write(u'{}\t{}\t{}\n'.format(tref, s[match.start():match.end()+2].strip(), seg_text[match.start()+offset:].strip()))
+                    csvfile.write(u'{}\t{}\t{}\n'.format(tref, 
+                                                         s[match.start():match.end()+2].strip(), 
+                                                         seg_text[match.start()+offset:].strip()))
                     offset += len(talmud_title)+2
                 else:
                     pass
@@ -305,7 +300,7 @@ def walk_thru_action(s, tref, heTref, version):
     return 
 
 
-with codecs.open('sham_test_2' + '.tsv', 'wb+', 'utf-8') as csvfile:
+with codecs.open('all_insert_(_test' + '.tsv', 'wb+', 'utf-8') as csvfile:
         # s is the segment string
         # tref is the segment's english ref
         # heTref is the hebrew ref
