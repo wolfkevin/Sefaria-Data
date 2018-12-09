@@ -168,6 +168,9 @@ Keritot,4,ספק אכל חלב
 Keritot,5,דם שחיטה
 Keritot,6,המביא אשם
 Tamid,1,בשלשה מקומות
+Tamid,1,בג מקומות
+Tamid,1,בג׳ מקומות
+Tamid,1,בג' מקומות
 Tamid,2,ראוהו אחיו
 Tamid,3,אמר להם הממו?נה בואו
 Tamid,4,לא היו כופתין
@@ -192,6 +195,7 @@ Arakhin,8,המקדש שדהו
 Arakhin,8,המקדש
 Arakhin,9,ה?מוכר שדהו
 Niddah,1,שמאי אומר
+Niddah,1,שמאי
 Niddah,2,כל היד
 Niddah,3,ה?מפלת חתיכה
 Niddah,3,ה?מפלת
