@@ -18,10 +18,16 @@ Megillah,2,ה?קורא למפרע
 Megillah,2,ה?קורא
 Megillah,3,ה?קורא עומד
 Megillah,4,בני ה?עיר
-Shevuot,1,שבועות שתים קמא
+Shevuot,1,שבו?עות שתים קמא
+Shevuot,1,שבו?עות ב קמא
+Shevuot,1,שבו?עות ב׳ קמא
+Shevuot,1,שבו?עות ב' קמא
 Shevuot,2,ידיעות הטו?מאה
 Shevuot,3,שבו?עות שתים בתרא
 Shevuot,3,שבו?עות שתים
+Shevuot,3,שבו?עות ב
+Shevuot,3,שבו?עות ב׳
+Shevuot,3,שבו?עות ב'
 Shevuot,4,שבועת העדות
 Shevuot,4,שבועת
 Shevuot,5,שבועת הפקדון
@@ -48,7 +54,8 @@ Berakhot,6,כיצד מברכים
 Berakhot,7,שלשה שאכלו
 Berakhot,9,ה?רואה
 Bekhorot,1,ה?לוקח עובר חמורו
-Bekhorot,1,הלוקח
+Bekhorot,1,ה?לוקח עובר
+Bekhorot,1,ה?לוקח
 Bekhorot,2,ה?לוקח עובר פרתו
 Bekhorot,3,הלו?קח בהמה
 Bekhorot,4,עד כמה
@@ -112,6 +119,7 @@ Bava_Kamma,4,שור שנגח ד׳ וה׳
 Bava_Kamma,4,שור שנגח
 Bava_Kamma,5,שור שנגח את הפרה
 Bava_Kamma,6,ה?כונס
+Bava_Kamma,6,ה?כונס צאן לדיר
 Bava_Kamma,7,מרובה
 Bava_Kamma,8,ה?חובל
 Bava_Kamma,8,הַחוֹבֵל
@@ -159,6 +167,7 @@ Meilah,4,קדשי מזבח
 Meilah,5,ה?נהנה מן ההקדש
 Meilah,6,ה?שליח שעשה שליחותו
 Keritot,1,שלשים ושש
+Keritot,2,מחוסרי כפרה
 Keritot,2,ארבעה? מחוסרי כפרה
 Keritot,2,ד' מחוסרי כפרה
 Keritot,2,ד׳ מחוסרי כפרה
@@ -205,8 +214,11 @@ Niddah,6,בא סימן
 Niddah,7,דם ה?נדה
 Niddah,8,ה?רואה כתם
 Niddah,9,ה?אשה שהיא עושה
+Niddah,9,ה?אישה שהיא עושה
 Niddah,9,ה?אשה שהיא עושה צרכיה
+Niddah,9,ה?אישה שהיא עושה צרכיה
 Niddah,9,ה?אשה שהיתה עושה צרכיה
+Niddah,9,ה?אישה שהיתה עושה צרכיה
 Niddah,10,תינוקת
 Gittin,1,ה?מביא קמא
 Gittin,2,ה?מביא בתרא
@@ -250,12 +262,15 @@ Yevamot,7,אלמנה לכ״ג
 Yevamot,8,ה?ערל
 Yevamot,9,יש מותרות
 Yevamot,10,ה?אישה רבה
+Yevamot,10,ה?אשה רבה
 Yevamot,11,נושאין על האנוסה
 Yevamot,11,נושאים על האנוסה
 Yevamot,12,מצות חליצה
 Yevamot,14,חרש שנשא
 Yevamot,15,ה?אשה שלום
+Yevamot,15,ה?אישה שלום
 Yevamot,16,ה?אשה בתרא
+Yevamot,16,ה?אישה בתרא
 Moed_Katan,1,משקין בית השלחין
 Moed_Katan,1,משקים בית השלחים
 Moed_Katan,2,מי שהפך
@@ -274,6 +289,7 @@ Shabbat,4,במה טו?מנין
 Shabbat,4,במה טו?מנים
 Shabbat,5,במה בהמה
 Shabbat,6,במה אשה
+Shabbat,6,במה אישה
 Shabbat,7,כלל גדול
 Shabbat,8,ה?מוציא יין
 Shabbat,9,אמר רבי עקיבא
@@ -304,6 +320,8 @@ Shabbat,19,ר״א דמילה
 Shabbat,20,תולין
 Shabbat,20,תולים
 Shabbat,21,נו?טל אדם את בנו
+Shabbat,21,נו?טל אדם
+Shabbat,21,נו?טל
 Shabbat,22,חבית
 Shabbat,23,שואל
 Shabbat,24,מי שהחשיך
@@ -333,7 +351,7 @@ Bava_Metzia,1,ב׳ אוחזים
 Bava_Metzia,2,אלו מציאות
 Bava_Metzia,3,ה?מפקיד
 Bava_Metzia,4,ה?זהב
-Bava_Metzia,5,איזהו נשך
+Bava_Metzia,5,אי?זהו נשך
 Bava_Metzia,6,ה?שוכר את האומנין
 Bava_Metzia,6,ה?שוכר את האומנים
 Bava_Metzia,7,ה?שוכר את הפועלים
@@ -364,6 +382,7 @@ Zevachim,12,טבול יום
 Zevachim,13,ה?שוחט והמעלה
 Zevachim,14,פרת חטאת
 Kiddushin,1,ה?אשה נקנית
+Kiddushin,1,ה?אישה נקנית
 Kiddushin,2,ה?איש מקדש
 Kiddushin,3,ה?אומר לחברו
 Kiddushin,3,קדושין פ' האומר
@@ -411,6 +430,8 @@ Beitzah,2,יו"ט
 Beitzah,2,יו״ט
 Beitzah,3,אין צדין
 Beitzah,3,אין צדים
+Beitzah,3,א״צ
+Beitzah,3,א"צ
 Beitzah,4,המביא כדי יין
 Beitzah,5,משי?לין
 Beitzah,5,משי?לים
@@ -483,23 +504,27 @@ Pesachim,7,כיצד צולין
 Pesachim,7,כיצד צולים
 Pesachim,7,צולין
 Pesachim,7,צולים
-Pesachim,8,האשה
 Pesachim,9,מי שהיה טמא
 Pesachim,10,ערבי פסחים
 Ketubot,1,בתולה נשאת
+Ketubot,2,ה?אישה שנתארמלה
 Ketubot,2,ה?אשה שנתארמלה
 Ketubot,3,אלו נערות
 Ketubot,4,נערה שנתפתתה
 Ketubot,5,אף על פי
 Ketubot,5,א״עפ
-Ketubot,6,מציאת האשה
+Ketubot,5,א"עפ
+Ketubot,6,מציאת ה?אשה
+Ketubot,6,מציאת ה?אישה
 Ketubot,7,ה?מדיר
 Ketubot,8,ה?אשה שנפלו
+Ketubot,8,ה?אישה שנפלו
 Ketubot,9,ה?כותב לאשתו
 Ketubot,9,ה?כותב
 Ketubot,10,מי שהיה נשוי
 Ketubot,11,אלמנה ני?זונת
 Ketubot,12,ה?נושא את האשה
+Ketubot,12,ה?נושא את האישה
 Ketubot,12,ה?נושא
 Ketubot,13,שני דייני גזירות
 Sukkah,2,ה?ישן
