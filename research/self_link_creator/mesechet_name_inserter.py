@@ -52,10 +52,10 @@ daf_words = ur"(?P<daf_prepend>ב?\u05d3[\u05e3\u05e4\u05f3']\s+)?"
 daf_number = ur'(?P<daf_number>[״”״\'ֿ׳\"א-ת]+(?![א-ת]))'
 parentheses = ur'(?P<parentheses>[\(\[{]?)'
 sham = ur'(?P<sham>שם\s)?'
-amud_words = ur'''(?P<amud>[:.]|(\s+ע(מוד\s+|[”״”"\'ֿ׳]+)|,?\s*)[אב](?![א-ת]))?'''
-perek_prepend = ur"ב?(פ['׳]|\u05e4\u05bc?\u05b6?\u05e8\u05b6?\u05e7(?:\u05d9\u05b4?\u05dd)?|[רס][\"”“״׳\']+פ|ו?ב?(סוף|ריש)|איתא)\s*"
+amud_words = ur'''(?P<amud>[:.]|(\s+ע(מוד\s+|[”״”"\'׳]+)|,?\s*)[אב][\'׳]?(?![א-ת]))?'''
+perek_prepend = ur"ב?(פר?['׳]|\u05e4\u05bc?\u05b6?\u05e8\u05b6?\u05e7(?:\u05d9\u05b4?\u05dd)?|[רס][\"”“״׳\']+פ|ו?ב?(סוף|ריש)|שי?להי|אית['׳א])\s*"
 not_siman_words = ur'''(?!\s*ס(י?[''׳]|ימן|[”״”"\'׳]+ס))'''
-filler_chars = ur'\s*[\(\[{\)\]\}\s.,:;]*'
+filler_chars = ur'\s*[\(\[{\)\]\}\s.,:;]+'
 
 files_dict = {}
 perakim_names = ur'(?P<perek_name>'
@@ -69,20 +69,33 @@ with codecs.open('perakim.txt', 'r', encoding='utf-8') as fr:
         ref = Ref(values[0].strip())
         perek_title = values[2].strip()
         chapter = values[1].strip()
+        hebrew_title = ref.he_book()
+        all_he_titles = ref.index.all_titles('he')
         if u'?' in perek_title:
             idx = perek_title.index(u'?')
             if perek_title[:idx]+perek_title[idx+1:] in perek_to_mesechet_dict:
                 print perek_title[:idx]+perek_title[idx+1:]
-            perek_to_mesechet_dict[perek_title[:idx]+perek_title[idx+1:]] = (ref.he_book(), chapter)
+            perek_to_mesechet_dict[perek_title[:idx]+perek_title[idx+1:]] = (hebrew_title, chapter)
+            # for hebrew_title in all_he_titles:
+            #     perek_to_mesechet_dict[hebrew_title + u' ב' + perek_title[:idx]+perek_title[idx+1:]] = (hebrew_title, chapter)
+            #     perek_to_mesechet_dict[hebrew_title + u' ' + perek_title[:idx]+perek_title[idx+1:]] = (hebrew_title, chapter)
             if perek_title[:idx-1]+perek_title[idx+1:] in perek_to_mesechet_dict:
                 print perek_title[:idx-1]+perek_title[idx+1:]
-            perek_to_mesechet_dict[perek_title[:idx-1]+perek_title[idx+1:]] = (ref.he_book(), chapter)
+            perek_to_mesechet_dict[perek_title[:idx-1]+perek_title[idx+1:]] = (hebrew_title, chapter)
+            # for hebrew_title in all_he_titles:
+            #     perek_to_mesechet_dict[hebrew_title + u' ' + perek_title[:idx-1]+perek_title[idx+1:]] = (hebrew_title, chapter)
+            #     perek_to_mesechet_dict[hebrew_title + u' ב' + perek_title[:idx-1]+perek_title[idx+1:]] = (hebrew_title, chapter)
         else:
             if perek_title in perek_to_mesechet_dict:
                 print perek_title
-            perek_to_mesechet_dict[perek_title] = (ref.he_book(), chapter)
+            perek_to_mesechet_dict[perek_title] = (hebrew_title, chapter)
+            # for hebrew_title in all_he_titles:
+            #     perek_to_mesechet_dict[hebrew_title + u' ' + perek_title] = (hebrew_title, chapter)
+            #     perek_to_mesechet_dict[hebrew_title + u' ב' + perek_title] = (hebrew_title, chapter)
         # mesechet_to_alt_titles[ref.he_book()] = ref.index.all_titles('he')
         perakim_names_list.append(perek_title)
+        # for hebrew_title in all_he_titles:
+        #     perakim_names_list.append(hebrew_title + ur' ב?' + perek_title)
     perakim_names_list.sort(key=len, reverse=True)
     perakim_names += ur'|'.join(perakim_names_list) + ur')'
     print(perakim_names)
@@ -147,6 +160,12 @@ def walk_thru_action(s, tref, heTref, version):
                             ref = talmud_title + u' ' + daf + amud if amud else talmud_title + u' ' + daf
                             if not Ref(ref).overlaps(get_chapter_range_ref(talmud_title, chapter)):
                                 continue
+                        elif u'נערה' == match.group('perek_name'):
+                            talmud_title = u'נדרים'
+                            chapter = 10
+                            ref = talmud_title + u' ' + daf + amud if amud else talmud_title + u' ' + daf
+                            if not Ref(ref).overlaps(get_chapter_range_ref(talmud_title, chapter)):
+                                continue 
                         elif u'שבועות שתים' in match.group('perek_name'):
                             chapter = 1
                             ref = talmud_title + u' ' + daf + amud if amud else talmud_title + u' ' + daf
@@ -155,6 +174,12 @@ def walk_thru_action(s, tref, heTref, version):
                         elif u'זורק' in match.group('perek_name'):
                             talmud_title = u'גיטין'
                             chapter = 8
+                            ref = talmud_title + u' ' + daf + amud if amud else talmud_title + u' ' + daf
+                            if not Ref(ref).overlaps(get_chapter_range_ref(talmud_title, chapter)):
+                                continue
+                        elif u'ה?שוחט' in match.group('perek_name'):
+                            talmud_title = u'זבחים'
+                            chapter = 13
                             ref = talmud_title + u' ' + daf + amud if amud else talmud_title + u' ' + daf
                             if not Ref(ref).overlaps(get_chapter_range_ref(talmud_title, chapter)):
                                 continue
@@ -264,7 +289,7 @@ def walk_thru_action(s, tref, heTref, version):
                         if u'(' in match.group():
                             seg_text += s[pre_idx:match.start('sham')] + talmud_title + u' ' + s[match.end('sham'):match.end()+3]
                             pre_idx = match.end() + 3 + 3  # subtract length of sham and space and add whats added to end
-                            text_changed_perek = True
+                            text_changed_perek = False
                     else:
                         for group in ["filler_inside", "daf_prepend", 'daf_number']:
                             if match.group(group):
@@ -273,21 +298,22 @@ def walk_thru_action(s, tref, heTref, version):
                                         seg_text += s[pre_idx:s.index(u'[', match.start())] + u'(' + s[s.index(u'[', match.start())+1:match.start(group)] + talmud_title + u' ' + s[match.start(group):match.end()] + u')'
                                         pre_idx = match.end() + 1
                                         text_changed_perek = True
-                                    elif group == 'daf_prepend' or match.group('amud'):
-                                        text_changed_perek = True
-                                        if re.search(ur'[(\[{]', match.group()) < (match.start(group) - match.start()):
+                                    elif match.group('daf_prepend') or match.group('amud'):
+                                        text_changed_perek = False
+                                        front_p_idx = re.search(ur'[(\[{]', match.group()) 
+                                        if front_p_idx and (front_p_idx.end() < (match.start(group) - match.start())):
                                             seg_text += s[pre_idx:match.start(group)] + u'(' + talmud_title + u' ' + s[match.start(group):match.end()] + u')'
-                                            print seg_text[pre_idx:]
+                                            print u"paren before:" + seg_text[pre_idx:]
                                             pre_idx = match.end()
                                         else:
                                             seg_text += s[pre_idx:match.start(group)] + talmud_title + u' ' + s[match.start(group):match.end()]
                                             pre_idx = match.end()
                                         
                                 else:
-                                    if group == 'daf_prepend' or match.group('amud'):
+                                    if match.group('daf_prepend') or match.group('amud'):
                                         seg_text += s[pre_idx:match.start(group)] + u'(' + talmud_title + u' ' + s[match.start(group):match.end()] + u')'
                                         pre_idx = match.end()
-                                        text_changed_perek = True
+                                        text_changed_perek = False
                                 break
                                         
                             # if (u'(' not in s[match.start():match.end()]) and (u'[' not in s[match.start():match.end()]):
@@ -323,19 +349,25 @@ def walk_thru_action(s, tref, heTref, version):
     return 
 
 
-with codecs.open('conservative_results3' + '.tsv', 'wb+', 'utf-8') as csvfile:
+with codecs.open('weird_replace' + '.tsv', 'wb+', 'utf-8') as csvfile:
         # s is the segment string
         # tref is the segment's english ref
         # heTref is the hebrew ref
         # version is the segment's version object. use it to get the version title and language```
     
-    # vs = VersionSet({"title": "Rosh on Ketubot"})
+    # vs = VersionSet({"title": "Siftei Kohen on Shulchan Arukh, Choshen Mishpat"})
     vs = VersionSet({"language": "he"})
+    start_posting = True
     for v in vs:
             try:
                 i = v.get_index()
                 if (u'Chesed LeAvraham' not in i.get_title()) and (u'Rav Pealim' not in i.get_title()):
-                    v.walk_thru_contents(walk_thru_action, heTref=i.get_title('he'), schema=i.schema)
+                    # if u'Tosafot Yom Tov on Mishnah Oholot' in i.get_title():
+                    #     start_posting = True
+                    if start_posting:
+                        v.walk_thru_contents(walk_thru_action, heTref=i.get_title('he'), schema=i.schema)
+                        # if (u"B'Mareh HaBazak Volume VII" in i.get_title()):
+                        #     start_posting = False
             except BookNameError:
                 print u"Skipping {}, {}".format(v.title, v.versionTitle)
                 continue
@@ -366,6 +398,12 @@ look for not in perek for כל המנחות
    והא דאמ"ר יוסף (שם [סנהדרין] פ"ק ט ע"ב)
    במנחות רפ"ט (פ"ג:)
    לעיל בפרקין הנטמא ביום מלאת אינו סותר אלא שלשים יום
+   ובמסכת זבחים פרק שני (כה, ב)
+    בהמפלת (כ"ב א')
+    בשבת פ"א (שבת י"א א')
+    ובנדה פ' האשה (ס"ג ג') וביבמות פ' כיצד (כ"ג א')
+חולין סוף (דף קמ"א)
+
 '''
 
 """
@@ -375,5 +413,9 @@ MISHNAH:
 
 RESEARCH:
 (בסו״פ כל הכלים) דתנור וכירים מחוברים לקרקע עיי״ש
+ובפסחים (פרק אלו דברים) תניא הרי הוא אומר עבודת מתנה
+
+skip Kinaat_Sofrim_on_Sefer_HaMitzvot%2C_Shorashim.9.5
+בסוטה בשילהי פרק שני
 
 """
