@@ -14,6 +14,8 @@ Avodah_Zarah,4,ר״י
 Avodah_Zarah,4,ר"י
 Avodah_Zarah,5,ה?שוכר את הפועל
 Megillah,1,מגילה נקראת
+Megillah,1,מגילה נקרא'
+Megillah,1,מגילה נקרא׳
 Megillah,2,ה?קורא למפרע
 Megillah,2,ה?קורא
 Megillah,3,ה?קורא עומד
@@ -23,18 +25,40 @@ Shevuot,1,שבו?עות ב קמא
 Shevuot,1,שבו?עות ב׳ קמא
 Shevuot,1,שבו?עות ב' קמא
 Shevuot,2,ידיעות הטו?מאה
+Shevuot,2,ידיעות הטומא'
+Shevuot,2,ידיעות הטומא׳
 Shevuot,3,שבו?עות שתים בתרא
+Shevuot,3,שבו?עות שתים בתר'
+Shevuot,3,שבו?עות שתים בתר׳
 Shevuot,3,שבו?עות שתים
 Shevuot,3,שבו?עות ב
 Shevuot,3,שבו?עות ב׳
 Shevuot,3,שבו?עות ב'
+Shevuot,3,שבו?עות ב בתרא
+Shevuot,3,שבו?עות ב׳ בתרא
+Shevuot,3,שבו?עות ב' בתרא
+Shevuot,3,שבו?עות ב׳ בתר׳
+Shevuot,3,שבו?עות ב' בתר'
 Shevuot,4,שבועת העדות
+Shevuot,4,שבועת העדו'
+Shevuot,4,שבועת העדו׳
+Shevuot,4,שבועות העדות
+Shevuot,4,שבועות העדו'
+Shevuot,4,שבועות העדו׳
 Shevuot,4,שבועת
-Shevuot,5,שבועת הפקדון
-Shevuot,6,שבועת הדייני?ן
-Shevuot,6,שבועת הדייני?ם
-Shevuot,7,כל הנשבעי?ן
-Shevuot,7,כל הנשבעי?ם
+Shevuot,4,שבוע'
+Shevuot,4,שבוע׳
+Shevuot,5,שבועת ה?פקדון
+Shevuot,5,שבועות ה?פקדון
+Shevuot,5,ה?פקדון
+Shevuot,6,שבועת ה?דיינין
+Shevuot,6,שבועת ה?דיינים
+Shevuot,6,שבועות ה?דיינין
+Shevuot,6,שבועות ה?דיינים
+Shevuot,6,ה?דיינין
+Shevuot,6,ה?דיינים
+Shevuot,7,כל ה?נשבעין
+Shevuot,7,כל ה?נשבעים
 Shevuot,8,ארבעה שו?מרין
 Shevuot,8,ארבעה שו?מרים
 Shevuot,8,ד שו?מרין
@@ -68,18 +92,42 @@ Bekhorot,7,מו?מים אלו
 Bekhorot,8,יש בכור
 Bekhorot,9,מעשר בהמה
 Sanhedrin,1,דיני ממונות
+Sanhedrin,1,דיני ממונו'
+Sanhedrin,1,דיני ממונו׳
 Sanhedrin,2,כהן גדול
 Sanhedrin,2,כהן הגדול
 Sanhedrin,2,כה״ג
+Sanhedrin,2,כה"ג
+Sanhedrin,2,כ״ג
+Sanhedrin,2,כ"ג
 Sanhedrin,3,זה בורר
 Sanhedrin,4,אחד דיני ממונות
+Sanhedrin,4,א דיני ממונות
+Sanhedrin,4,א דיני ממונו'
+Sanhedrin,4,א דיני ממונו׳
+Sanhedrin,4,א' דיני ממונות
+Sanhedrin,4,א' דיני ממונו'
+Sanhedrin,4,א' דיני ממונו׳
+Sanhedrin,4,א׳ דיני ממונות
+Sanhedrin,4,א׳ דיני ממונו'
+Sanhedrin,4,א׳ דיני ממונו׳
+Sanhedrin,4,אחד דיני ממונו'
+Sanhedrin,4,אחד דיני ממונו׳
 Sanhedrin,5,היו בודקין
 Sanhedrin,5,היו בודקים
 Sanhedrin,6,נגמר הדין
 Sanhedrin,7,ארבע מיתות
+Sanhedrin,7,ארבע מיתו'
+Sanhedrin,7,ארבע מיתו׳
 Sanhedrin,7,ד' מיתות
+Sanhedrin,7,ד' מיתו'
+Sanhedrin,7,ד' מיתו׳
 Sanhedrin,7,ד מיתות
+Sanhedrin,7,ד מיתו'
+Sanhedrin,7,ד מיתו׳
 Sanhedrin,7,ד׳ מיתות
+Sanhedrin,7,ד׳ מיתו'
+Sanhedrin,7,ד׳ מיתו׳
 Sanhedrin,8,בן סורר ומורה
 Sanhedrin,8,בן סורר
 Sanhedrin,9,ה?נשרפין
@@ -91,9 +139,13 @@ Sanhedrin,10,ה?נחנקים
 Sanhedrin,11,ה?חלק
 Sanhedrin,11,חֵלֶק
 Nazir,1,כל כנויי נזירות
+Nazir,1,כל כנויי נזירו'
+Nazir,1,כל כנויי נזירו׳
 Nazir,2,הריני נזיר
 Nazir,3,מי שאמר קמא
 Nazir,4,מי שאמר בתרא
+Nazir,4,מי שאמר בתר'
+Nazir,4,מי שאמר בתר׳
 Nazir,4,מי שאמר
 Nazir,6,שלשה מינין
 Nazir,6,ג מינין
@@ -108,10 +160,20 @@ Nazir,8,ב נזירים
 Nazir,8,ב' נזירים
 Nazir,8,ב׳ נזירים
 Nazir,9,ה?כותים אין להם נזירות
+Nazir,9,ה?כותים אין להם נזירו'
+Nazir,9,ה?כותים אין להם נזירו׳
 Bava_Kamma,1,ארבעה? אבות
+Bava_Kamma,1,ארבעה? אבו'
+Bava_Kamma,1,ארבעה? אבו׳
 Bava_Kamma,1,ד אבות
+Bava_Kamma,1,ד אבו'
+Bava_Kamma,1,ד אבו׳
 Bava_Kamma,1,ד' אבות
+Bava_Kamma,1,ד' אבו'
+Bava_Kamma,1,ד' אבו׳
 Bava_Kamma,1,ד׳ אבות
+Bava_Kamma,1,ד׳ אבו'
+Bava_Kamma,1,ד׳ אבו׳
 Bava_Kamma,2,כיצד רגל
 Bava_Kamma,3,המניח
 Bava_Kamma,4,שור שנגח ד' וה'
@@ -124,8 +186,12 @@ Bava_Kamma,7,מרובה
 Bava_Kamma,8,ה?חובל
 Bava_Kamma,8,הַחוֹבֵל
 Bava_Kamma,9,ה?גוזל עצים
+Bava_Kamma,9,ה?גוזל קמא
 Bava_Kamma,9,ה?גוזל
 Bava_Kamma,10,ה?גוזל בתרא
+Bava_Kamma,10,הגוזל בתר'
+Bava_Kamma,10,הגוזל בתר׳
+Bava_Kamma,10,ה?גוזל ומאכיל
 Sotah,1,ה?מקנא
 Sotah,2,היה מביא
 Sotah,3,היה נוטל
@@ -142,14 +208,25 @@ Bava_Batra,1,ה?שותפין
 Bava_Batra,1,ה?שותפים
 Bava_Batra,2,לא יחפור
 Bava_Batra,3,חזקת הבתים
+Bava_Batra,3,חזקת הבתי'
+Bava_Batra,3,חזקת הבתי׳
 Bava_Batra,3,חזקת
+Bava_Batra,3,חזק'
+Bava_Batra,3,חזק׳
 Bava_Batra,4,ה?מוכר את הבית
+Bava_Batra,4,ה?מוכר את הבי'
+Bava_Batra,4,ה?מוכר את הבי׳
 Bava_Batra,5,ה?מוכר את הספינה
+Bava_Batra,5,ה?ספינה
 Bava_Batra,6,ה?מוכר פירות
+Bava_Batra,6,ה?מוכר פירו'
+Bava_Batra,6,ה?מוכר פירו׳
 Bava_Batra,7,בית כור
 Bava_Batra,8,יש נוחלין
 Bava_Batra,8,יש נוחלים
 Bava_Batra,9,מי שמת
+Bava_Batra,9,מי שמ'
+Bava_Batra,9,מי שמ׳
 Bava_Batra,10,גט פשוט
 Yoma,1,שבעת ימים
 Yoma,2,בראשונה
@@ -161,8 +238,16 @@ Yoma,6,ב שעירי
 Yoma,6,ב׳ שעירי
 Yoma,6,ב' שעירי
 Yoma,7,בא לו
+Yoma,7,בא לו כהן
+Yoma,7,בא לו כ"ג
+Yoma,7,בא לו כ״ג
+Yoma,7,בא לו כהן גדול
 Yoma,8,יום ה?כפורים
+Yoma,8,ין?ה״כ
+Yoma,8,יו?ה"כ
 Meilah,3,ולד חטאת
+Meilah,3,ולד חטא'
+Meilah,3,ולד חטא׳
 Meilah,4,קדשי מזבח
 Meilah,5,ה?נהנה מן ההקדש
 Meilah,6,ה?שליח שעשה שליחותו
@@ -177,9 +262,17 @@ Keritot,4,ספק אכל חלב
 Keritot,5,דם שחיטה
 Keritot,6,המביא אשם
 Tamid,1,בשלשה מקומות
+Tamid,1,בשלשה מקומו'
+Tamid,1,בשלשה מקומו׳
 Tamid,1,בג מקומות
+Tamid,1,בג מקומו'
+Tamid,1,בג מקומו׳
 Tamid,1,בג׳ מקומות
+Tamid,1,בג׳ מקומו'
+Tamid,1,בג׳ מקומו׳
 Tamid,1,בג' מקומות
+Tamid,1,בג' מקומו'
+Tamid,1,בג' מקומו׳
 Tamid,2,ראוהו אחיו
 Tamid,3,אמר להם הממו?נה בואו
 Tamid,4,לא היו כופתין
@@ -208,6 +301,8 @@ Niddah,1,שמאי
 Niddah,2,כל היד
 Niddah,3,ה?מפלת חתיכה
 Niddah,3,ה?מפלת
+Niddah,3,ה?מפל'
+Niddah,3,ה?מפל׳
 Niddah,4,בנות כותים
 Niddah,5,יוצא דופן
 Niddah,6,בא סימן
@@ -219,16 +314,31 @@ Niddah,9,ה?אשה שהיא עושה צרכיה
 Niddah,9,ה?אישה שהיא עושה צרכיה
 Niddah,9,ה?אשה שהיתה עושה צרכיה
 Niddah,9,ה?אישה שהיתה עושה צרכיה
-Niddah,10,תינוקת
+Niddah,10,תי?נוקת
+Niddah,10,תי?נוק'
+Niddah,10,תי?נוק׳
+Niddah,10,תי?נוקות
+Niddah,10,תי?נוקו'
+Niddah,10,תי?נוקו׳
 Gittin,1,ה?מביא קמא
+Gittin,1,ה?מביא ראשון
+Gittin,1,ה?מביא א
+Gittin,1,ה?מביא א׳
+Gittin,1,ה?מביא א'
 Gittin,2,ה?מביא בתרא
+Gittin,2,ה?מביא בתר׳
+Gittin,2,ה?מביא בתר'
+Gittin,2,ה?מביא שני
+Gittin,2,ה?מביא ב
+Gittin,2,ה?מביא ב'
+Gittin,2,ה?מביא ב׳
 Gittin,2,ה?מביא תניין
 Gittin,2,ה?מביא תניים
 Gittin,3,כל הגט
 Gittin,4,ה?שולח
-Gittin,5,הניזקין
-Gittin,5,הניזקים
-Gittin,5,הניזקּין
+Gittin,5,הני?זקין
+Gittin,5,הני?זקים
+Gittin,5,הני?זקּין
 Gittin,5,הניזקּים
 Gittin,6,ה?אומר התקבל
 Gittin,6,ה?תקבל
@@ -256,21 +366,34 @@ Yevamot,5,ר' גמליאל
 Yevamot,5,ר״ג
 Yevamot,5,ר"ג
 Yevamot,6,ה?בא על יבמתו
+Yevamot,6,ה?בע"י
+Yevamot,6,ה?בע״י
 Yevamot,7,אלמנה לכהן גדול
 Yevamot,7,אלמנה לכ"ג
 Yevamot,7,אלמנה לכ״ג
 Yevamot,8,ה?ערל
 Yevamot,9,יש מותרות
+Yevamot,9,יש מותרו'
+Yevamot,9,יש מותרו׳
 Yevamot,10,ה?אישה רבה
 Yevamot,10,ה?אשה רבה
 Yevamot,11,נושאין על האנוסה
 Yevamot,11,נושאים על האנוסה
 Yevamot,12,מצות חליצה
+Yevamot,12,מצות
+Yevamot,12,מצו'
+Yevamot,12,מצו׳
 Yevamot,14,חרש שנשא
 Yevamot,15,ה?אשה שלום
 Yevamot,15,ה?אישה שלום
+Yevamot,15,ה?אישה שהלכה
+Yevamot,15,ה?אשה שהלכה
 Yevamot,16,ה?אשה בתרא
 Yevamot,16,ה?אישה בתרא
+Yevamot,16,ה?אשה בתר'
+Yevamot,16,ה?אישה בתר'
+Yevamot,16,ה?אשה בתר׳
+Yevamot,16,ה?אישה בתר׳
 Moed_Katan,1,משקין בית השלחין
 Moed_Katan,1,משקים בית השלחים
 Moed_Katan,2,מי שהפך
@@ -281,23 +404,33 @@ Chagigah,1,ה?כל חייבים
 Chagigah,2,אין דו?רשין
 Chagigah,2,אין דו?רשים
 Chagigah,3,חו?מר בקודש
-Shabbat,1,יציאות השבת
+Shabbat,1,יצי?אות השבת
+Shabbat,1,יצי?אות השב'
+Shabbat,1,יצי?אות השב׳
+Shabbat,1,יצי?אותֿ
 Shabbat,2,במה מדליקין
 Shabbat,2,במה מדליקים
 Shabbat,3,כירה
 Shabbat,4,במה טו?מנין
 Shabbat,4,במה טו?מנים
+Shabbat,5,במה בהמה יוצאה
 Shabbat,5,במה בהמה
-Shabbat,6,במה אשה
-Shabbat,6,במה אישה
+Shabbat,6,במה אי?שה
+Shabbat,6,במה אי?שה יוצאה
 Shabbat,7,כלל גדול
 Shabbat,8,ה?מוציא יין
 Shabbat,9,אמר רבי עקיבא
 Shabbat,9,אמר ר׳ עקיבא
 Shabbat,9,אמר ר עקיבא
 Shabbat,9,אמר ר' עקיבא
+Shabbat,9,רבי עקיבא
+Shabbat,9,ר׳ עקיבא
+Shabbat,9,ר עקיבא
+Shabbat,9,ר' עקיבא
 Shabbat,9,אמר ר"ע
 Shabbat,9,אמר ר״ע
+Shabbat,9,ר"ע
+Shabbat,9,ר״ע
 Shabbat,10,ה?מצניע
 Shabbat,11,ה?זורק
 Shabbat,12,ה?בונה
@@ -323,6 +456,8 @@ Shabbat,21,נו?טל אדם את בנו
 Shabbat,21,נו?טל אדם
 Shabbat,21,נו?טל
 Shabbat,22,חבית
+Shabbat,22,חבי'
+Shabbat,22,חבי׳
 Shabbat,23,שואל
 Shabbat,24,מי שהחשיך
 Eruvin,1,מבוי
@@ -338,6 +473,8 @@ Eruvin,7,חלון
 Eruvin,8,כיצד משתתפין
 Eruvin,8,כיצד משתתפים
 Eruvin,9,כל גגות
+Eruvin,9,כל גגו'
+Eruvin,9,כל גגו׳
 Eruvin,10,ה?מוצא תפילין
 Eruvin,10,ה?מוצא
 Bava_Metzia,1,שנים אוחזין
@@ -348,18 +485,26 @@ Bava_Metzia,1,ב' אוחזין
 Bava_Metzia,1,ב' אוחזים
 Bava_Metzia,1,ב׳ אוחזין
 Bava_Metzia,1,ב׳ אוחזים
-Bava_Metzia,2,אלו מציאות
+Bava_Metzia,2,ו?אלו מציאות
+Bava_Metzia,2,ו?אלו מציאו'
+Bava_Metzia,2,ו?אלו מציאו׳
 Bava_Metzia,3,ה?מפקיד
 Bava_Metzia,4,ה?זהב
 Bava_Metzia,5,אי?זהו נשך
 Bava_Metzia,6,ה?שוכר את האומנין
 Bava_Metzia,6,ה?שוכר את האומנים
+Bava_Metzia,6,ה?אומנין
+Bava_Metzia,6,ה?אומנים
 Bava_Metzia,7,ה?שוכר את הפועלים
 Bava_Metzia,7,ה?שוכר את הפועלין
+Bava_Metzia,7,ה?פועלים
+Bava_Metzia,7,ה?פועלין
 Bava_Metzia,8,ה?שואל את הפרה
 Bava_Metzia,9,ה?מקבל שדה מחבירו
+Bava_Metzia,9,ה?מקבל שדה
 Bava_Metzia,9,ה?מקבל
 Bava_Metzia,10,ה?בית והעלייה
+Bava_Metzia,10,ה?בית והעליה
 Zevachim,1,כל ה?זבחים
 Zevachim,2,כל הזבחים שקבלו דמן
 Zevachim,2,כל הזבחים שקבלו דמם
@@ -374,15 +519,29 @@ Zevachim,5,איזהו מקומם
 Zevachim,6,קדשי קדשים
 Zevachim,7,חטאת העוף
 Zevachim,8,כל הזבחים שנתערבו
+Zevachim,8,ה?תערבות
+Zevachim,8,ה?תערבו'
+Zevachim,8,ה?תערבו׳
+Zevachim,8,ה?תערובת
+Zevachim,8,ה?תערוב'
+Zevachim,8,ה?תערוב׳
 Zevachim,9,ה?מזבח מקדש
 Zevachim,10,כל התדיר
 Zevachim,10,כָּל הַתָּדִיר
 Zevachim,11,דם חטאת
+Zevachim,11,דם חטא'
+Zevachim,11,דם חטא׳
 Zevachim,12,טבול יום
 Zevachim,13,ה?שוחט והמעלה
 Zevachim,14,פרת חטאת
+Zevachim,14,פרת חטא'
+Zevachim,14,פרת חטא׳
 Kiddushin,1,ה?אשה נקנית
+Kiddushin,1,ה?אשה נקני'
+Kiddushin,1,ה?אשה נקני׳
 Kiddushin,1,ה?אישה נקנית
+Kiddushin,1,ה?אישה נקני'
+Kiddushin,1,ה?אישה נקני׳
 Kiddushin,2,ה?איש מקדש
 Kiddushin,3,ה?אומר לחברו
 Kiddushin,3,קדושין פ' האומר
@@ -398,6 +557,8 @@ Chullin,1,ה?כל שוחטין
 Chullin,1,ה?כל שוחטים
 Chullin,2,ה?שוחט
 Chullin,3,אלו טרי?פות
+Chullin,3,אלו טרי?פו'
+Chullin,3,אלו טרי?פו׳
 Chullin,4,בהמה המקשה
 Chullin,5,או?תו ואת בנו
 Chullin,6,כסוי ה?דם
@@ -412,6 +573,8 @@ Chullin,12,שילוח הקן
 Temurah,1,הכל ממי?רין
 Temurah,1,הכל ממי?רים
 Temurah,2,יש בקרבנות
+Temurah,2,יש בקרבנו'
+Temurah,2,יש בקרבנו׳
 Temurah,3,אלו קדשים
 Temurah,5,כיצד מערי?מין
 Temurah,5,כיצד מערי?מים
@@ -421,8 +584,14 @@ Temurah,7,יש בקדשי מזבח
 Taanit,1,מאימתי מזכירין
 Taanit,1,מאימתי מזכירים
 Taanit,2,סדר תעניות
+Taanit,2,סדר תעניו'
+Taanit,2,סדר תעניו׳
+Taanit,2,סדר תעניות קמא
 Taanit,2,סדר תעניות כיצד
 Taanit,3,סדר תעניות אלו
+Taanit,2,סדר תעניות בתרא
+Taanit,2,סדר תעניות בתר'
+Taanit,2,סדר תעניות בתר׳
 Taanit,4,ב?שלשה פרקים
 Taanit,4,ב?שלשה פרקים בשנה
 Beitzah,2,יום טוב
@@ -467,20 +636,37 @@ Nedarim,9,ר״א
 Nedarim,10,נערה המאורסה
 Nedarim,11,ו?אלו נדרים
 Menachot,1,כל ה?מנחות
+Menachot,1,כל ה?מנחו'
+Menachot,1,כל ה?מנחו׳
 Menachot,2,ה?קומץ את המנחה
 Menachot,3,ה?קומץ רבה
 Menachot,3,ה?קומץ
 Menachot,4,ה?תכלת
+Menachot,4,ה?תכל'
+Menachot,4,ה?תכל׳
 Menachot,5,כל ה?מנחות באות מצה
 Menachot,7,אלו מנחות נקמצות
 Menachot,7,אלו מנחות
+Menachot,7,אלו מנחו'
+Menachot,7,אלו מנחו׳
 Menachot,8,ה?תודה היתה באה
+Menachot,8,ה?תודה
 Menachot,9,כל קרבנות ציבור
 Menachot,9,כל קרבנות
+Menachot,9,כל קרבנו'
+Menachot,9,כל קרבנו׳
 Menachot,10,שתי מדות
+Menachot,10,שתי מדו'
+Menachot,10,שתי מדו׳
 Menachot,10,ב מדות
+Menachot,10,ב מדו'
+Menachot,10,ב מדו׳
 Menachot,10,ב' מדות
+Menachot,10,ב' מדו'
+Menachot,10,ב' מדו׳
 Menachot,10,ב׳ מדות
+Menachot,10,ב׳ מדו'
+Menachot,10,ב׳ מדו׳
 Menachot,11,שתי הלחם
 Menachot,11,ב הלחם
 Menachot,11,ב' הלחם
@@ -502,18 +688,31 @@ Pesachim,5,תמיד נשחט
 Pesachim,6,אלו דברים
 Pesachim,7,כיצד צולין
 Pesachim,7,כיצד צולים
+Pesachim,7,אין צולין
+Pesachim,7,אין צולים
 Pesachim,7,צולין
 Pesachim,7,צולים
 Pesachim,9,מי שהיה טמא
 Pesachim,10,ערבי פסחים
 Ketubot,1,בתולה נשאת
+Ketubot,1,בתולה נשא'
+Ketubot,1,בתולה נשא׳
 Ketubot,2,ה?אישה שנתארמלה
 Ketubot,2,ה?אשה שנתארמלה
-Ketubot,3,אלו נערות
+Ketubot,3,ו?אלו נערות
+Ketubot,3,ו?אלו נערו'
+Ketubot,3,ו?אלו נערו׳
 Ketubot,4,נערה שנתפתתה
+Ketubot,4,נערה
 Ketubot,5,אף על פי
+Ketubot,5,אף ע״פ
+Ketubot,5,אף ע"פ
 Ketubot,5,א״עפ
 Ketubot,5,א"עפ
+Ketubot,5,אע"פ
+Ketubot,5,אע״פ
+Ketubot,5,אעפ"י
+Ketubot,5,אעפ״י
 Ketubot,6,מציאת ה?אשה
 Ketubot,6,מציאת ה?אישה
 Ketubot,7,ה?מדיר
@@ -523,10 +722,30 @@ Ketubot,9,ה?כותב לאשתו
 Ketubot,9,ה?כותב
 Ketubot,10,מי שהיה נשוי
 Ketubot,11,אלמנה ני?זונת
+Ketubot,11,אלמנה ני?זונ'
+Ketubot,11,אלמנה ני?זונ׳
+Ketubot,11,אלמנה ניזונית
+Ketubot,11,אלמנה ניזוני'
+Ketubot,11,אלמנה ניזוני׳
+Ketubot,11,אלמנ' ניזונת
+Ketubot,11,אלמנ׳ ניזונת
 Ketubot,12,ה?נושא את האשה
 Ketubot,12,ה?נושא את האישה
 Ketubot,12,ה?נושא
 Ketubot,13,שני דייני גזירות
+Ketubot,13,שני דייני גזירו'
+Ketubot,13,שני דייני גזירו׳
+Ketubot,13,שני דייני
+Ketubot,13,ב דייני גזירות
+Ketubot,13,ב דייני גזירו'
+Ketubot,13,ב דייני גזירו׳
+Ketubot,13,ב דייני
+Ketubot,13,ב׳ דייני גזירות
+Ketubot,13,ב׳ דייני גזירו'
+Ketubot,13,ב׳ דייני גזירו׳
+Ketubot,13,ב' דייני גזירות
+Ketubot,13,ב' דייני גזירו'
+Ketubot,13,ב' דייני גזירו׳
 Sukkah,2,ה?ישן
 Sukkah,3,לולב ה?גזול
 Sukkah,3,לולב ה?גזל
