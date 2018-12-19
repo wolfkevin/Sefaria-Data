@@ -407,7 +407,7 @@ Chagigah,3,חו?מר בקודש
 Shabbat,1,יצי?אות השבת
 Shabbat,1,יצי?אות השב'
 Shabbat,1,יצי?אות השב׳
-Shabbat,1,יצי?אותֿ
+Shabbat,1,יצי?אות
 Shabbat,2,במה מדליקין
 Shabbat,2,במה מדליקים
 Shabbat,3,כירה
@@ -610,6 +610,7 @@ Rosh_Hashanah,1,ד׳ ראשי שנים
 Rosh_Hashanah,1,ד' ראשי שנים
 Rosh_Hashanah,2,אם אינן מכירין
 Rosh_Hashanah,2,אם אינן מכירים
+Rosh_Hashanah,2,אם אינן
 Rosh_Hashanah,3,ראוהו בית דין
 Rosh_Hashanah,3,ראוהו ב״ד
 Rosh_Hashanah,3,ראוהו ב"ד
@@ -621,6 +622,7 @@ Nedarim,3,ד נדרים
 Nedarim,3,ד' נדרים
 Nedarim,3,ד׳ נדרים
 Nedarim,4,אין בין המודר
+Nedarim,4,אין בין
 Nedarim,5,השו?תפין שנדרו
 Nedarim,5,השו?תפים שנדרו
 Nedarim,6,ה?נודר מן המבושל
@@ -650,6 +652,7 @@ Menachot,7,אלו מנחות
 Menachot,7,אלו מנחו'
 Menachot,7,אלו מנחו׳
 Menachot,8,ה?תודה היתה באה
+Menachot,8,ה?תודה היתה
 Menachot,8,ה?תודה
 Menachot,9,כל קרבנות ציבור
 Menachot,9,כל קרבנות
