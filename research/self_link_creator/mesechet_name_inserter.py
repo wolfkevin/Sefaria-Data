@@ -10,7 +10,7 @@ from sefaria.datatype import jagged_array
 from sefaria.model import *
 from sefaria.system.exceptions import BookNameError
 
-post = False
+post = True
 
 def isGematria(txt):
     txt = normalize_final_letters_in_str(txt)
@@ -349,7 +349,7 @@ def walk_thru_action(s, tref, heTref, version):
     return 
 
 
-with codecs.open('weird_replace' + '.tsv', 'wb+', 'utf-8') as csvfile:
+with codecs.open('newest' + '.tsv', 'wb+', 'utf-8') as csvfile:
         # s is the segment string
         # tref is the segment's english ref
         # heTref is the hebrew ref
@@ -404,6 +404,7 @@ look for not in perek for כל המנחות
     ובנדה פ' האשה (ס"ג ג') וביבמות פ' כיצד (כ"ג א')
 חולין סוף (דף קמ"א)
 נדה סוף פרק ראשון
+(דף מ') ראש הפרק יוצא דופן
 
 '''
 
@@ -415,6 +416,8 @@ MISHNAH:
 RESEARCH:
 (בסו״פ כל הכלים) דתנור וכירים מחוברים לקרקע עיי״ש
 ובפסחים (פרק אלו דברים) תניא הרי הוא אומר עבודת מתנה
+
+כדאמרי' בפ' קמא (דף י:)
 
 skip Kinaat_Sofrim_on_Sefer_HaMitzvot%2C_Shorashim.9.5
 בסוטה בשילהי פרק שני
