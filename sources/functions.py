@@ -1190,19 +1190,19 @@ def numToHeb(engnum=""):
     return hebnum
 
 def isGematria(txt):
-    txt = txt.replace('.','')
-    if txt.find("ך")>=0:
-        txt = txt.replace("ך", "כ")
-    if txt.find("ם")>=0:
-        txt = txt.replace("ם", "מ")
-    if txt.find("ף")>=0:
-        txt = txt.replace("ף", "פ")
-    if txt.find("ץ")>=0:
-        txt = txt.replace("ץ", "צ")
-    if txt.find("טו")>=0:
-        txt = txt.replace("טו", "יה")
-    if txt.find("טז")>=0:
-        txt = txt.replace("טז", "יו")
+    txt = txt.replace(u'.',u'')
+    if txt.find(u"ך")>=0:
+        txt = txt.replace(u"ך", u"כ")
+    if txt.find(u"ם")>=0:
+        txt = txt.replace(u"ם", u"מ")
+    if txt.find(u"ף")>=0:
+        txt = txt.replace(u"ף", u"פ")
+    if txt.find(u"ץ")>=0:
+        txt = txt.replace(u"ץ", u"צ")
+    if txt.find(u"טו")>=0:
+        txt = txt.replace(u"טו", u"יה")
+    if txt.find(u"טז")>=0:
+        txt = txt.replace(u"טז", u"יו")
     if len(txt) == 2:
         letter_count = 0
         for i in range(9):
