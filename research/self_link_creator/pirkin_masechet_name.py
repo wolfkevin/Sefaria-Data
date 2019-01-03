@@ -254,8 +254,8 @@ def walk_thru_action(s, tref, heTref, version):
                         
                     if match.group("sham"):
                         if u'(' in match.group():
-                            seg_text += s[pre_idx:match.start('sham')] + base_text + u' ' + s[match.end('sham'):match.end()+3]
-                            pre_idx = match.end() + 3 + 3  # subtract length of sham and space and add whats added to end
+                            seg_text += s[pre_idx:match.start('sham')] + base_text + u' ' + s[match.end('sham'):match.end()]
+                            pre_idx = match.end()  # subtract length of sham and space and add whats added to end
                             text_changed_perek = True
                     else:
                         for group in ["daf_prepend", 'daf_number']:
