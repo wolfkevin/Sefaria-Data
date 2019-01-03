@@ -303,7 +303,7 @@ Niddah,3,ה?מפלת חתיכה
 Niddah,3,ה?מפלת
 Niddah,3,ה?מפל'
 Niddah,3,ה?מפל׳
-Niddah,4,בנות כותים
+Niddah,4,בנות כותיי?ם
 Niddah,5,יוצא דופן
 Niddah,6,בא סימן
 Niddah,7,דם ה?נדה
@@ -450,6 +450,12 @@ Shabbat,19,ר אלי?עזר דמילה
 Shabbat,19,ר׳ אלי?עזר דמילה
 Shabbat,19,ר"א דמילה
 Shabbat,19,ר״א דמילה
+Shabbat,19,דמילה
+Shabbat,19,דמיל'
+Shabbat,19,דמיל׳
+Shabbat,19,המילה
+Shabbat,19,המיל׳
+Shabbat,19,המיל'
 Shabbat,20,תולין
 Shabbat,20,תולים
 Shabbat,21,נו?טל אדם את בנו
@@ -723,6 +729,8 @@ Ketubot,8,ה?אשה שנפלו
 Ketubot,8,ה?אישה שנפלו
 Ketubot,9,ה?כותב לאשתו
 Ketubot,9,ה?כותב
+Ketubot,9,הכות'
+Ketubot,9,הכות׳
 Ketubot,10,מי שהיה נשוי
 Ketubot,11,אלמנה ני?זונת
 Ketubot,11,אלמנה ני?זונ'
