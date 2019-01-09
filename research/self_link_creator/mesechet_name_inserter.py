@@ -287,9 +287,9 @@ def walk_thru_action(s, tref, heTref, version):
                         
                     if match.group("sham"):
                         if u'(' in match.group():
-                            seg_text += s[pre_idx:match.start('sham')] + talmud_title + u' ' + s[match.end('sham'):match.end()+3]
-                            pre_idx = match.end() + 3 + 3  # subtract length of sham and space and add whats added to end
-                            text_changed_perek = False
+                            seg_text += s[pre_idx:match.start('sham')] + talmud_title + u' ' + s[match.end('sham'):match.end()]
+                            pre_idx = match.end()
+                            text_changed_perek = True
                     else:
                         for group in ["filler_inside", "daf_prepend", 'daf_number']:
                             if match.group(group):
@@ -299,7 +299,7 @@ def walk_thru_action(s, tref, heTref, version):
                                         pre_idx = match.end() + 1
                                         text_changed_perek = True
                                     elif match.group('daf_prepend') or match.group('amud'):
-                                        text_changed_perek = False
+                                        text_changed_perek = True
                                         front_p_idx = re.search(ur'[(\[{]', match.group()) 
                                         if front_p_idx and (front_p_idx.end() < (match.start(group) - match.start())):
                                             seg_text += s[pre_idx:match.start(group)] + u'(' + talmud_title + u' ' + s[match.start(group):match.end()] + u')'
@@ -313,7 +313,7 @@ def walk_thru_action(s, tref, heTref, version):
                                     if match.group('daf_prepend') or match.group('amud'):
                                         seg_text += s[pre_idx:match.start(group)] + u'(' + talmud_title + u' ' + s[match.start(group):match.end()] + u')'
                                         pre_idx = match.end()
-                                        text_changed_perek = False
+                                        text_changed_perek = True
                                 break
                                         
                             # if (u'(' not in s[match.start():match.end()]) and (u'[' not in s[match.start():match.end()]):
@@ -349,7 +349,7 @@ def walk_thru_action(s, tref, heTref, version):
     return 
 
 
-with codecs.open('newest' + '.tsv', 'wb+', 'utf-8') as csvfile:
+with codecs.open('newest1' + '.tsv', 'wb+', 'utf-8') as csvfile:
         # s is the segment string
         # tref is the segment's english ref
         # heTref is the hebrew ref
