@@ -2,24 +2,10 @@
 import django
 django.setup()
 import re
-import pickle
-import codecs
 from sefaria.helper.text import replace_roman_numerals
-import urllib2
-from sefaria.system.database import db
-from sefaria.system.exceptions import DuplicateRecordError
-
 from sefaria.model import *
-from sefaria.utils.hebrew import is_hebrew, strip_nikkud, has_cantillation
-from data_utilities.util import WeightedLevenshtein
-from data_utilities.dibur_hamatchil_matcher import match_ref
-from sefaria.model.text import Library
-from collections import defaultdict
 import json
-from dictionary_tools import create_links_from_refs, add_span_to_heb, ref_replacement_text
-import roman
-import json
-from sources.functions import post_index, post_text
+from sources.functions import post_text
 
 
 all_titles_reg = library.all_titles_regex('en', citing_only=True)
