@@ -76,6 +76,9 @@ Berakhot,5,אין עו?מדים
 Berakhot,6,כיצד מברכי?ן
 Berakhot,6,כיצד מברכים
 Berakhot,7,שלשה שאכלו
+Berakhot,7,ג שאכלו
+Berakhot,7,ג' שאכלו
+Berakhot,7,ג׳ שאכלו
 Berakhot,9,ה?רואה
 Bekhorot,1,ה?לוקח עובר חמורו
 Bekhorot,1,ה?לוקח עובר
@@ -441,6 +444,7 @@ Shabbat,14,ח' שרצים
 Shabbat,14,ח׳ שרצים
 Shabbat,15,ו?אלו קשרים
 Shabbat,16,כל כתבי
+Shabbat,16,כל כתבי ה?קודש
 Shabbat,17,כל ה?כלים
 Shabbat,18,מפנין
 Shabbat,18,מפנים
@@ -568,6 +572,7 @@ Chullin,3,אלו טרי?פו׳
 Chullin,4,בהמה המקשה
 Chullin,5,או?תו ואת בנו
 Chullin,6,כסוי ה?דם
+Chullin,6,כיסוי ה?דם
 Chullin,7,גיד ה?נשה
 Chullin,8,כל ה?בשר
 Chullin,9,ה?עור והרוטב
@@ -589,15 +594,15 @@ Temurah,6,כל ה?אסורים
 Temurah,7,יש בקדשי מזבח
 Taanit,1,מאימתי מזכירין
 Taanit,1,מאימתי מזכירים
-Taanit,2,סדר תעניות
+Taanit,2,סדר תעניו?ת
 Taanit,2,סדר תעניו'
 Taanit,2,סדר תעניו׳
-Taanit,2,סדר תעניות קמא
-Taanit,2,סדר תעניות כיצד
-Taanit,3,סדר תעניות אלו
-Taanit,2,סדר תעניות בתרא
-Taanit,2,סדר תעניות בתר'
-Taanit,2,סדר תעניות בתר׳
+Taanit,2,סדר תעניו?ת קמא
+Taanit,2,סדר תעניו?ת כיצד
+Taanit,3,סדר תעניו?ת אלו
+Taanit,2,סדר תעניו?ת בתרא
+Taanit,2,סדר תעניו?ת בתר'
+Taanit,2,סדר תעניו?ת בתר׳
 Taanit,4,ב?שלשה פרקים
 Taanit,4,ב?שלשה פרקים בשנה
 Beitzah,2,יום טוב
