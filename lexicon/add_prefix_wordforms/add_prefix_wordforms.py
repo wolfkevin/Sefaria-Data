@@ -138,7 +138,7 @@ old_jastrow_wordforms = None
 old_klein_wordforms = None
 old_words_in_klein_and_jastrow = None
 old_bdb_wordforms = None
-old_words_that_we_miss = None
+old_potentially_bad_prefixes = None
 # with open('jastrow_wordforms.pickle', 'rb') as handle:
 #     old_jastrow_wordforms = pickle.load(handle)
 # with open('klein_wordforms.pickle', 'rb') as handle:
@@ -147,11 +147,14 @@ old_words_that_we_miss = None
 #     old_words_in_klein_and_jastrow = pickle.load(handle)
 # with open('bdb_wordforms.pickle', 'rb') as handle:
 #     old_bdb_wordforms = pickle.load(handle)
-# with open('words_that_we_miss.pickle', 'rb') as handle:
-#     old_words_that_we_miss = pickle.load(handle)
-# 
-# for key, value in sorted(old_words_that_we_miss.iteritems(), key=lambda (k,v): (v,k), reverse=True):
-#     print "%s: %s" % (key, value)
+with open('potentially_bad_prefixes.pickle', 'rb') as handle:
+    old_potentially_bad_prefixes = pickle.load(handle)
+
+# for key, value in sorted(old_potentially_bad_prefixes.iteritems(), key=lambda (k,v): (v,k), reverse=True):
+for key, value in sorted(old_potentially_bad_prefixes.iteritems()):
+    print u"{}, {}:\n {}".format(key[0], key[1], u', '.join(value))
+    
+    
 
 # def find_and_add_hw(ref, word, prefix=u'', found=False):
 #     in_jastrow = False
