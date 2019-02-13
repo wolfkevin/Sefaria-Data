@@ -536,6 +536,7 @@ Zevachim,8,ה?תערובת
 Zevachim,8,ה?תערוב'
 Zevachim,8,ה?תערוב׳
 Zevachim,9,ה?מזבח מקדש
+Zevachim,9,ה?מזבח
 Zevachim,10,כל התדיר
 Zevachim,10,כָּל הַתָּדִיר
 Zevachim,11,דם חטאת
